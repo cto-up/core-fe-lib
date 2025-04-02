@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import HelloWorld from "./components/HelloWorld.vue";
 import { Greeting } from "../lib/main.ts";
+import DatePicker from "../lib/components/DatePicker.vue";
+import { ref } from "vue";
+
+const date = ref("");
 </script>
 
 <template>
@@ -13,6 +17,7 @@ import { Greeting } from "../lib/main.ts";
     </a>
   </div>
   <greeting name="User"></greeting>
+  <date-picker v-model="date"></date-picker>
   <HelloWorld msg="Vite + VueX" />
 </template>
 
