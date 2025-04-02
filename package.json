@@ -1,0 +1,29 @@
+{
+  "name": "ctoup-core-fe",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "peerDependencies": {
+    "@quasar/extras": "^1.16.4",
+    "quasar": "^2.0.0",
+    "vue": "^3.5.13"
+  },
+  "devDependencies": {
+    "@quasar/extras": "^1.16.17",
+    "@types/node": "^22.13.17",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/tsconfig": "^0.7.0",
+    "quasar": "^2.18.1",
+    "sass": "^1.86.1",
+    "sass-loader": "^16.0.5",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0",
+    "vue-cli-plugin-quasar": "^5.1.2",
+    "vue-tsc": "^2.2.4"
+  }
+}
