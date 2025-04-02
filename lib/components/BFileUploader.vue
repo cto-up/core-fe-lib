@@ -33,7 +33,7 @@ import { QRejectedEntry, QUploader, useQuasar } from "quasar";
 import {
   ReceivedProgressEvent,
   ExtractJSONObject,
-} from "../../../../core/frontend/src/events/received-events";
+} from "../types/received-events";
 import { max } from "lodash";
 
 interface Option {

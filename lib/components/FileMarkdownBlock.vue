@@ -3,10 +3,10 @@
 </template>
 
 <script setup lang="ts">
-import markdownit from 'markdown-it/index.js';
-import DOMPurify from 'dompurify';
-import { computed, ref, watch } from 'vue';
-import { useI18n } from 'vue-i18n';
+import markdownit from "markdown-it";
+import DOMPurify from "dompurify";
+import { computed, ref, watch } from "vue";
+import { useI18n } from "vue-i18n";
 const { locale } = useI18n();
 // enable everything
 const md = markdownit({
@@ -27,23 +27,23 @@ const { filename } = defineProps({
 });
 
 // Reactive variable to store the markdown text
-const mdText = ref('');
+const mdText = ref("");
 
 const computedFilePath = computed(
   () =>
-    '/markdown/' +
+    "/markdown/" +
     filename +
-    '_' +
-    (locale.value === 'fr' ? 'fr' : 'en') +
-    '.md',
+    "_" +
+    (locale.value === "fr" ? "fr" : "en") +
+    ".md"
 );
 
 // Watch for changes in filePath and load the file
 watch(
   [() => computedFilePath, () => locale.value],
   async ([newPath, newLocale]) => {
-    console.log('newPath', newPath);
-    console.log('newLocale', newLocale);
+    console.log("newPath", newPath);
+    console.log("newLocale", newLocale);
 
     if (newPath) {
       try {
@@ -54,12 +54,12 @@ watch(
         mdText.value = await response.text();
       } catch (error) {
         console.error(error);
-        mdText.value = 'Error loading content.';
+        mdText.value = "Error loading content.";
       }
     } else {
-      mdText.value = '';
+      mdText.value = "";
     }
   },
-  { immediate: true },
+  { immediate: true }
 );
 </script>

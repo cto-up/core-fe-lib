@@ -12,6 +12,17 @@ import BPeriodDateTimePicker from "../lib/components/BPeriodDateTimePicker.vue";
 import BSelectorID from "../lib/components/BSelectorID.vue";
 import MarkdownEditor from "../lib/components/MarkdownEditor.vue";
 import MarkdownBlock from "../lib/components/MarkdownBlock.vue";
+import BBtn from "../lib/components/BBtn.vue";
+import BCurrency from "../lib/components/BCurrency.vue";
+import BFileUploader from "../lib/components/BFileUploader.vue";
+import BImageUploader from "../lib/components/BImageUploader.vue";
+import BMoneyAmountInput from "../lib/components/BMoneyAmountInput.vue";
+import BTextID from "../lib/components/BTextID.vue";
+import BTitle from "../lib/components/BTitle.vue";
+import FileMarkdownBlock from "../lib/components/FileMarkdownBlock.vue";
+import LanguageSwitcher from "../lib/components/LanguageSwitcher.vue";
+import LLMSelector from "../lib/components/LLMSelector.vue";
+import NoDataPagination from "../lib/components/NoDataPagination.vue";
 
 // Required variables for components
 const date = ref("2025-04-22T22:00:00.000Z");
@@ -21,6 +32,9 @@ const icon = ref("home");
 const selectedLabel = ref(null);
 const selectedId = ref("");
 const markdownContent = ref("**Hello** _world_");
+const moneyAmount = ref({ amount: 100, currency: "USD" });
+const textId = ref("SAMPLE-001");
+const selectedLLM = ref("gpt-4");
 
 // Sample data for CloudWords
 const words = ref([
@@ -137,6 +151,72 @@ const translationFields = [
           <td>MarkdownBlock</td>
           <td>
             <MarkdownBlock :content="markdownContent" />
+          </td>
+        </tr>
+        <tr>
+          <td>BBtn</td>
+          <td>
+            <BBtn label="Click me" color="primary" />
+          </td>
+        </tr>
+        <tr>
+          <td>BCurrency</td>
+          <td>
+            <BCurrency v-model="moneyAmount.currency" />
+          </td>
+        </tr>
+        <tr>
+          <td>BFileUploader</td>
+          <td>
+            <BFileUploader accept=".pdf,.doc,.docx" />
+          </td>
+        </tr>
+        <tr>
+          <td>BImageUploader</td>
+          <td>
+            <BImageUploader :width="200" :height="200" />
+          </td>
+        </tr>
+        <tr>
+          <td>BMoneyAmountInput</td>
+          <td>
+            <BMoneyAmountInput v-model="moneyAmount" label="Amount" />
+          </td>
+        </tr>
+        <tr>
+          <td>BTextID</td>
+          <td>
+            <BTextID v-model="textId" label="Reference ID" />
+          </td>
+        </tr>
+        <tr>
+          <td>BTitle</td>
+          <td>
+            <BTitle title="Sample Title" subtitle="Sample Subtitle" />
+          </td>
+        </tr>
+        <tr>
+          <td>FileMarkdownBlock</td>
+          <td>
+            <FileMarkdownBlock :content="markdownContent" />
+          </td>
+        </tr>
+        <tr>
+          <td>LanguageSwitcher</td>
+          <td>
+            <LanguageSwitcher />
+          </td>
+        </tr>
+        <tr>
+          <td>LLMSelector</td>
+          <td>
+            <LLMSelector v-model="selectedLLM" />
+          </td>
+        </tr>
+        <tr>
+          <td>NoDataPagination</td>
+          <td>
+            <NoDataPagination :total="100" :page="1" :per-page="10" />
           </td>
         </tr>
       </tbody>
