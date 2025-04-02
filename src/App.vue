@@ -2,21 +2,17 @@
 import HelloWorld from "./components/HelloWorld.vue";
 import { Greeting } from "../lib/main.ts";
 import DatePicker from "../lib/components/DatePicker.vue";
+import BDateTime from "../lib/components/BDateTime.vue";
+import BTitle from "../lib/components/BTitle.vue";
 import { ref } from "vue";
 
 const date = ref("");
 </script>
 
 <template>
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
   <greeting name="User"></greeting>
+  <b-title v-model="date"></b-title>
+  <b-date-time v-model="date"></b-date-time>
   <date-picker v-model="date"></date-picker>
   <HelloWorld msg="Vite + VueX" />
 </template>
