@@ -60,10 +60,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import markdownit from 'markdown-it/index.js';
-import MarkdownEditor from './MarkdownEditor.vue';
-import DOMPurify from 'dompurify';
+import { ref, watch } from "vue";
+import markdownit from "markdown-it";
+import MarkdownEditor from "./MarkdownEditor.vue";
+import DOMPurify from "dompurify";
 
 // Set up Markdown-it with all features enabled
 const md = markdownit({
@@ -85,20 +85,20 @@ const props = defineProps({
   },
 });
 
-defineEmits(['update:modelValue']);
+defineEmits(["update:modelValue"]);
 
 // Reactive variable to store the markdown text (editable)
-const mdText = ref<string>(props.modelValue ?? '');
+const mdText = ref<string>(props.modelValue ?? "");
 
 watch(
   () => props.modelValue,
   (newValue) => {
-    mdText.value = newValue ?? '';
-  },
+    mdText.value = newValue ?? "";
+  }
 );
 
 // Tracks the active tab (view or edit)
-const activeTab = ref<string>('view');
+const activeTab = ref<string>("view");
 </script>
 
 <style lang="scss" scoped>
@@ -118,7 +118,7 @@ const activeTab = ref<string>('view');
 /* Clear Quasar styles for the markdown body */
 .markdown-body :deep(*) {
   // all: unset; /* Unset all inherited styles */
-  font-family: 'Arial', sans-serif; /* Re-define your desired font */
+  font-family: "Arial", sans-serif; /* Re-define your desired font */
 }
 
 .markdown-body :deep(h1),
@@ -148,7 +148,7 @@ const activeTab = ref<string>('view');
 .markdown-body :deep(code) {
   padding: 8px;
   border-radius: 4px;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
 }
 .markdown-body :deep(table) {
   width: 100%;

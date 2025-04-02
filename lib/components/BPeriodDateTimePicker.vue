@@ -58,8 +58,8 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
-import useDate from 'composables/useDate';
+import { ref, watch } from "vue";
+import useDate from "../composables/useDate";
 
 const {
   ISOStringToDateTimeString,
@@ -71,12 +71,12 @@ const {
 const props = defineProps({
   fromDate: {
     type: String,
-    default: '',
+    default: "",
     required: true,
   },
   toDate: {
     type: String,
-    default: '',
+    default: "",
     required: true,
   },
   error: {
@@ -84,33 +84,33 @@ const props = defineProps({
   },
   label: {
     type: String,
-    default: 'Date Time',
+    default: "Date Time",
   },
   durationLabel: {
     type: String,
-    default: 'Duration',
+    default: "Duration",
   },
   errorMessage: {
     type: String,
   },
   maxWidth: {
     type: String,
-    default: '320px',
+    default: "320px",
   },
 });
 
-const emit = defineEmits(['update:fromDate', 'update:toDate']);
+const emit = defineEmits(["update:fromDate", "update:toDate"]);
 
 const internalFromDateTime = ref(ISOStringToDateTimeString(props.fromDate));
 const internalToDateTime = ref(ISOStringToDateTimeString(props.toDate));
 const selectedDuration = ref(
-  updateDuration(internalFromDateTime.value, internalToDateTime.value),
+  updateDuration(internalFromDateTime.value, internalToDateTime.value)
 ); // Default duration
 
 const durationOptions = [
-  { label: '30 min', value: 30 },
-  { label: '1h', value: 60 },
-  { label: '1h 30 min', value: 90 },
+  { label: "30 min", value: 30 },
+  { label: "1h", value: 60 },
+  { label: "1h 30 min", value: 90 },
 ];
 
 // Sync `fromDate` prop with internal value
@@ -122,10 +122,10 @@ watch(
       internalFromDateTime.value = newFrom;
       selectedDuration.value = updateDuration(
         newFrom,
-        internalToDateTime.value,
+        internalToDateTime.value
       );
     }
-  },
+  }
 );
 
 // Sync `toDate` prop with internal value and compute duration
@@ -137,10 +137,10 @@ watch(
       internalToDateTime.value = newTo;
       selectedDuration.value = updateDuration(
         internalFromDateTime.value,
-        newTo,
+        newTo
       );
     }
-  },
+  }
 );
 
 // Update `toDate` when `fromDate` changes
@@ -148,10 +148,10 @@ const onFromDateTimeChange = (newFromDateTime: string) => {
   if (!newFromDateTime) return;
   const newFromNormDate = normalizeDateTime(newFromDateTime);
   const newFromDateISO = datetimeStringToISO(newFromNormDate);
-  emit('update:fromDate', newFromDateISO);
+  emit("update:fromDate", newFromDateISO);
   updateToDate(
     new Date(ISOStringToDateTimeString(newFromDateISO)),
-    selectedDuration.value,
+    selectedDuration.value
   );
 };
 
@@ -163,13 +163,13 @@ const onDurationChange = (newDuration: string) => {
   const newFromDateISO = datetimeStringToISO(newFromNormDate);
   updateToDate(
     new Date(ISOStringToDateTimeString(newFromDateISO)),
-    parseInt(newDuration),
+    parseInt(newDuration)
   );
 };
 
 function normalizeDateTime(dateString: string): string {
   // Get the current date as YYYY-MM-DD
-  const currentDate = new Date().toISOString().split('T')[0];
+  const currentDate = new Date().toISOString().split("T")[0];
 
   // Regex patterns to detect formats
   const isDateFormat = /^\d{4}-\d{2}-\d{2}$/; // Format: YYYY-MM-DD
@@ -189,7 +189,7 @@ function normalizeDateTime(dateString: string): string {
 
 function updateToDate(fromDate: Date, duration: number): Date {
   const newToDate = addMinutesToDate(fromDate, duration);
-  emit('update:toDate', newToDate.toISOString());
+  emit("update:toDate", newToDate.toISOString());
   return newToDate;
 }
 
@@ -203,7 +203,7 @@ function updateDuration(fromDate: string, toDate: string): number {
   }
 
   const duration = calculateDurationInMinutes(fromDate, toDate);
-  console.log('duration', duration);
+  console.log("duration", duration);
   return duration;
 }
 </script>

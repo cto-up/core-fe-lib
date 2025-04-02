@@ -3,12 +3,12 @@
 </template>
 
 <script lang="ts">
-import axios from 'axios';
-import { useErrors } from 'composables/useErrors';
-import { defineComponent, ref, watch } from 'vue';
+import axios from "axios";
+import { useErrors } from "../composables/useErrors";
+import { defineComponent, ref, watch } from "vue";
 
 export default defineComponent({
-  name: 'BTextID',
+  name: "BTextID",
   props: {
     modelValue: {
       type: String,
@@ -32,7 +32,7 @@ export default defineComponent({
     const { handleError } = useErrors();
     const theModel = ref({
       [props.optionValue]: props.modelValue,
-      [props.optionLabel]: '',
+      [props.optionLabel]: "",
     });
 
     const loadOne = async (newValue: string) => {
@@ -55,7 +55,7 @@ export default defineComponent({
       async (newValue) => {
         loadOne(newValue);
       },
-      { immediate: true },
+      { immediate: true }
     );
 
     return {

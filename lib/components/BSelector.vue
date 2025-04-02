@@ -20,9 +20,9 @@
 </template>
 
 <script lang="ts">
-import axios from 'axios';
-import { useErrors } from 'composables/useErrors';
-import { computed, defineComponent, ref } from 'vue';
+import axios from "axios";
+import { useErrors } from "../composables/useErrors";
+import { computed, defineComponent, ref } from "vue";
 
 interface Option {
   label: string;
@@ -30,7 +30,7 @@ interface Option {
 }
 
 export default defineComponent({
-  name: 'BSelector',
+  name: "BSelector",
   props: {
     modelValue: {
       type: Object, // Type Annotation
@@ -57,7 +57,7 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
 
   setup(props, { emit }) {
     const { handleError } = useErrors();
@@ -65,7 +65,7 @@ export default defineComponent({
 
     const theModel = computed({
       get: () => (props.modelValue ? props.modelValue : null),
-      set: (value) => emit('update:modelValue', value),
+      set: (value) => emit("update:modelValue", value),
     });
 
     const options = ref<Option[]>([]);
@@ -77,7 +77,7 @@ export default defineComponent({
       filterFn(
         val: string,
         update: (fn: () => void) => void,
-        abort: () => void,
+        abort: () => void
       ) {
         if (val.length < 1) {
           abort();
@@ -89,7 +89,7 @@ export default defineComponent({
 
             let url = props.url;
             if (val) {
-              url = url + '?q=' + val.toLocaleLowerCase() + '&detail=basic';
+              url = url + "?q=" + val.toLocaleLowerCase() + "&detail=basic";
             }
             try {
               const fetchedData = (await axios.get(url, {})).data;

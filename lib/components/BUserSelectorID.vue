@@ -50,9 +50,9 @@
 </template>
 
 <script lang="ts">
-import axios from 'axios';
-import { useErrors } from 'composables/useErrors';
-import { defineComponent, PropType, ref, watch } from 'vue';
+import axios from "axios";
+import { useErrors } from "../composables/useErrors";
+import { defineComponent, PropType, ref, watch } from "vue";
 
 interface User {
   id: string;
@@ -61,7 +61,7 @@ interface User {
 }
 
 export default defineComponent({
-  name: 'BUserSelectorID',
+  name: "BUserSelectorID",
   props: {
     modelValue: {
       type: [String, Array] as PropType<string | string[]>,
@@ -91,8 +91,8 @@ export default defineComponent({
     },
   },
   emits: {
-    'update:modelValue': (value: string | string[]) => true,
-    'update:label': (value: string) => true,
+    "update:modelValue": (value: string | string[]) => true,
+    "update:label": (value: string) => true,
   },
 
   setup(props, { emit }) {
@@ -103,28 +103,28 @@ export default defineComponent({
     // Build the base URL for user fetching
     const buildUrl = (id?: string, query?: string) => {
       const url = new URL(
-        id ? `/api/v1/users/${id}` : '/api/v1/users',
-        window.location.origin,
+        id ? `/api/v1/users/${id}` : "/api/v1/users",
+        window.location.origin
       );
 
       // If specific roles are required
       if (props.roles && props.roles.length > 0) {
-        url.searchParams.append('roles', `${props.roles.join(',')}`);
+        url.searchParams.append("roles", `${props.roles.join(",")}`);
       }
 
       // If team filtering is required
       if (props.teamId) {
-        url.searchParams.append('teamId', props.teamId);
+        url.searchParams.append("teamId", props.teamId);
       }
 
       // If excluding current user
       if (props.excludeCurrentUser) {
-        url.searchParams.append('excludeCurrentUser', 'true');
+        url.searchParams.append("excludeCurrentUser", "true");
       }
 
       // If searching by query
       if (query) {
-        url.searchParams.append('q', query.toLowerCase());
+        url.searchParams.append("q", query.toLowerCase());
       }
 
       return url.pathname + url.search;
@@ -136,9 +136,9 @@ export default defineComponent({
         ? []
         : {
             id: props.modelValue,
-            name: '',
-            email: '',
-          },
+            name: "",
+            email: "",
+          }
     );
 
     const loadOne = async (newValue: string | string[]) => {
@@ -156,7 +156,7 @@ export default defineComponent({
             name: response.data.name,
             email: response.data.email,
           }));
-          emit('update:label', responses.map((r) => r.data.name).join(', '));
+          emit("update:label", responses.map((r) => r.data.name).join(", "));
         } else if (!Array.isArray(newValue)) {
           const fetchedData = (await axios.get(buildUrl(newValue))).data;
           theModel.value = {
@@ -164,7 +164,7 @@ export default defineComponent({
             name: fetchedData.name,
             email: fetchedData.email,
           };
-          emit('update:label', fetchedData.name);
+          emit("update:label", fetchedData.name);
         }
       } catch (err) {
         handleError(err);
@@ -176,19 +176,19 @@ export default defineComponent({
     const onSelect = (val: any) => {
       if (props.multiple) {
         const values = val ? val.map((v: User) => v.id) : [];
-        const labels = val ? val.map((v: User) => v.name).join(', ') : '';
-        emit('update:modelValue', values);
-        emit('update:label', labels);
+        const labels = val ? val.map((v: User) => v.name).join(", ") : "";
+        emit("update:modelValue", values);
+        emit("update:label", labels);
       } else {
-        emit('update:modelValue', val ? val.id : val);
-        emit('update:label', val ? val.name : val);
+        emit("update:modelValue", val ? val.id : val);
+        emit("update:label", val ? val.name : val);
       }
     };
 
     const filterFn = async (
       val: string,
       update: (fn: () => void) => void,
-      abort: () => void,
+      abort: () => void
     ) => {
       /*if (val.length < 2) {
         abort();
@@ -217,7 +217,7 @@ export default defineComponent({
       () => props.modelValue,
       async (newValue) => {
         loadOne(newValue);
-      },
+      }
     );
 
     // Initial load

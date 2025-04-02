@@ -6,14 +6,21 @@ import BDate from "../lib/components/BDate.vue";
 import BDiv from "../lib/components/BDiv.vue";
 import DatePicker from "../lib/components/DatePicker.vue";
 import IconPicker from "../lib/components/IconPicker.vue";
-import SavingProcessIndicator from "../lib/components/SavingProcessIndicator.vue";
 import CloudWords from "../lib/components/CloudWords.vue";
+import BLabelSelector from "../lib/components/BLabelSelector.vue";
+import BPeriodDateTimePicker from "../lib/components/BPeriodDateTimePicker.vue";
+import BSelectorID from "../lib/components/BSelectorID.vue";
+import MarkdownEditor from "../lib/components/MarkdownEditor.vue";
+import MarkdownBlock from "../lib/components/MarkdownBlock.vue";
 
 // Required variables for components
 const date = ref("2025-04-22T22:00:00.000Z");
+const fromDate = ref("2025-04-22T22:00:00.000Z");
+const toDate = ref("2025-04-23T22:00:00.000Z");
 const icon = ref("home");
-const resourceIds = ref(["1", "2"]);
-const projectIds = ref(["1", "2"]);
+const selectedLabel = ref(null);
+const selectedId = ref("");
+const markdownContent = ref("**Hello** _world_");
 
 // Sample data for CloudWords
 const words = ref([
@@ -65,15 +72,71 @@ const translationFields = [
           </td>
         </tr>
         <tr>
+          <td>IconPicker</td>
+          <td>
+            <IconPicker v-model="icon" />
+          </td>
+        </tr>
+        <tr>
           <td>CloudWords</td>
           <td>
             <CloudWords :words="words" />
           </td>
         </tr>
         <tr>
-          <td>IconPicker</td>
+          <td>BLabelSelector</td>
           <td>
-            <IconPicker v-model="icon" />
+            <BLabelSelector
+              v-model="selectedLabel"
+              label="Select Label"
+              option-label="name"
+              url="/api/labels"
+            />
+          </td>
+        </tr>
+        <tr>
+          <td>BPeriodDateTimePicker</td>
+          <td>
+            <BPeriodDateTimePicker
+              v-model:fromDate="fromDate"
+              v-model:toDate="toDate"
+              label="Period"
+            />
+          </td>
+        </tr>
+        <tr>
+          <td>BSelectorID</td>
+          <td>
+            <BSelectorID
+              v-model="selectedId"
+              label="Select Item"
+              option-value="id"
+              option-label="name"
+              url="/api/items"
+            />
+          </td>
+        </tr>
+        <tr>
+          <td>MarkdownEditor</td>
+          <td>
+            <MarkdownEditor
+              v-model="markdownContent"
+              :initial-content="markdownContent"
+              :active-buttons="[
+                'bold',
+                'italic',
+                'strike',
+                'heading',
+                'bullet_list',
+                'ordered_list',
+              ]"
+            />
+          </td>
+        </tr>
+        <tr>
+          <td>MarkdownBlock</td>
+          <td>
+            <MarkdownBlock :content="markdownContent" />
           </td>
         </tr>
       </tbody>

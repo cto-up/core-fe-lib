@@ -17,7 +17,7 @@
 
 <script lang="ts">
 import axios from "axios";
-import { useErrors } from "composables/useErrors";
+import { useErrors } from "../composables/useErrors";
 import { computed, defineComponent, ref } from "vue";
 import { Option } from "../../dev/src/components/types";
 export default defineComponent({
