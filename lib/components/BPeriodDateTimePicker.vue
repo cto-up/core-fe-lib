@@ -43,7 +43,7 @@
         </q-icon>
         <!-- Duration Dropdown -->
         <q-select
-          :label="$t('entities.common.duration')"
+          :label="computedDurationLabel"
           v-model="selectedDuration"
           :options="durationOptions"
           dense
@@ -58,8 +58,12 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from "vue";
+import { ref, watch, computed } from "vue";
 import useDate from "../composables/useDate";
+import { useI18n } from "vue-i18n";
+
+// Initialize i18n
+const { t } = useI18n();
 
 const {
   ISOStringToDateTimeString,
@@ -88,7 +92,7 @@ const props = defineProps({
   },
   durationLabel: {
     type: String,
-    default: "Duration",
+    default: "", // Remove the function reference to t
   },
   errorMessage: {
     type: String,
@@ -98,6 +102,11 @@ const props = defineProps({
     default: "320px",
   },
 });
+
+// Compute the duration label with fallback
+const computedDurationLabel = computed(
+  () => props.durationLabel || t("entities.common.duration")
+);
 
 const emit = defineEmits(["update:fromDate", "update:toDate"]);
 
