@@ -4,8 +4,16 @@ This template should help get you started developing with Vue 3 and TypeScript i
 
 Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
 
-## Customize configuration
+## Based on
+
+https://jhale.dev/posts/vue-component-library-storybook-vitest/
+https://jhale.dev/posts/quasar-component-library-storybook/
 
 package.json
 must match your package.json
 "@quasar/extras": "^1.16.4",
+
+did not need step: Enable TypeScript in your IDE for the lib directory
+
+npm install
+npm run dev
