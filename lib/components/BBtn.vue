@@ -18,13 +18,13 @@
 </template>
 
 <script lang="ts" setup>
-import { PropType, computed } from 'vue';
-import { useQuasar } from 'quasar';
+import { type PropType, computed } from "vue";
+import { useQuasar } from "quasar";
 const $q = useQuasar();
 
 const props = defineProps({
   color: {
-    type: String as PropType<'primary' | 'secondary' | 'tertiary'>,
+    type: String as PropType<"primary" | "secondary" | "tertiary">,
     required: false,
   },
   type: {
@@ -45,18 +45,18 @@ const props = defineProps({
 });
 
 const computedColor = computed(() => {
-  return `btn-${$q.dark.mode ? 'dark' : 'light'}-${
-    props.color ? props.color : 'tertiary'
+  return `btn-${$q.dark.mode ? "dark" : "light"}-${
+    props.color ? props.color : "tertiary"
   }`;
 });
 </script>
 
 <style scoped>
-[dark='true']:not([color='primary']) {
+[dark="true"]:not([color="primary"]) {
   background: rgb(60, 60, 60);
 }
 
-[dark='false']:not([color='primary']) {
+[dark="false"]:not([color="primary"]) {
   background: rgb(241, 241, 241);
 }
 </style>

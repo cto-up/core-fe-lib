@@ -1,6 +1,6 @@
 // composables/useUrl.ts
 import { ref} from 'vue'
-import { LocationQueryValue, useRouter } from 'vue-router'
+import { type LocationQueryValue, useRouter } from 'vue-router'
 
 export interface QueryParams {
   [key: string]: LocationQueryValue | LocationQueryValue[] | null
