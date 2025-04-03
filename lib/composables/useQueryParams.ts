@@ -1,6 +1,6 @@
 // src/composables/useQueryParams.ts
 
-import { useRouter, useRoute, LocationQuery } from 'vue-router';
+import { useRouter, useRoute, type LocationQuery } from 'vue-router';
 import { computed, nextTick, ref } from 'vue';
 
 export function useQueryParams() {
