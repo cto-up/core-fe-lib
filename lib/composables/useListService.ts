@@ -1,12 +1,8 @@
 import { Notify } from 'quasar';
-import { QTableProps } from 'quasar';
-import { i18n } from 'boot/i18n';
-import { CancelablePromise } from 'src/openapi/core';
-import { router } from 'src/router';
-import { Ref } from 'vue';
-import { use } from 'echarts';
+import { type QTableProps } from 'quasar';
+import { CancelablePromise } from '../openapi/core';
+import { type Ref } from 'vue';
 import { useQueryParams } from './useQueryParams';
-const { t } = i18n.global;
 
 // Define a proper type for columns and rows, adjust as needed
 interface TableColumn {
@@ -80,7 +76,7 @@ export default function useListService<T>({
     } catch (error) {
       Notify.create({
         type: 'negative',
-        message: t('App.info.error'),
+        message: 'App.info.error',
       });
     } finally {
       loading.value = false;

@@ -1,9 +1,9 @@
 import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { useQuasar } from 'quasar';
-import { useTenantStore } from 'stores/tenant-store';
+import { useTenantStore } from '../stores/tenant-store';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
-import  {useUrl}  from 'composables/useUrl';
+import  {useUrl}  from '../composables/useUrl';
 
 export const useAuth = () => {
   const route = useRoute();
