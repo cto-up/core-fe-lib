@@ -28,7 +28,7 @@ export default {
     } else if (navigator.language.startsWith('fr')) {
       locale.value = 'fr';
     } else {
-      locale.value = 'en-US';
+      locale.value = 'en';
     }
     const updateLocale = (newLocale) => {
       localStorage.setItem('user-locale', newLocale);
@@ -38,7 +38,7 @@ export default {
       updateLocale,
       locale,
       localeOptions: [
-        { value: 'en-US', label: 'English' },
+        { value: 'en', label: 'English' },
         { value: 'fr', label: 'Français' },
       ],
     };
