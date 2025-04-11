@@ -8,12 +8,15 @@ import type { APITokenCreated } from '../models/APITokenCreated';
 import type { APITokenRevoke } from '../models/APITokenRevoke';
 import type { ClientApplication } from '../models/ClientApplication';
 import type { Config } from '../models/Config';
+import type { ExecutePromptResponse } from '../models/ExecutePromptResponse';
 import type { NewAPIToken } from '../models/NewAPIToken';
 import type { NewClientApplication } from '../models/NewClientApplication';
 import type { NewConfig } from '../models/NewConfig';
+import type { NewPrompt } from '../models/NewPrompt';
 import type { NewRole } from '../models/NewRole';
 import type { NewTenant } from '../models/NewTenant';
 import type { NewUser } from '../models/NewUser';
+import type { Prompt } from '../models/Prompt';
 import type { PublicTenantSchema } from '../models/PublicTenantSchema';
 import type { Role } from '../models/Role';
 import type { Tenant } from '../models/Tenant';
@@ -1349,6 +1352,146 @@ export class DefaultService {
             query: {
                 'page': page,
                 'pageSize': pageSize,
+            },
+        });
+    }
+
+    /**
+     * Returns all prompts from the system that the user has access to
+     *
+     * @param page page number
+     * @param pageSize maximum number of results to return
+     * @param sortBy field to sort by
+     * @param order sort order
+     * @param q starts with
+     * @param detail basic or full
+     * @returns Prompt prompt response
+     * @throws ApiError
+     */
+    public static listPrompts(
+        page?: number,
+        pageSize?: number,
+        sortBy?: string,
+        order?: 'asc' | 'desc',
+        q?: string,
+        detail?: string,
+    ): CancelablePromise<Array<Prompt>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/prompts',
+            query: {
+                'page': page,
+                'pageSize': pageSize,
+                'sortBy': sortBy,
+                'order': order,
+                'q': q,
+                'detail': detail,
+            },
+        });
+    }
+
+    /**
+     * Creates a new prompt in the store. Duplicates are allowed
+     * @param requestBody Prompt to add to the store
+     * @returns Prompt prompt response
+     * @throws ApiError
+     */
+    public static addPrompt(
+        requestBody: NewPrompt,
+    ): CancelablePromise<Prompt> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/prompts',
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+
+    /**
+     * Returns a prompt based on a single ID, if the user does not have access to the prompt
+     * @param id ID of prompt to fetch
+     * @returns Prompt prompt response
+     * @throws ApiError
+     */
+    public static getPromptById(
+        id: string,
+    ): CancelablePromise<Prompt> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/prompts/{id}',
+            path: {
+                'id': id,
+            },
+        });
+    }
+
+    /**
+     * Updates a prompt in the store.
+     * @param id ID of prompt to fetch
+     * @param requestBody Prompt to add to the store
+     * @returns Prompt prompt response
+     * @throws ApiError
+     */
+    public static updatePrompt(
+        id: string,
+        requestBody: Prompt,
+    ): CancelablePromise<Prompt> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/prompts/{id}',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+
+    /**
+     * deletes a single prompt based on the ID supplied
+     * @param id ID of prompt to delete
+     * @returns void
+     * @throws ApiError
+     */
+    public static deletePrompt(
+        id: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/prompts/{id}',
+            path: {
+                'id': id,
+            },
+        });
+    }
+
+    /**
+     * Execute a prompt with parameters
+     * @param requestBody Parameters for the prompt
+     * @param id ID of prompt to execute
+     * @param name Name of prompt to execute
+     * @returns ExecutePromptResponse Prompt execution result
+     * @throws ApiError
+     */
+    public static executePrompt(
+        requestBody: {
+            parameters?: Record<string, string>;
+        },
+        id?: string,
+        name?: string,
+    ): CancelablePromise<ExecutePromptResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/prompts/execute',
+            query: {
+                'id': id,
+                'name': name,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid parameters`,
+                404: `Prompt not found`,
             },
         });
     }
