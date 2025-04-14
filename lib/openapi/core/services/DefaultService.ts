@@ -1387,6 +1387,10 @@ export class DefaultService {
                 'q': q,
                 'detail': detail,
             },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+            },
         });
     }
 
@@ -1404,6 +1408,11 @@ export class DefaultService {
             url: '/api/v1/prompts',
             body: requestBody,
             mediaType: 'application/json',
+            errors: {
+                400: `Invalid input`,
+                401: `Unauthorized`,
+                403: `Forbidden`,
+            },
         });
     }
 
