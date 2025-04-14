@@ -8,7 +8,6 @@ import type { APITokenCreated } from '../models/APITokenCreated';
 import type { APITokenRevoke } from '../models/APITokenRevoke';
 import type { ClientApplication } from '../models/ClientApplication';
 import type { Config } from '../models/Config';
-import type { ExecutePromptResponse } from '../models/ExecutePromptResponse';
 import type { NewAPIToken } from '../models/NewAPIToken';
 import type { NewClientApplication } from '../models/NewClientApplication';
 import type { NewConfig } from '../models/NewConfig';
@@ -17,6 +16,7 @@ import type { NewRole } from '../models/NewRole';
 import type { NewTenant } from '../models/NewTenant';
 import type { NewUser } from '../models/NewUser';
 import type { Prompt } from '../models/Prompt';
+import type { PromptResponse } from '../models/PromptResponse';
 import type { PublicTenantSchema } from '../models/PublicTenantSchema';
 import type { Role } from '../models/Role';
 import type { Tenant } from '../models/Tenant';
@@ -1470,7 +1470,42 @@ export class DefaultService {
      * @param requestBody Parameters for the prompt
      * @param id ID of prompt to execute
      * @param name Name of prompt to execute
-     * @returns ExecutePromptResponse Prompt execution result
+     * @returns PromptResponse Prompt execution result
+     * @throws ApiError
+     */
+    public static formatPrompt(
+        requestBody: {
+            parameters?: Record<string, string>;
+        },
+        id?: string,
+        name?: string,
+    ): CancelablePromise<PromptResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/prompts/format',
+            query: {
+                'id': id,
+                'name': name,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid parameters`,
+                404: `Prompt not found`,
+            },
+        });
+    }
+
+    /**
+     * Execute a prompt with parameters
+     * @param requestBody Parameters for the prompt
+     * @param id ID of prompt to execute
+     * @param name Name of prompt to execute
+     * @param provider LLM Provider
+     * @param llm LLM to use for execution
+     * @param output Output format of the prompt execution
+     * @param maxTokens Maximum number of tokens to generate
+     * @returns PromptResponse Prompt execution result
      * @throws ApiError
      */
     public static executePrompt(
@@ -1479,13 +1514,21 @@ export class DefaultService {
         },
         id?: string,
         name?: string,
-    ): CancelablePromise<ExecutePromptResponse> {
+        provider?: 'OPENAI' | 'GOOGLEAI' | 'ANTHROPIC' | 'OLLAMA',
+        llm?: string,
+        output?: 'text' | 'markdown' | 'json',
+        maxTokens?: number,
+    ): CancelablePromise<PromptResponse> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/v1/prompts/execute',
             query: {
                 'id': id,
                 'name': name,
+                'provider': provider,
+                'llm': llm,
+                'output': output,
+                'maxTokens': maxTokens,
             },
             body: requestBody,
             mediaType: 'application/json',

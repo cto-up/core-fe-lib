@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ExecutePromptResponse = {
+export type PromptResponse = {
     result: string;
 };
 
