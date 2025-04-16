@@ -71,7 +71,7 @@ export default defineComponent({
     },
   },
   emits: {
-    'update:modelValue': (value: string | string[] | undefined) => true,
+    'update:modelValue': (value: string | string[]) => true,
     'update:label': (value: string) => true,
     'update:extra': (value: string) => true,
   },
@@ -102,25 +102,17 @@ export default defineComponent({
     };
 
     // Initialize theModel based on multiple prop
-    const theModel = ref<
-      | { [key: string]: string | string[] }[]
-      | { [key: string]: string | string[] }
-      | null
-    >(
+    const theModel = ref(
       props.multiple
         ? []
-        : props.modelValue
-          ? {
-              [props.optionValue]: props.modelValue,
-              [props.optionLabel]: '',
-            }
-          : null,
+        : {
+            [props.optionValue]: props.modelValue,
+            [props.optionLabel]: '',
+          },
     );
 
-    const loadOne = async (newValue: string | string[] | undefined) => {
+    const loadOne = async (newValue: string | string[]) => {
       if (!newValue || (Array.isArray(newValue) && newValue.length === 0)) {
-        theModel.value = props.multiple ? [] : null;
-        emit('update:label', '');
         return;
       }
 
@@ -197,17 +189,18 @@ export default defineComponent({
         emit('update:label', '');
         return;
       }
-
       if (props.multiple) {
-        const values = val.map((v: any) => v[props.optionValue]);
-        const labels = val.map((v: any) => v[props.optionLabel]).join(', ');
+        const values = val ? val.map((v: any) => v[props.optionValue]) : [];
+        const labels = val
+          ? val.map((v: any) => v[props.optionLabel]).join(', ')
+          : '';
         emit('update:modelValue', values);
         emit('update:label', labels);
         loadExtra(values);
       } else {
-        emit('update:modelValue', val[props.optionValue]);
-        emit('update:label', val[props.optionLabel]);
-        loadExtra(val[props.optionValue]);
+        emit('update:modelValue', val ? val[props.optionValue] : val);
+        emit('update:label', val ? val[props.optionLabel] : val);
+        loadExtra(val ? val[props.optionValue] : val);
       }
     };
 
