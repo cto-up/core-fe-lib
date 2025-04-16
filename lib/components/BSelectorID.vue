@@ -20,11 +20,10 @@
   />
 </template>
 <script lang="ts">
-import axios from "axios";
-import { useErrors } from "../composables/useErrors";
-import { defineComponent, PropType, ref, watch } from "vue";
-import { useI18n } from "vue-i18n";
-import { boolean } from "zod";
+import axios from 'axios';
+import { useErrors } from '../composables/useErrors';
+import { defineComponent, type PropType, ref, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 interface Option {
   label: string;
@@ -32,11 +31,14 @@ interface Option {
 }
 
 export default defineComponent({
-  name: "BSelectorID",
+  name: 'BSelectorID',
   props: {
     modelValue: {
-      type: [String, Array] as PropType<string | string[]>,
-      required: true,
+      type: [String, Array, undefined] as PropType<
+        string | string[] | undefined
+      >,
+      required: false,
+      default: undefined,
     },
     multiple: {
       type: Boolean,
@@ -69,9 +71,9 @@ export default defineComponent({
     },
   },
   emits: {
-    "update:modelValue": (value: string | string[]) => true,
-    "update:label": (value: string) => true,
-    "update:extra": (value: string) => true,
+    'update:modelValue': (value: string | string[] | undefined) => true,
+    'update:label': (value: string) => true,
+    'update:extra': (value: string) => true,
   },
 
   setup(props, { emit }) {
@@ -83,34 +85,42 @@ export default defineComponent({
     const buildUrl = (baseUrl: string, id?: string, query?: string) => {
       const url = new URL(
         id ? `${baseUrl}/${id}` : baseUrl,
-        window.location.origin
+        window.location.origin,
       );
 
-      url.searchParams.append("detail", "basic");
+      url.searchParams.append('detail', 'basic');
 
       if (props.useI18n) {
-        url.searchParams.append("lang", locale.value);
+        url.searchParams.append('lang', locale.value);
       }
 
       if (query) {
-        url.searchParams.append("q", query.toLowerCase());
+        url.searchParams.append('q', query.toLowerCase());
       }
 
       return url.pathname + url.search;
     };
 
     // Initialize theModel based on multiple prop
-    const theModel = ref(
+    const theModel = ref<
+      | { [key: string]: string | string[] }[]
+      | { [key: string]: string | string[] }
+      | null
+    >(
       props.multiple
         ? []
-        : {
-            [props.optionValue]: props.modelValue,
-            [props.optionLabel]: "",
-          }
+        : props.modelValue
+          ? {
+              [props.optionValue]: props.modelValue,
+              [props.optionLabel]: '',
+            }
+          : null,
     );
 
-    const loadOne = async (newValue: string | string[]) => {
+    const loadOne = async (newValue: string | string[] | undefined) => {
       if (!newValue || (Array.isArray(newValue) && newValue.length === 0)) {
+        theModel.value = props.multiple ? [] : null;
+        emit('update:label', '');
         return;
       }
 
@@ -118,7 +128,7 @@ export default defineComponent({
       try {
         if (props.multiple && Array.isArray(newValue)) {
           const promises = newValue.map((id) =>
-            axios.get(buildUrl(props.url, id))
+            axios.get(buildUrl(props.url, id)),
           );
           const responses = await Promise.all(promises);
           theModel.value = responses.map((response) => ({
@@ -126,8 +136,8 @@ export default defineComponent({
             [props.optionLabel]: response.data[props.optionLabel],
           }));
           emit(
-            "update:label",
-            responses.map((r) => r.data[props.optionLabel]).join(", ")
+            'update:label',
+            responses.map((r) => r.data[props.optionLabel]).join(', '),
           );
         } else if (!Array.isArray(newValue)) {
           const fetchedData = (await axios.get(buildUrl(props.url, newValue)))
@@ -136,7 +146,7 @@ export default defineComponent({
             [props.optionValue]: fetchedData[props.optionValue],
             [props.optionLabel]: fetchedData[props.optionLabel],
           };
-          emit("update:label", fetchedData[props.optionLabel]);
+          emit('update:label', fetchedData[props.optionLabel]);
         }
       } catch (err) {
         handleError(err);
@@ -158,17 +168,19 @@ export default defineComponent({
       try {
         if (props.multiple && Array.isArray(newValue)) {
           const promises = newValue.map((id) =>
-            axios.get(buildUrl(props.url, id))
+            axios.get(buildUrl(props.url, id)),
           );
           const responses = await Promise.all(promises);
           const extraValues = responses
-            .map((r) => r.data[props.optionExtra])
-            .join(", ");
-          emit("update:extra", extraValues);
+            .map((r) =>
+              props.optionExtra ? r.data[props.optionExtra] : undefined,
+            )
+            .join(', ');
+          emit('update:extra', extraValues);
         } else if (!Array.isArray(newValue)) {
           const fetchedData = (await axios.get(buildUrl(props.url, newValue)))
             .data;
-          emit("update:extra", fetchedData[props.optionExtra]);
+          emit('update:extra', fetchedData[props.optionExtra]);
         }
       } catch (err) {
         handleError(err);
@@ -180,18 +192,22 @@ export default defineComponent({
     loadOne(props.modelValue);
 
     const onSelect = (val: any) => {
+      if (!val) {
+        emit('update:modelValue', undefined);
+        emit('update:label', '');
+        return;
+      }
+
       if (props.multiple) {
-        const values = val ? val.map((v: any) => v[props.optionValue]) : [];
-        const labels = val
-          ? val.map((v: any) => v[props.optionLabel]).join(", ")
-          : "";
-        emit("update:modelValue", values);
-        emit("update:label", labels);
+        const values = val.map((v: any) => v[props.optionValue]);
+        const labels = val.map((v: any) => v[props.optionLabel]).join(', ');
+        emit('update:modelValue', values);
+        emit('update:label', labels);
         loadExtra(values);
       } else {
-        emit("update:modelValue", val ? val[props.optionValue] : val);
-        emit("update:label", val ? val[props.optionLabel] : val);
-        loadExtra(val ? val[props.optionValue] : val);
+        emit('update:modelValue', val[props.optionValue]);
+        emit('update:label', val[props.optionLabel]);
+        loadExtra(val[props.optionValue]);
       }
     };
 
@@ -199,7 +215,7 @@ export default defineComponent({
       () => props.modelValue,
       async (newValue) => {
         loadOne(newValue);
-      }
+      },
     );
 
     // Watch for locale changes and reload data if useI18n is true
@@ -217,7 +233,7 @@ export default defineComponent({
     const filterFn = async (
       val: string,
       update: (fn: () => void) => void,
-      abort: () => void
+      abort: () => void,
     ) => {
       /*if (val.length < 1) {
         abort();
