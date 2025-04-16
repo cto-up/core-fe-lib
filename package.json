@@ -28,10 +28,13 @@
     "vue-tsc": "^2.2.4"
   },
   "dependencies": {
+    "@tiptap/extension-color": "^2.11.7",
+    "@tiptap/extension-link": "^2.11.7",
     "@tiptap/extension-table": "^2.11.7",
     "@tiptap/extension-table-cell": "^2.11.7",
     "@tiptap/extension-table-header": "^2.11.7",
     "@tiptap/extension-table-row": "^2.11.7",
+    "@tiptap/extension-text-align": "^2.11.7",
     "@tiptap/extension-underline": "^2.11.7",
     "@tiptap/starter-kit": "^2.11.7",
     "@tiptap/vue-3": "^2.11.7",
@@ -41,6 +44,7 @@
     "dompurify": "^3.2.4",
     "firebase": "^11.6.0",
     "http-errors": "^2.0.0",
+    "lodash": "^4.17.21",
     "markdown-it": "^14.1.0",
     "marked": "^15.0.7",
     "marked-katex-extension": "^5.1.4",

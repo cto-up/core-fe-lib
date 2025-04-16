@@ -11,6 +11,7 @@ import BLabelSelector from "../lib/components/BLabelSelector.vue";
 import BPeriodDateTimePicker from "../lib/components/BPeriodDateTimePicker.vue";
 import BSelectorID from "../lib/components/BSelectorID.vue";
 import MarkdownEditor from "../lib/components/MarkdownEditor.vue";
+import HTMLEditor from "../lib/components/HTMLEditor.vue";
 import MarkdownBlock from "../lib/components/MarkdownBlock.vue";
 import BBtn from "../lib/components/BBtn.vue";
 import BCurrency from "../lib/components/BCurrency.vue";
@@ -32,6 +33,7 @@ const icon = ref("home");
 const selectedLabel = ref(null);
 const selectedId = ref("");
 const markdownContent = ref("**Hello** _world_");
+const htmlContent = ref("<p>Enter your content here...</p>");
 const moneyAmount = ref({ amount: 100, currency: "USD" });
 const textId = ref("SAMPLE-001");
 const selectedLLM = ref("gpt-4");
@@ -151,6 +153,12 @@ const translationFields = [
           <td>MarkdownBlock</td>
           <td>
             <MarkdownBlock :content="markdownContent" />
+          </td>
+        </tr>
+        <tr>
+          <td>HTMLEditor</td>
+          <td>
+            <HTMLEditor v-model="htmlContent" :initial-content="htmlContent" />
           </td>
         </tr>
         <tr>
