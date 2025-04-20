@@ -1,16 +1,15 @@
 <template>
   <q-select
     clearable
-    v-model="theModel"
+    :model-value="internalModel"
     @update:model-value="onSelect"
     filled
     :multiple="multiple"
     :label="label"
     :options="options"
     map-options
-    fill-input
     use-chips
-    :hide-selected="!multiple"
+    :hide-selected="isEmpty"
     input-debounce="500"
     use-input
     :option-label="optionLabel"
@@ -22,7 +21,7 @@
 <script lang="ts">
 import axios from 'axios';
 import { useErrors } from '../composables/useErrors';
-import { defineComponent, type PropType, ref, watch } from 'vue';
+import { computed, defineComponent, type PropType, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 interface Option {
@@ -71,7 +70,7 @@ export default defineComponent({
     },
   },
   emits: {
-    'update:modelValue': (value: string | string[]) => true,
+    'update:modelValue': (value: string | string[] | undefined) => true,
     'update:label': (value: string) => true,
     'update:extra': (value: string) => true,
   },
@@ -80,6 +79,11 @@ export default defineComponent({
     const { locale } = useI18n();
     const { handleError } = useErrors();
     const loading = ref(false);
+    const options = ref<Option[]>([]);
+    // Initialize internalModel based on multiple prop
+    const internalModel = ref(props.modelValue ?? (props.multiple ? [] : {}));
+
+    const lastFilterValue = ref('NONSENSE');
 
     // Function to build URL with language parameter
     const buildUrl = (baseUrl: string, id?: string, query?: string) => {
@@ -101,18 +105,24 @@ export default defineComponent({
       return url.pathname + url.search;
     };
 
-    // Initialize theModel based on multiple prop
-    const theModel = ref(
-      props.multiple
-        ? []
-        : {
-            [props.optionValue]: props.modelValue,
-            [props.optionLabel]: '',
-          },
-    );
+    const isEmpty = computed(() => {
+      return (
+        !internalModel.value ||
+        (Array.isArray(internalModel.value) && internalModel.value.length === 0)
+      );
+    });
 
-    const loadOne = async (newValue: string | string[]) => {
-      if (!newValue || (Array.isArray(newValue) && newValue.length === 0)) {
+    const loadOne = async (newValue: string | string[] | undefined) => {
+      console.log('loadOne', newValue);
+      if (!newValue) {
+        emit('update:label', '');
+        emit('update:modelValue', undefined);
+        options.value = [];
+        internalModel.value = props.multiple ? [] : '';
+
+        if (props.optionExtra) {
+          emit('update:extra', '');
+        }
         return;
       }
 
@@ -123,7 +133,8 @@ export default defineComponent({
             axios.get(buildUrl(props.url, id)),
           );
           const responses = await Promise.all(promises);
-          theModel.value = responses.map((response) => ({
+
+          internalModel.value = responses.map((response) => ({
             [props.optionValue]: response.data[props.optionValue],
             [props.optionLabel]: response.data[props.optionLabel],
           }));
@@ -134,10 +145,15 @@ export default defineComponent({
         } else if (!Array.isArray(newValue)) {
           const fetchedData = (await axios.get(buildUrl(props.url, newValue)))
             .data;
-          theModel.value = {
+
+          const option = {
             [props.optionValue]: fetchedData[props.optionValue],
             [props.optionLabel]: fetchedData[props.optionLabel],
           };
+
+          // options.value = [option];
+
+          internalModel.value = option;
           emit('update:label', fetchedData[props.optionLabel]);
         }
       } catch (err) {
@@ -148,11 +164,10 @@ export default defineComponent({
     };
 
     const loadExtra = async (newValue: string | string[]) => {
-      if (
-        !newValue ||
-        !props.optionExtra ||
-        (Array.isArray(newValue) && newValue.length === 0)
-      ) {
+      if (!props.optionExtra) {
+        return;
+      }
+      if (!newValue || (Array.isArray(newValue) && newValue.length === 0)) {
         return;
       }
 
@@ -184,10 +199,11 @@ export default defineComponent({
     loadOne(props.modelValue);
 
     const onSelect = (val: any) => {
-      if (!val) {
-        emit('update:modelValue', undefined);
+      console.log('onSelect', val);
+      if (!val || (Array.isArray(val) && val.length === 0)) {
+        emit('update:modelValue', props.multiple ? [] : undefined);
         emit('update:label', '');
-        return;
+        return; // Or perform a different action for no selection
       }
       if (props.multiple) {
         const values = val ? val.map((v: any) => v[props.optionValue]) : [];
@@ -198,8 +214,12 @@ export default defineComponent({
         emit('update:label', labels);
         loadExtra(values);
       } else {
+        internalModel.value = val;
         emit('update:modelValue', val ? val[props.optionValue] : val);
         emit('update:label', val ? val[props.optionLabel] : val);
+        if (!props.optionExtra) {
+          return;
+        }
         loadExtra(val ? val[props.optionValue] : val);
       }
     };
@@ -207,6 +227,9 @@ export default defineComponent({
     watch(
       () => props.modelValue,
       async (newValue) => {
+        if (props.modelValue === internalModel.value) {
+          return;
+        }
         loadOne(newValue);
       },
     );
@@ -221,23 +244,30 @@ export default defineComponent({
       }
     });
 
-    const options = ref<Option[]>([]);
-
     const filterFn = async (
       val: string,
       update: (fn: () => void) => void,
       abort: () => void,
     ) => {
-      /*if (val.length < 1) {
-        abort();
-        return;
-      }*/
+      if (val === lastFilterValue.value) {
+        update(() => {
+          console.log('same value');
+        });
+        return; // Prevent triggering for the same value
+      }
+      lastFilterValue.value = val;
+
       update(() => {
         loading.value = true;
+        console.log('updating');
         axios
           .get(buildUrl(props.url, undefined, val))
           .then(({ data }) => {
+            console.log('data', data, 'val', val);
+
             options.value = data ?? [];
+
+            console.log('options.value', options.value);
           })
           .catch(handleError)
           .finally(() => {
@@ -247,11 +277,12 @@ export default defineComponent({
     };
 
     return {
-      theModel,
+      internalModel,
       options,
       loading,
       onSelect,
       filterFn,
+      isEmpty,
     };
   },
 });
