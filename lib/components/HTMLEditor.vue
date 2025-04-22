@@ -14,7 +14,6 @@
         dense
       />
     </div>
-
     <editor-content class="editor__content" :editor="editor" />
   </div>
 </template>
