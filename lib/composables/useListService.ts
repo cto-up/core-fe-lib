@@ -2,7 +2,7 @@ import { Notify } from 'quasar';
 import { type QTableProps } from 'quasar';
 import { CancelablePromise } from '../openapi/core';
 import { type Ref } from 'vue';
-import { useQueryParams } from './useQueryParams';
+import { useRoute, useRouter } from 'vue-router';
 
 // Define a proper type for columns and rows, adjust as needed
 interface TableColumn {
@@ -42,8 +42,8 @@ export default function useListService<T>({
   loading,
   filter,
 }: UseListServiceParams<T>) {
-
-  const { setQueryParam } = useQueryParams();
+  const route = useRoute();
+  const router = useRouter();
 
   const onRequest: QTableProps['onRequest'] = async (props) => {
     const { page, rowsPerPage, sortBy, descending } = props.pagination;
@@ -67,12 +67,18 @@ export default function useListService<T>({
         page,
       };
 
-      // Update the route accordingly
-      setQueryParam('page', page + '');
-      setQueryParam('sortBy', sortBy);
-      setQueryParam('descending', descending + '');
-      setQueryParam('rowsPerPage', rowsPerPage + '');
-      setQueryParam('filter', filter?.value);
+      // Batch update query parameters
+      const query = { ...route.query };
+      query.page = page + '';
+      query.sortBy = sortBy;
+      query.descending = descending + '';
+      query.rowsPerPage = rowsPerPage + '';
+      query.filter = filter?.value || null;
+
+      await router.push({
+        path: route.path,
+        query
+      });
     } catch (error) {
       Notify.create({
         type: 'negative',
