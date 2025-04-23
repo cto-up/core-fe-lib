@@ -27,21 +27,23 @@
 </template>
 
 <script lang="ts">
-import axios, { AxiosProgressEvent } from "axios";
-import { computed, defineComponent, ref } from "vue";
-import { QRejectedEntry, QUploader, useQuasar } from "quasar";
+import type { AxiosProgressEvent } from 'axios';
+import axios from 'axios';
+
+import { computed, defineComponent, ref } from 'vue';
+import { type QRejectedEntry, QUploader, useQuasar } from 'quasar';
 import {
-  ReceivedProgressEvent,
+  type ReceivedProgressEvent,
   ExtractJSONObject,
-} from "../types/received-events";
-import { max } from "lodash";
+} from '../types/received-events';
+import { max } from 'lodash';
 
 interface Option {
   size: number;
 }
 
 export default defineComponent({
-  name: "FileUploadComponent",
+  name: 'FileUploadComponent',
   components: {},
   props: {
     postEndPoint: {
@@ -69,9 +71,9 @@ export default defineComponent({
     const fileInput = ref();
     const uploading = ref(false);
     const progress = ref(0.0);
-    const progressStatus = ref("INFO");
+    const progressStatus = ref('INFO');
     const progressColor = computed(() =>
-      progressStatus.value == "INFO" ? "primary" : "negative"
+      progressStatus.value == 'INFO' ? 'primary' : 'negative',
     );
     const checkFileSize = function (files: readonly File[] | FileList) {
       if (Array.isArray(files)) {
@@ -84,13 +86,13 @@ export default defineComponent({
       // Notify plugin needs to be installed
       // https://quasar.dev/quasar-plugins/notify#Installation
       $q.notify({
-        type: "negative",
+        type: 'negative',
         message:
           `${rejectedEntries.length} file(s) did not pass validation constraints` +
           JSON.stringify(rejectedEntries),
       });
     };
-    const message = ref("");
+    const message = ref('');
 
     const selectedFile = ref<null | Blob>(null);
 
@@ -100,7 +102,7 @@ export default defineComponent({
     });
 
     const emitUploaded = () => {
-      emit("uploaded");
+      emit('uploaded');
     };
 
     const handleUpload = async function (files: readonly File[]) {
@@ -108,7 +110,7 @@ export default defineComponent({
       selectedFile.value = files[0];
       // Create a FormData object and append the Blob to it
       const formData: FormData = new FormData();
-      formData.append("file", selectedFile.value as Blob);
+      formData.append('file', selectedFile.value as Blob);
 
       // Now, use Axios to upload the image
       const endPoint = props.postEndPoint;
@@ -117,14 +119,14 @@ export default defineComponent({
         url: endPoint,
         data: formData,
         headers: {
-          "Content-Type": "multipart/form-data",
+          'Content-Type': 'multipart/form-data',
         },
-        method: "POST",
+        method: 'POST',
         onDownloadProgress: (progressEvent: AxiosProgressEvent) => {
           const xhr = progressEvent.event.target;
           const { responseText } = xhr;
           let progressEventsServer = ExtractJSONObject(
-            responseText
+            responseText,
           ) as ReceivedProgressEvent[];
 
           const progressEventServer = progressEventsServer.slice(-1)[0];
@@ -133,8 +135,8 @@ export default defineComponent({
 
           uploader.value?.updateFileStatus(
             selectedFile.value as File,
-            "uploading",
-            10
+            'uploading',
+            10,
           );
 
           message.value = progressEventServer.message;
@@ -144,22 +146,22 @@ export default defineComponent({
               emitUploaded();
               uploader.value?.updateFileStatus(
                 selectedFile.value as File,
-                "uploaded",
-                10
+                'uploaded',
+                10,
               );
               progress.value = 0;
               uploader.value.reset();
-              message.value = "Done";
+              message.value = 'Done';
               //uploader.value?.removeFile(selectedFile.value as File);
             }
-          } else if (progressEventServer.eventType === "ERROR") {
+          } else if (progressEventServer.eventType === 'ERROR') {
             $q.notify({
-              type: "negative",
+              type: 'negative',
               message: progressEventServer.message,
             });
             progress.value = 0;
             uploader.value?.reset();
-            message.value = "Err: " + progressEventServer.message;
+            message.value = 'Err: ' + progressEventServer.message;
           }
         },
       })
@@ -167,9 +169,9 @@ export default defineComponent({
           uploading.value = false;
         })
         .catch((error: Error) => {
-          console.error("Error uploading image:", error);
+          console.error('Error uploading image:', error);
           $q.notify({
-            type: "negative",
+            type: 'negative',
             message: error.message,
           });
         });

@@ -16,12 +16,12 @@
 </template>
 
 <script lang="ts">
-import axios from "axios";
-import { useErrors } from "../composables/useErrors";
-import { computed, defineComponent, ref } from "vue";
-import { Option } from "../../dev/src/components/types";
+import axios from 'axios';
+import { useErrors } from '../composables/useErrors';
+import { computed, defineComponent, ref } from 'vue';
+import type { Option } from './types';
 export default defineComponent({
-  name: "BLabelSelector",
+  name: 'BLabelSelector',
   props: {
     disable: {
       type: Boolean,
@@ -48,7 +48,7 @@ export default defineComponent({
       required: true,
     },
   },
-  emits: ["update:modelValue", "add", "remove"],
+  emits: ['update:modelValue', 'add', 'remove'],
 
   setup(props, { emit }) {
     const { handleError } = useErrors();
@@ -56,16 +56,16 @@ export default defineComponent({
 
     const theModel = computed({
       get: () => (props.modelValue ? props.modelValue : null),
-      set: (value) => emit("update:modelValue", value),
+      set: (value) => emit('update:modelValue', value),
     });
 
     const options = ref([]);
 
     const add = (detail: { value: Option }) => {
-      emit("add", detail.value);
+      emit('add', detail.value);
     };
     const remove = (detail: { value: Option }) => {
-      emit("remove", detail.value);
+      emit('remove', detail.value);
     };
 
     return {
@@ -77,7 +77,7 @@ export default defineComponent({
       filterFn(
         val: string,
         update: (fn: () => void) => void,
-        abort: () => void
+        abort: () => void,
       ) {
         if (val.length < 1) {
           abort();
@@ -89,12 +89,12 @@ export default defineComponent({
 
             let url = props.url;
             if (val) {
-              url = url + "?q=" + val.toLocaleLowerCase() + "&detail=basic";
+              url = url + '?q=' + val.toLocaleLowerCase() + '&detail=basic';
             }
             try {
               const fetchedData = (await axios.get(url, {})).data;
               options.value = fetchedData.map(
-                (option: Record<string, string>) => option[props.optionLabel]
+                (option: Record<string, string>) => option[props.optionLabel],
               );
             } catch (err) {
               handleError(err);
