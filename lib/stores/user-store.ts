@@ -10,8 +10,8 @@ export const useUserStore = defineStore('user', {
   getters: {
     isLogged: (state) => state.user != null,
     getUser: (state) => state.user,
-    isAdmin: (state) => state.user?.roles.includes('ADMIN'),
-    isSuperAdmin: (state) => state.user?.roles.includes('SUPER_ADMIN'),
+    isAdmin: (state) => state.user?.roles?.includes('ADMIN'),
+    isSuperAdmin: (state) => state.user?.roles?.includes('SUPER_ADMIN'),
   },
   actions: {
     setUser(user: LoggedUser | null) {
