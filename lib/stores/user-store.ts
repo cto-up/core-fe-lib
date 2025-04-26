@@ -1,14 +1,7 @@
-console.log('Entering file 1')
 import { type LoggedUser } from '../models/logged-user';
-console.log('Entering file 2')
-import { defineStore } from 'pinia';
-console.log('Loading defineStore', defineStore)
+import { defineStore, getActivePinia, setActivePinia, createPinia } from 'pinia';
 
-export const testMe = ()=> {
-  console.log('TESTED')
-}
-
-export const useUserStore = defineStore('user', {
+export const useInternalUserStore = defineStore('user', {
   state: () => {
     return {
       user: null as null | LoggedUser,
@@ -27,3 +20,13 @@ export const useUserStore = defineStore('user', {
     },
   },
 });
+
+// Helper function to ensure Pinia is available
+export function useUserStore() {
+  let pinia = getActivePinia();
+  if (!pinia) {
+    pinia = createPinia();
+    setActivePinia(pinia);
+  }
+  return useInternalUserStore();
+}
