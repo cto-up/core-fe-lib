@@ -1,5 +1,12 @@
+console.log('Entering file 1')
 import { type LoggedUser } from '../models/logged-user';
+console.log('Entering file 2')
 import { defineStore } from 'pinia';
+console.log('Entering file 3')
+
+export const testMe = ()=> {
+  console.log('TESTED')
+}
 
 export const useUserStore = defineStore('user', {
   state: () => {
