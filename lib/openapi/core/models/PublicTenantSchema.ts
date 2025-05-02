@@ -1,14 +1,12 @@
-/* generated using openapi-typescript-codegen -- do no edit */
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { Tenant } from './Tenant';
 import type { TenantFeatures } from './TenantFeatures';
-import type { TenantProfileSchema } from './TenantProfileSchema';
-
+import type { TenantProfile } from './TenantProfile';
 export type PublicTenantSchema = (Tenant & {
-    profile: TenantProfileSchema;
+    profile: TenantProfile;
     features: TenantFeatures;
 });
 

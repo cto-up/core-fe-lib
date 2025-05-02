@@ -1,8 +1,7 @@
-/* generated using openapi-typescript-codegen -- do no edit */
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 export type CheckDetails = {
     /**
      * The type of component (e.g., database, cache, external service)
@@ -25,9 +24,7 @@ export type CheckDetails = {
      */
     output?: string;
 };
-
 export namespace CheckDetails {
-
     /**
      * The status of this particular component
      */
@@ -36,7 +33,5 @@ export namespace CheckDetails {
         FAIL = 'fail',
         WARN = 'warn',
     }
-
-
 }
 

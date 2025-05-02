@@ -1,10 +1,8 @@
-/* generated using openapi-typescript-codegen -- do no edit */
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { CheckDetails } from './CheckDetails';
-
 export type HealthResponse = {
     /**
      * The overall health status of the API
@@ -31,9 +29,7 @@ export type HealthResponse = {
      */
     checks?: Record<string, CheckDetails>;
 };
-
 export namespace HealthResponse {
-
     /**
      * The overall health status of the API
      */
@@ -42,7 +38,5 @@ export namespace HealthResponse {
         FAIL = 'fail',
         WARN = 'warn',
     }
-
-
 }
 

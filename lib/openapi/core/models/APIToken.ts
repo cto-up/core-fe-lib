@@ -1,10 +1,8 @@
-/* generated using openapi-typescript-codegen -- do no edit */
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-
 import type { NewAPIToken } from './NewAPIToken';
-
 export type APIToken = (NewAPIToken & {
     id: string;
     status: APIToken.status;
@@ -45,15 +43,11 @@ export type APIToken = (NewAPIToken & {
      */
     updatedAt: string;
 });
-
 export namespace APIToken {
-
     export enum status {
         ACTIVE = 'ACTIVE',
         REVOKED = 'REVOKED',
         EXPIRED = 'EXPIRED',
     }
-
-
 }
 

@@ -1,4 +1,4 @@
-/* generated using openapi-typescript-codegen -- do no edit */
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -24,6 +24,7 @@ export type { NewConfig } from './models/NewConfig';
 export { NewPrompt } from './models/NewPrompt';
 export type { NewRole } from './models/NewRole';
 export type { NewTenant } from './models/NewTenant';
+export type { NewTranslation } from './models/NewTranslation';
 export type { NewUser } from './models/NewUser';
 export type { Prompt } from './models/Prompt';
 export type { PromptResponse } from './models/PromptResponse';
@@ -31,7 +32,8 @@ export type { PublicTenantSchema } from './models/PublicTenantSchema';
 export type { Role } from './models/Role';
 export type { Tenant } from './models/Tenant';
 export type { TenantFeatures } from './models/TenantFeatures';
-export type { TenantProfileSchema } from './models/TenantProfileSchema';
+export type { TenantProfile } from './models/TenantProfile';
+export type { Translation } from './models/Translation';
 export type { User } from './models/User';
 export { UserActionSchema } from './models/UserActionSchema';
 export type { UserProfileSchema } from './models/UserProfileSchema';

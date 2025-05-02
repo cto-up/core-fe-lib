@@ -1,4 +1,4 @@
-/* generated using openapi-typescript-codegen -- do no edit */
+/* generated using openapi-typescript-codegen -- do not edit */
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
@@ -14,6 +14,7 @@ import type { NewConfig } from '../models/NewConfig';
 import type { NewPrompt } from '../models/NewPrompt';
 import type { NewRole } from '../models/NewRole';
 import type { NewTenant } from '../models/NewTenant';
+import type { NewTranslation } from '../models/NewTranslation';
 import type { NewUser } from '../models/NewUser';
 import type { Prompt } from '../models/Prompt';
 import type { PromptResponse } from '../models/PromptResponse';
@@ -21,17 +22,15 @@ import type { PublicTenantSchema } from '../models/PublicTenantSchema';
 import type { Role } from '../models/Role';
 import type { Tenant } from '../models/Tenant';
 import type { TenantFeatures } from '../models/TenantFeatures';
-import type { TenantProfileSchema } from '../models/TenantProfileSchema';
+import type { TenantProfile } from '../models/TenantProfile';
+import type { Translation } from '../models/Translation';
 import type { User } from '../models/User';
 import type { UserActionSchema } from '../models/UserActionSchema';
 import type { UserProfileSchema } from '../models/UserProfileSchema';
-
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
-
 export class DefaultService {
-
     /**
      * Returns all global_configs from the system that the user has access to
      *
@@ -65,7 +64,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new global_config in the store. Duplicates are allowed
      * @param requestBody GlobalConfig to add to the store
@@ -82,7 +80,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns a global config based on a single ID, if the user does not have access to the global config
      * @param id ID of global config to fetch
@@ -100,7 +97,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a global config in the store.
      * @param id ID of global config to fetch
@@ -122,7 +118,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * deletes a single global config based on the ID supplied
      * @param id ID of global config to delete
@@ -140,7 +135,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns all tenant_configs from the system that the user has access to
      *
@@ -174,7 +168,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new tenant_config in the store. Duplicates are allowed
      * @param requestBody TenantConfig to add to the store
@@ -191,7 +184,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns a tenant config based on a single ID, if the user does not have access to the tenant config
      * @param id ID of tenant config to fetch
@@ -209,7 +201,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a tenant config in the store.
      * @param id ID of tenant config to fetch
@@ -231,7 +222,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * deletes a single tenant config based on the ID supplied
      * @param id ID of tenant config to delete
@@ -249,7 +239,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns a user based on a single ID, if the user does not have access to the user
      * @param userid ID of user to fetch
@@ -267,7 +256,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a new user in the store. Duplicates are allowed
      * @param userid ID of user to fetch
@@ -289,7 +277,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * deletes a single user based on the ID supplied
      * @param userid ID of user to delete
@@ -307,7 +294,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Act on user
      * @param userid ID of user
@@ -329,7 +315,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Assign a role to a user based
      * @param userid ID of user
@@ -350,7 +335,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Unassign a role to a user based
      * @param userid ID of user
@@ -371,7 +355,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns all users from the system that the user has access to
      *
@@ -405,7 +388,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new user in the store. Duplicates are not allowed
      * @param requestBody User to add to the store
@@ -422,7 +404,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns a user based on a single ID, if the user does not have access to the user
      * @param userid ID of user to fetch
@@ -443,7 +424,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a new user in the store. Duplicates are allowed
      * @param userid ID of user to fetch
@@ -468,7 +448,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * deletes a single user based on the ID supplied
      * @param userid ID of user to fetch
@@ -489,7 +468,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Act on user
      * @param userid ID of user to fetch
@@ -514,7 +492,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Assign a role to a user based
      * @param userid ID of user to fetch
@@ -538,7 +515,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Unassign a role to a user based
      * @param userid ID of user to fetch
@@ -562,7 +538,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns all users from the system that the user has access to
      *
@@ -598,7 +573,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new user in the store. Duplicates are not allowed
      * @param tenantid ID of tenant
@@ -620,7 +594,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Creates a new empty user in the store. Duplicates are not allowed
      * @returns User user response
@@ -632,7 +605,6 @@ export class DefaultService {
             url: '/api/v1/me',
         });
     }
-
     /**
      * Returns current user profile.
      *
@@ -645,7 +617,6 @@ export class DefaultService {
             url: '/api/v1/me/profile',
         });
     }
-
     /**
      * Updates a user in the store.
      * @param requestBody User to add to the store
@@ -662,7 +633,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Upload user profile picture
      * @param formData User to add to the store
@@ -681,7 +651,6 @@ export class DefaultService {
             mediaType: 'multipart/form-data',
         });
     }
-
     /**
      * Request a password reset
      * @param userid ID of user to fetch
@@ -708,7 +677,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Request a password reset
      * @param userid ID of user to fetch
@@ -738,7 +706,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Request a password reset
      * @param requestBody email
@@ -760,7 +727,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns a user based on a single ID, if the user does not have access to the user
      * @param userid ID of user to fetch
@@ -778,7 +744,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns current tenant.
      *
@@ -791,29 +756,27 @@ export class DefaultService {
             url: '/public-api/v1/tenant',
         });
     }
-
     /**
      * Returns current tenant profile.
      *
-     * @returns TenantProfileSchema tenant response
+     * @returns TenantProfile tenant response
      * @throws ApiError
      */
-    public static getTenantProfile(): CancelablePromise<TenantProfileSchema> {
+    public static getTenantProfile(): CancelablePromise<TenantProfile> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/v1/tenant/profile',
         });
     }
-
     /**
      * Updates a tenant profile in the store.
      * @param requestBody Tenant profile to update to the store
-     * @returns TenantProfileSchema tenant response
+     * @returns TenantProfile tenant response
      * @throws ApiError
      */
     public static updateTenantProfile(
-        requestBody: TenantProfileSchema,
-    ): CancelablePromise<TenantProfileSchema> {
+        requestBody: TenantProfile,
+    ): CancelablePromise<TenantProfile> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/v1/tenant/profile',
@@ -821,7 +784,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns all roles from the system that the user has access to
      *
@@ -852,7 +814,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new role in the store. Duplicates are allowed
      * @param requestBody Role to add to the store
@@ -869,7 +830,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns a user based on a single ID, if the user does not have access to the role
      * @param id ID of role to fetch
@@ -887,7 +847,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a new role in the store. Duplicates are allowed
      * @param id ID of role to fetch
@@ -909,7 +868,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * deletes a single role based on the ID supplied
      * @param id ID of role to delete
@@ -927,7 +885,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns all tenants from the system that the user has access to
      *
@@ -958,7 +915,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new tenant in the store. Duplicates are allowed
      * @param requestBody Tenant to add to the store
@@ -975,7 +931,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns a tenant based on a single ID, if the user does not have access to the tenant
      * @param tenantid ID of tenant to fetch
@@ -993,7 +948,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a tenant in the store.
      * @param tenantid ID of tenant to fetch
@@ -1015,7 +969,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * deletes a single tenant based on the ID supplied
      * @param tenantid ID of tenant to delete
@@ -1033,7 +986,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns tenant features.
      * @param tenantid ID of tenant to fetch
@@ -1051,7 +1003,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a tenant in the store.
      * @param tenantid ID of tenant to fetch
@@ -1073,7 +1024,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns all client applications the user has access to
      * @param page page number
@@ -1106,7 +1056,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new client application
      * @param requestBody Client application to create
@@ -1123,7 +1072,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns a client application by ID
      * @param id ID of client application to fetch
@@ -1141,7 +1089,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a client application
      * @param id ID of client application to update
@@ -1163,7 +1110,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Deletes a client application
      * @param id ID of client application to delete
@@ -1181,7 +1127,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Deactivates a client application
      * @param id ID of client application to deactivate
@@ -1199,7 +1144,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns all API tokens for a client application
      * @param id ID of client application
@@ -1237,7 +1181,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new API token for a client application
      * @param id ID of client application
@@ -1259,7 +1202,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns an API token by ID
      * @param id ID of client application
@@ -1280,7 +1222,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Deletes an API token
      * @param id ID of client application
@@ -1301,7 +1242,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Revokes an API token
      * @param id ID of client application
@@ -1326,7 +1266,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * Returns audit logs for an API token
      * @param id ID of client application
@@ -1355,7 +1294,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns all prompts from the system that the user has access to
      *
@@ -1393,7 +1331,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Creates a new prompt in the store. Duplicates are allowed
      * @param requestBody Prompt to add to the store
@@ -1415,7 +1352,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Returns a prompt based on a single ID, if the user does not have access to the prompt
      * @param id ID of prompt to fetch
@@ -1433,7 +1369,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Updates a prompt in the store.
      * @param id ID of prompt to fetch
@@ -1455,7 +1390,6 @@ export class DefaultService {
             mediaType: 'application/json',
         });
     }
-
     /**
      * deletes a single prompt based on the ID supplied
      * @param id ID of prompt to delete
@@ -1473,7 +1407,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Execute a prompt with parameters
      * @param requestBody Parameters for the prompt
@@ -1504,7 +1437,6 @@ export class DefaultService {
             },
         });
     }
-
     /**
      * Execute a prompt with parameters
      * @param requestBody Parameters for the prompt
@@ -1547,5 +1479,174 @@ export class DefaultService {
             },
         });
     }
-
+    /**
+     * Returns a list of translations
+     * @param page
+     * @param pageSize
+     * @param sortBy
+     * @param order
+     * @param q
+     * @param lang
+     * @param type
+     * @param key
+     * @returns Translation A list of translations
+     * @throws ApiError
+     */
+    public static listTranslations(
+        page: number = 1,
+        pageSize: number = 10,
+        sortBy: string = 'name',
+        order: 'asc' | 'desc' = 'asc',
+        q?: string,
+        lang: 'en' | 'fr' = 'en',
+        type?: string,
+        key?: string,
+    ): CancelablePromise<Array<Translation>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/translations',
+            query: {
+                'page': page,
+                'page_size': pageSize,
+                'sort_by': sortBy,
+                'order': order,
+                'q': q,
+                'lang': lang,
+                'type': type,
+                'key': key,
+            },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+            },
+        });
+    }
+    /**
+     * Creates a new translation
+     * @param requestBody
+     * @returns Translation Translation created
+     * @throws ApiError
+     */
+    public static createTranslation(
+        requestBody: NewTranslation,
+    ): CancelablePromise<Translation> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/translations',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid input`,
+                401: `Unauthorized`,
+                403: `Forbidden`,
+            },
+        });
+    }
+    /**
+     * Returns a translation
+     * @param entityType
+     * @param entityId
+     * @param field
+     * @param language
+     * @returns Translation Translation found
+     * @throws ApiError
+     */
+    public static getTranslation(
+        entityType: string,
+        entityId: string,
+        field: string,
+        language: 'en' | 'fr',
+    ): CancelablePromise<Translation> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/translations/search',
+            query: {
+                'entityType': entityType,
+                'entityId': entityId,
+                'field': field,
+                'language': language,
+            },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `Translation not found`,
+            },
+        });
+    }
+    /**
+     * Returns a translation by ID
+     * @param id
+     * @param lang
+     * @returns Translation Translation found
+     * @throws ApiError
+     */
+    public static getTranslationById(
+        id: string,
+        lang: 'en' | 'fr' = 'en',
+    ): CancelablePromise<Translation> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/translations/{id}',
+            path: {
+                'id': id,
+            },
+            query: {
+                'lang': lang,
+            },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `Translation not found`,
+            },
+        });
+    }
+    /**
+     * Updates a translation
+     * @param id
+     * @param requestBody
+     * @returns Translation Translation updated
+     * @throws ApiError
+     */
+    public static updateTranslation(
+        id: string,
+        requestBody: NewTranslation,
+    ): CancelablePromise<Translation> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/translations/{id}',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid input`,
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `Translation not found`,
+            },
+        });
+    }
+    /**
+     * Deletes a translation
+     * @param id
+     * @returns void
+     * @throws ApiError
+     */
+    public static deleteTranslation(
+        id: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/translations/{id}',
+            path: {
+                'id': id,
+            },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `Translation not found`,
+            },
+        });
+    }
 }
