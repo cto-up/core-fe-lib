@@ -1472,7 +1472,7 @@ export class DefaultService {
         },
         id?: string,
         name?: string,
-        provider?: 'OPENAI' | 'GOOGLEAI' | 'ANTHROPIC' | 'OLLAMA',
+        provider?: 'OPENAI' | 'MISTRAL' | 'GOOGLEAI' | 'ANTHROPIC' | 'OLLAMA',
         llm?: string,
         output?: 'text' | 'markdown' | 'json',
         maxTokens?: number,
