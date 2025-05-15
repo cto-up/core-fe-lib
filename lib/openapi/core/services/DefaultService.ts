@@ -1439,19 +1439,36 @@ export class DefaultService {
     }
     /**
      * Execute a prompt with parameters
-     * @param requestBody Parameters for the prompt
+     * @param requestBody Optional Overrides for the prompt, except for Parameters Values which will be taken from the request body
      * @param id ID of prompt to execute
      * @param name Name of prompt to execute
      * @param provider LLM Provider
      * @param llm LLM to use for execution
      * @param output Output format of the prompt execution
      * @param maxTokens Maximum number of tokens to generate
+     * @param temperature Temperature for LLM generation (0.0-1.0)
      * @returns PromptResponse Prompt execution result
      * @throws ApiError
      */
     public static executePrompt(
         requestBody: {
-            parameters?: Record<string, string>;
+            /**
+             * Override the prompt with a custom prompt. Used for tests.
+             */
+            content?: string;
+            /**
+             * Override the parameters with a custom list of parameters. Used for tests.
+             */
+            parameters?: Array<string>;
+            /**
+             * Override the output format. Used for tests.
+             */
+            format?: 'json' | 'text' | 'markdown';
+            /**
+             * Override the format instructions with custom instructions. Used for tests.
+             */
+            formatInstructions?: string;
+            parametersValues?: Record<string, string>;
         },
         id?: string,
         name?: string,
@@ -1459,6 +1476,7 @@ export class DefaultService {
         llm?: string,
         output?: 'text' | 'markdown' | 'json',
         maxTokens?: number,
+        temperature: number = 0.7,
     ): CancelablePromise<PromptResponse> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -1470,6 +1488,7 @@ export class DefaultService {
                 'llm': llm,
                 'output': output,
                 'maxTokens': maxTokens,
+                'temperature': temperature,
             },
             body: requestBody,
             mediaType: 'application/json',
