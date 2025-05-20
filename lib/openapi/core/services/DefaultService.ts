@@ -405,6 +405,54 @@ export class DefaultService {
         });
     }
     /**
+     * Import users from CSV file
+     * @param formData CSV file containing user data
+     * @returns any Import results
+     * @throws ApiError
+     */
+    public static importUsersFromAdmin(
+        formData: {
+            /**
+             * CSV file with user data (Lastname;Firstname;password;email format)
+             */
+            file?: Blob;
+        },
+    ): CancelablePromise<{
+        /**
+         * Total number of records processed
+         */
+        total?: number;
+        /**
+         * Number of users successfully created
+         */
+        success?: number;
+        /**
+         * Number of users that failed to be created
+         */
+        failed?: number;
+        errors?: Array<{
+            /**
+             * Line number in CSV
+             */
+            line?: number;
+            /**
+             * Email of the user that failed
+             */
+            email?: string;
+            /**
+             * Error message
+             */
+            error?: string;
+        }>;
+    }> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/users/import',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+        });
+    }
+    /**
      * Returns a user based on a single ID, if the user does not have access to the user
      * @param userid ID of user to fetch
      * @param tenantid ID of tenant
