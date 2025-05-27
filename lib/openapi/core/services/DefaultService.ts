@@ -833,6 +833,111 @@ export class DefaultService {
         });
     }
     /**
+     * Returns the tenant logo. Returns 404 if no logo is set.
+     * @returns binary Logo response
+     * @throws ApiError
+     */
+    public static getTenantLogo(): CancelablePromise<Blob> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/public-api/v1/tenant/pictures/logo',
+            errors: {
+                404: `Logo not found`,
+            },
+        });
+    }
+    /**
+     * Returns the tenant background image. Returns 404 if no background image is set.
+     * @returns binary Background image response
+     * @throws ApiError
+     */
+    public static getTenantBackground(): CancelablePromise<Blob> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/public-api/v1/tenant/pictures/background',
+            errors: {
+                404: `Background image not found`,
+            },
+        });
+    }
+    /**
+     * Returns the tenant background mobile image. Returns 404 if no background mobile image is set.
+     * @returns binary Background mobile image response
+     * @throws ApiError
+     */
+    public static getTenantBackgroundMobile(): CancelablePromise<Blob> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/public-api/v1/tenant/pictures/background-mobile',
+            errors: {
+                404: `Background mobile image not found`,
+            },
+        });
+    }
+    /**
+     * Uploads a new tenant logo. Only webp files are accepted.
+     * @param formData
+     * @returns void
+     * @throws ApiError
+     */
+    public static uploadTenantLogo(
+        formData: {
+            picture?: Blob;
+        },
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tenant/pictures/logo',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                400: `Invalid file format. Only webp files are allowed`,
+            },
+        });
+    }
+    /**
+     * Uploads a new tenant background image. Only webp files are accepted.
+     * @param formData
+     * @returns void
+     * @throws ApiError
+     */
+    public static uploadTenantBackground(
+        formData: {
+            picture?: Blob;
+        },
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tenant/pictures/background',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                400: `Invalid file format. Only webp files are allowed`,
+            },
+        });
+    }
+    /**
+     * Uploads a new tenant background mobile image. Only webp files are accepted.
+     * @param formData
+     * @returns void
+     * @throws ApiError
+     */
+    public static uploadTenantBackgroundMobile(
+        formData: {
+            picture?: Blob;
+        },
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tenant/pictures/background-mobile',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                400: `Invalid file format. Only webp files are allowed`,
+            },
+        });
+    }
+    /**
      * Returns all roles from the system that the user has access to
      *
      * @param page page number
