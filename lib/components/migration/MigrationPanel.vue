@@ -11,7 +11,6 @@
               {{ t(`layout.navigation.${module}.migration.caption`) }}
             </div>
           </q-card-section>
-
           <q-card-section class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <q-card>
