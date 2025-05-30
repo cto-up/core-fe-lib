@@ -1454,6 +1454,7 @@ export class DefaultService {
      * @param pageSize maximum number of results to return
      * @param sortBy field to sort by
      * @param order sort order
+     * @param tags tags to filter by
      * @param q starts with
      * @param detail basic or full
      * @returns Prompt prompt response
@@ -1464,6 +1465,7 @@ export class DefaultService {
         pageSize?: number,
         sortBy?: string,
         order?: 'asc' | 'desc',
+        tags?: Array<string>,
         q?: string,
         detail?: string,
     ): CancelablePromise<Array<Prompt>> {
@@ -1475,6 +1477,7 @@ export class DefaultService {
                 'pageSize': pageSize,
                 'sortBy': sortBy,
                 'order': order,
+                'tags': tags,
                 'q': q,
                 'detail': detail,
             },

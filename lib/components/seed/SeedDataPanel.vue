@@ -1,28 +1,26 @@
 <template>
   <q-page padding>
     <div class="row q-col-gutter-md">
+      <h2>Seed: {{ module }}</h2>
       <div class="col-12">
         <q-card>
           <q-card-section>
             <div class="text-h6">
-              {{ t(`layout.navigation.${module}.seed.title`) }}
+              {{ t(`layout.navigation.seed.title`) }}
             </div>
             <div class="text-subtitle2">
-              {{ t(`layout.navigation.${module}.seed.caption`) }}
+              {{ t(`layout.navigation.seed.caption`) }}
             </div>
           </q-card-section>
-
           <q-card-section class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <q-card>
                 <q-card-section>
                   <div class="text-h6">
-                    {{ t(`layout.navigation.${module}.seed.reference.title`) }}
+                    {{ t(`layout.navigation.seed.reference.title`) }}
                   </div>
                   <div class="text-subtitle2">
-                    {{
-                      t(`layout.navigation.${module}.seed.reference.caption`)
-                    }}
+                    {{ t(`layout.navigation.seed.reference.caption`) }}
                   </div>
                 </q-card-section>
                 <q-card-section>
@@ -32,9 +30,7 @@
                     :disable="loadingReference || loadingSample"
                     @click="seedReferenceData"
                     icon="data_array"
-                    :label="
-                      t(`layout.navigation.${module}.seed.reference.action`)
-                    "
+                    :label="t(`layout.navigation.seed.reference.action`)"
                   />
                 </q-card-section>
               </q-card>
@@ -44,10 +40,10 @@
               <q-card>
                 <q-card-section>
                   <div class="text-h6">
-                    {{ t(`layout.navigation.${module}.seed.sample.title`) }}
+                    {{ t(`layout.navigation.seed.sample.title`) }}
                   </div>
                   <div class="text-subtitle2">
-                    {{ t(`layout.navigation.${module}.seed.sample.caption`) }}
+                    {{ t(`layout.navigation.seed.sample.caption`) }}
                   </div>
                 </q-card-section>
                 <q-card-section>
@@ -57,7 +53,7 @@
                     :disable="loadingReference || loadingSample"
                     @click="seedSampleData"
                     icon="dataset"
-                    :label="t(`layout.navigation.${module}.seed.sample.action`)"
+                    :label="t(`layout.navigation.seed.sample.action`)"
                   />
                 </q-card-section>
               </q-card>
@@ -78,8 +74,6 @@ const props = defineProps({
   module: {
     type: String,
     required: true,
-    validator: (value: string) =>
-      ["skeellscoach", "skeellsfriend"].includes(value),
   },
   seedReferenceFn: {
     type: Function,

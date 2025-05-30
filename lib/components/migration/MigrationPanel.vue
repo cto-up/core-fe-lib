@@ -1,14 +1,15 @@
 <template>
   <q-page padding>
     <div class="row q-col-gutter-md">
+      <h2>Migration: {{ module }}</h2>
       <div class="col-12">
         <q-card>
           <q-card-section>
             <div class="text-h6">
-              {{ t(`layout.navigation.${module}.migration.title`) }}
+              {{ t(`layout.navigation.migration.title`) }}
             </div>
             <div class="text-subtitle2">
-              {{ t(`layout.navigation.${module}.migration.caption`) }}
+              {{ t(`layout.navigation.migration.caption`) }}
             </div>
           </q-card-section>
           <q-card-section class="row q-col-gutter-md">
@@ -16,10 +17,10 @@
               <q-card>
                 <q-card-section>
                   <div class="text-h6">
-                    {{ t(`layout.navigation.${module}.migration.up.title`) }}
+                    {{ t(`layout.navigation.migration.up.title`) }}
                   </div>
                   <div class="text-subtitle2">
-                    {{ t(`layout.navigation.${module}.migration.up.caption`) }}
+                    {{ t(`layout.navigation.migration.up.caption`) }}
                   </div>
                 </q-card-section>
                 <q-card-section>
@@ -29,9 +30,7 @@
                     :disable="loadingUp || loadingDown"
                     @click="migrateUp"
                     icon="arrow_upward"
-                    :label="
-                      t(`layout.navigation.${module}.migration.up.action`)
-                    "
+                    :label="t(`layout.navigation.migration.up.action`)"
                   />
                 </q-card-section>
               </q-card>
@@ -41,12 +40,10 @@
               <q-card>
                 <q-card-section>
                   <div class="text-h6">
-                    {{ t(`layout.navigation.${module}.migration.down.title`) }}
+                    {{ t(`layout.navigation.migration.down.title`) }}
                   </div>
                   <div class="text-subtitle2">
-                    {{
-                      t(`layout.navigation.${module}.migration.down.caption`)
-                    }}
+                    {{ t(`layout.navigation.migration.down.caption`) }}
                   </div>
                 </q-card-section>
                 <q-card-section>
@@ -56,9 +53,7 @@
                     :disable="loadingUp || loadingDown"
                     @click="confirmMigrateDown"
                     icon="arrow_downward"
-                    :label="
-                      t(`layout.navigation.${module}.migration.down.action`)
-                    "
+                    :label="t(`layout.navigation.migration.down.action`)"
                   />
                 </q-card-section>
               </q-card>
@@ -79,8 +74,6 @@ const props = defineProps({
   module: {
     type: String,
     required: true,
-    validator: (value: string) =>
-      ["skeellscoach", "skeellsfriend"].includes(value),
   },
   migrateUpFn: {
     type: Function,
