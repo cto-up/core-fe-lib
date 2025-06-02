@@ -162,29 +162,34 @@ const getDomainInfo = (hostname = null) => {
   }
 };
 
-/**
- * Gets just the subdomain from current page or provided hostname
- * @param {string} [hostname] - Optional hostname to parse
- * @returns {string|null} The subdomain or null if none exists
- */
-const getSubdomain = (hostname = null) => {
-  const domainInfo = getDomainInfo(hostname);
+  /**
+   * Gets just the subdomain from current page or provided hostname
+   * @param {string} [hostname] - Optional hostname to parse
+   * @returns {string|null} The subdomain or null if none exists
+   */
+  const getSubdomain = (hostname = null) => {
+    const domainInfo = getDomainInfo(hostname);
 
-  // If there's no subdomain, return null
-  if (!domainInfo.subdomain) {
-    return null;
+    // If there's no subdomain, return null
+    if (!domainInfo.subdomain) {
+      return null;
+    }
+
+    // If the subdomain contains dots, it has multiple parts
+    if (domainInfo.subdomain.includes('.')) {
+      // Split by dots and get the last part
+      const parts = domainInfo.subdomain.split('.');
+      return parts[parts.length - 1];
+    }
+
+    // Otherwise return the subdomain as is
+    return domainInfo.subdomain;
+  };
+
+  const getDomain = (hostname = null) => {
+    const domainInfo = getDomainInfo(hostname);
+    return domainInfo.domain;
   }
-
-  // If the subdomain contains dots, it has multiple parts
-  if (domainInfo.subdomain.includes('.')) {
-    // Split by dots and get the last part
-    const parts = domainInfo.subdomain.split('.');
-    return parts[parts.length - 1];
-  }
-
-  // Otherwise return the subdomain as is
-  return domainInfo.subdomain;
-};
 
   const isTenantSubdomain = () => {
      const subdomain = getSubdomain();
@@ -202,5 +207,5 @@ const getSubdomain = (hostname = null) => {
     const baseSocket = process.env.HTTP_API
     return `${baseSocket}/ws/channel/${location}/connections/${connectionId}`
   }
-  return { params, socketPath, updateParams, getSubdomain, isTenantSubdomain }
+  return { params, socketPath, updateParams, getDomain, getSubdomain, isTenantSubdomain }
 }
