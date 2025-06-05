@@ -47,7 +47,7 @@ export default function useListService<T>({
   const route = useRoute();
   const router = useRouter();
 
-  const onRequest: QTableProps['onRequest'] = void(async (props) => {
+  const onRequest: QTableProps['onRequest'] = async (props) => {
     const { page, rowsPerPage, sortBy, descending } = props.pagination;
     loading.value = true;
 
@@ -86,7 +86,7 @@ export default function useListService<T>({
     } finally {
       loading.value = false;
     }
-  });
+  };
 
   return { onRequest };
 }
