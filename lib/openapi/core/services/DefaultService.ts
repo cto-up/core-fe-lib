@@ -413,7 +413,7 @@ export class DefaultService {
     public static importUsersFromAdmin(
         formData: {
             /**
-             * CSV file with user data (Lastname;Firstname;password;email format)
+             * CSV file with user data (lastname;firstname;email format)
              */
             file?: Blob;
         },
