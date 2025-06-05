@@ -1,8 +1,10 @@
-import { Notify } from 'quasar';
 import { type QTableProps } from 'quasar';
-import { CancelablePromise } from '../openapi/core';
+import { type CancelablePromise } from '../openapi/core';
 import { type Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useErrors } from './useErrors';
+
+const { handleError } = useErrors();
 
 // Define a proper type for columns and rows, adjust as needed
 interface TableColumn {
@@ -45,7 +47,7 @@ export default function useListService<T>({
   const route = useRoute();
   const router = useRouter();
 
-  const onRequest: QTableProps['onRequest'] = async (props) => {
+  const onRequest: QTableProps['onRequest'] = void(async (props) => {
     const { page, rowsPerPage, sortBy, descending } = props.pagination;
     loading.value = true;
 
@@ -80,14 +82,11 @@ export default function useListService<T>({
         query
       });
     } catch (error) {
-      Notify.create({
-        type: 'negative',
-        message: 'App.info.error',
-      });
+      handleError(error);
     } finally {
       loading.value = false;
     }
-  };
+  });
 
   return { onRequest };
 }
