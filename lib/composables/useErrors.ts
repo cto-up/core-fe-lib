@@ -27,6 +27,11 @@ export function useErrors() {
         type: 'negative',
         message: error.message || 'An unexpected error occurred',
       });
+    } else if (error instanceof String) {
+      $q.notify({
+        type: 'negative',
+        message: error,
+      });
     } else {
       $q.notify({
         type: 'negative',
