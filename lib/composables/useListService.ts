@@ -4,8 +4,6 @@ import { type Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useErrors } from './useErrors';
 
-const { handleError } = useErrors();
-
 // Define a proper type for columns and rows, adjust as needed
 interface TableColumn {
   field: string;
@@ -46,6 +44,7 @@ export default function useListService<T>({
 }: UseListServiceParams<T>) {
   const route = useRoute();
   const router = useRouter();
+  const { handleError } = useErrors();
 
   const onRequest: QTableProps['onRequest'] = async (props) => {
     const { page, rowsPerPage, sortBy, descending } = props.pagination;
