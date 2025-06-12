@@ -5,7 +5,6 @@
 import type { ColorSchema } from './ColorSchema';
 export type TenantProfile = {
     displayName: string;
-    companyName: string;
     values?: string;
     storeRAGDocument?: boolean;
     lightColors: ColorSchema;
