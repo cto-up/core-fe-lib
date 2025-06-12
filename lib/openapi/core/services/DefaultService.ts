@@ -1178,6 +1178,33 @@ export class DefaultService {
         });
     }
     /**
+     * Add authorized domains for Firebase Authentication
+     * @param requestBody Domains to authorize
+     * @returns any Domains successfully authorized
+     * @throws ApiError
+     */
+    public static addAuthorizedDomains(
+        requestBody: {
+            /**
+             * List of domains to authorize
+             */
+            domains: Array<string>;
+        },
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/superadmin-api/v1/config/authorized-domains',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid request`,
+                401: `Unauthorized`,
+                403: `Forbidden - requires SUPER_ADMIN role`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
      * Returns all client applications the user has access to
      * @param page page number
      * @param pageSize maximum number of results to return
