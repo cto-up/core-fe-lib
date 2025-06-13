@@ -1192,7 +1192,34 @@ export class DefaultService {
         },
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'POST',
+            method: 'PATCH',
+            url: '/superadmin-api/v1/config/authorized-domains',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid request`,
+                401: `Unauthorized`,
+                403: `Forbidden - requires SUPER_ADMIN role`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Remove authorized domains for Firebase Authentication
+     * @param requestBody Domains to remove
+     * @returns any Domains successfully removed
+     * @throws ApiError
+     */
+    public static removeAuthorizedDomains(
+        requestBody: {
+            /**
+             * List of domains to remove
+             */
+            domains: Array<string>;
+        },
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
             url: '/superadmin-api/v1/config/authorized-domains',
             body: requestBody,
             mediaType: 'application/json',
