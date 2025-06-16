@@ -11,7 +11,7 @@ export type User = {
     disabled?: boolean;
     email_verified?: boolean;
     profile?: UserProfileSchema;
-    roles?: Array<Role>;
+    roles: Array<Role>;
     created_at?: string;
 };
 

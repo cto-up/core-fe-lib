@@ -2,8 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Role } from './Role';
 export type NewUser = {
     name: string;
     email: string;
+    roles: Array<Role>;
 };
 

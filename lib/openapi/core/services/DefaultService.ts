@@ -12,7 +12,6 @@ import type { NewAPIToken } from '../models/NewAPIToken';
 import type { NewClientApplication } from '../models/NewClientApplication';
 import type { NewConfig } from '../models/NewConfig';
 import type { NewPrompt } from '../models/NewPrompt';
-import type { NewRole } from '../models/NewRole';
 import type { NewTenant } from '../models/NewTenant';
 import type { NewTranslation } from '../models/NewTranslation';
 import type { NewUser } from '../models/NewUser';
@@ -318,40 +317,40 @@ export class DefaultService {
     /**
      * Assign a role to a user based
      * @param userid ID of user
-     * @param roleid ID of role to assign
+     * @param role role to assign
      * @returns void
      * @throws ApiError
      */
     public static assignRole(
         userid: string,
-        roleid: string,
+        role: Role,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/users/{userid}/roles/{roleid}/assign',
+            url: '/api/v1/users/{userid}/roles/{role}/assign',
             path: {
                 'userid': userid,
-                'roleid': roleid,
+                'role': role,
             },
         });
     }
     /**
      * Unassign a role to a user based
      * @param userid ID of user
-     * @param roleid ID of role to unassign
+     * @param role role to unassign
      * @returns void
      * @throws ApiError
      */
     public static unassignRole(
         userid: string,
-        roleid: string,
+        role: Role,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/users/{userid}/roles/{roleid}/unassign',
+            url: '/api/v1/users/{userid}/roles/{role}/unassign',
             path: {
                 'userid': userid,
-                'roleid': roleid,
+                'role': role,
             },
         });
     }
@@ -544,22 +543,22 @@ export class DefaultService {
      * Assign a role to a user based
      * @param userid ID of user to fetch
      * @param tenantid ID of tenant
-     * @param roleid ID of role to assign
+     * @param role role to assign
      * @returns void
      * @throws ApiError
      */
     public static assignRoleFromSuperAdmin(
         userid: string,
         tenantid: string,
-        roleid: string,
+        role: Role,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/roles/{roleid}/assign',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/roles/{role}/assign',
             path: {
                 'userid': userid,
                 'tenantid': tenantid,
-                'roleid': roleid,
+                'role': role,
             },
         });
     }
@@ -567,22 +566,22 @@ export class DefaultService {
      * Unassign a role to a user based
      * @param userid ID of user to fetch
      * @param tenantid ID of tenant
-     * @param roleid ID of role to unassign
+     * @param role role to unassign
      * @returns void
      * @throws ApiError
      */
     public static unassignRoleFromSuperAdmin(
         userid: string,
         tenantid: string,
-        roleid: string,
+        role: Role,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/roles/{roleid}/unassign',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/roles/{role}/unassign',
             path: {
                 'userid': userid,
                 'tenantid': tenantid,
-                'roleid': roleid,
+                'role': role,
             },
         });
     }
@@ -934,107 +933,6 @@ export class DefaultService {
             mediaType: 'multipart/form-data',
             errors: {
                 400: `Invalid file format. Only webp files are allowed`,
-            },
-        });
-    }
-    /**
-     * Returns all roles from the system that the user has access to
-     *
-     * @param page page number
-     * @param pageSize maximum number of results to return
-     * @param sortBy field to sort by
-     * @param order sort order
-     * @param q starts with
-     * @returns Role role response
-     * @throws ApiError
-     */
-    public static listRoles(
-        page?: number,
-        pageSize?: number,
-        sortBy?: string,
-        order?: 'asc' | 'desc',
-        q?: string,
-    ): CancelablePromise<Array<Role>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/roles',
-            query: {
-                'page': page,
-                'pageSize': pageSize,
-                'sortBy': sortBy,
-                'order': order,
-                'q': q,
-            },
-        });
-    }
-    /**
-     * Creates a new role in the store. Duplicates are allowed
-     * @param requestBody Role to add to the store
-     * @returns Role role response
-     * @throws ApiError
-     */
-    public static addRole(
-        requestBody: NewRole,
-    ): CancelablePromise<Role> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/roles',
-            body: requestBody,
-            mediaType: 'application/json',
-        });
-    }
-    /**
-     * Returns a user based on a single ID, if the user does not have access to the role
-     * @param id ID of role to fetch
-     * @returns Role role response
-     * @throws ApiError
-     */
-    public static getRoleById(
-        id: string,
-    ): CancelablePromise<Role> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/v1/roles/{id}',
-            path: {
-                'id': id,
-            },
-        });
-    }
-    /**
-     * Updates a new role in the store. Duplicates are allowed
-     * @param id ID of role to fetch
-     * @param requestBody Role to update to the store
-     * @returns void
-     * @throws ApiError
-     */
-    public static updateRole(
-        id: string,
-        requestBody: Role,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/v1/roles/{id}',
-            path: {
-                'id': id,
-            },
-            body: requestBody,
-            mediaType: 'application/json',
-        });
-    }
-    /**
-     * deletes a single role based on the ID supplied
-     * @param id ID of role to delete
-     * @returns void
-     * @throws ApiError
-     */
-    public static deleteRole(
-        id: string,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/v1/roles/{id}',
-            path: {
-                'id': id,
             },
         });
     }
