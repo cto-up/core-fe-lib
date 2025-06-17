@@ -133,11 +133,8 @@ const extractDomainParts = (hostname) => {
     // Instead of joining all subdomain parts, just take the last one
     const lastSubdomainPart = subdomainParts[subdomainParts.length - 1];
 
-    // remove 'bo-' from subdomain
-    const cleanSubdomain = lastSubdomainPart.replace('bo-', '');
-
     return {
-      subdomain: cleanSubdomain,
+      subdomain: lastSubdomainPart,
       domain: fullDomain,
       tld: tldPart,
       fullHost: hostname
