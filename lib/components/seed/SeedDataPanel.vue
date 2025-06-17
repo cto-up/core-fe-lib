@@ -20,7 +20,7 @@
                     {{ t(`layout.navigation.seed.reference.title`) }}
                   </div>
                   <div class="text-subtitle2">
-                    {{ t(`layout.navigation.seed.reference.caption`) }}
+                    {{ seedReferenceCaption }}
                   </div>
                 </q-card-section>
                 <q-card-section>
@@ -43,7 +43,7 @@
                     {{ t(`layout.navigation.seed.sample.title`) }}
                   </div>
                   <div class="text-subtitle2">
-                    {{ t(`layout.navigation.seed.sample.caption`) }}
+                    {{ seedSampleCaption }}
                   </div>
                 </q-card-section>
                 <q-card-section>
@@ -79,8 +79,16 @@ const props = defineProps({
     type: Function,
     required: true,
   },
+  seedReferenceCaption: {
+    type: String,
+    required: true,
+  },
   seedSampleFn: {
     type: Function,
+    required: true,
+  },
+  seedSampleCaption: {
+    type: String,
     required: true,
   },
   hideSampleData: {
