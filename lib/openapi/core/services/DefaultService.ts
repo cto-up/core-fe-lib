@@ -1150,7 +1150,7 @@ export class DefaultService {
     ): CancelablePromise<Array<ClientApplication>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/superadmin-api/v1/client-applications',
+            url: '/admin-api/v1/client-applications',
             query: {
                 'page': page,
                 'pageSize': pageSize,
@@ -1172,7 +1172,7 @@ export class DefaultService {
     ): CancelablePromise<ClientApplication> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/superadmin-api/v1/client-applications',
+            url: '/admin-api/v1/client-applications',
             body: requestBody,
             mediaType: 'application/json',
         });
@@ -1188,7 +1188,7 @@ export class DefaultService {
     ): CancelablePromise<ClientApplication> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/superadmin-api/v1/client-applications/{id}',
+            url: '/admin-api/v1/client-applications/{id}',
             path: {
                 'id': id,
             },
@@ -1207,7 +1207,7 @@ export class DefaultService {
     ): CancelablePromise<ClientApplication> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/superadmin-api/v1/client-applications/{id}',
+            url: '/admin-api/v1/client-applications/{id}',
             path: {
                 'id': id,
             },
@@ -1226,7 +1226,7 @@ export class DefaultService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/superadmin-api/v1/client-applications/{id}',
+            url: '/admin-api/v1/client-applications/{id}',
             path: {
                 'id': id,
             },
@@ -1243,7 +1243,7 @@ export class DefaultService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/superadmin-api/v1/client-applications/{id}/deactivate',
+            url: '/admin-api/v1/client-applications/{id}/deactivate',
             path: {
                 'id': id,
             },
@@ -1272,7 +1272,7 @@ export class DefaultService {
     ): CancelablePromise<Array<APIToken>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/superadmin-api/v1/client-applications/{id}/tokens',
+            url: '/admin-api/v1/client-applications/{id}/tokens',
             path: {
                 'id': id,
             },
@@ -1299,7 +1299,7 @@ export class DefaultService {
     ): CancelablePromise<APITokenCreated> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/superadmin-api/v1/client-applications/{id}/tokens',
+            url: '/admin-api/v1/client-applications/{id}/tokens',
             path: {
                 'id': id,
             },
@@ -1320,7 +1320,7 @@ export class DefaultService {
     ): CancelablePromise<APIToken> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/superadmin-api/v1/client-applications/{id}/tokens/{tokenId}',
+            url: '/admin-api/v1/client-applications/{id}/tokens/{tokenId}',
             path: {
                 'id': id,
                 'tokenId': tokenId,
@@ -1340,7 +1340,7 @@ export class DefaultService {
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/superadmin-api/v1/client-applications/{id}/tokens/{tokenId}',
+            url: '/admin-api/v1/client-applications/{id}/tokens/{tokenId}',
             path: {
                 'id': id,
                 'tokenId': tokenId,
@@ -1362,7 +1362,7 @@ export class DefaultService {
     ): CancelablePromise<APIToken> {
         return __request(OpenAPI, {
             method: 'PATCH',
-            url: '/superadmin-api/v1/client-applications/{id}/tokens/{tokenId}/revoke',
+            url: '/admin-api/v1/client-applications/{id}/tokens/{tokenId}/revoke',
             path: {
                 'id': id,
                 'tokenId': tokenId,
@@ -1388,7 +1388,7 @@ export class DefaultService {
     ): CancelablePromise<Array<APITokenAuditLog>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/superadmin-api/v1/client-applications/{id}/tokens/{tokenId}/audit',
+            url: '/admin-api/v1/client-applications/{id}/tokens/{tokenId}/audit',
             path: {
                 'id': id,
                 'tokenId': tokenId,
