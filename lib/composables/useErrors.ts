@@ -12,6 +12,9 @@ export function useErrors() {
         case 400:
           $q.notify({ type: 'negative', message: error.message });
           break;
+        case 401:
+          $q.notify({ type: 'negative', message: 'Don\'t have the right' });
+          break;
         case 404:
           if (skip404) {
             return;
@@ -19,6 +22,7 @@ export function useErrors() {
           $q.notify({ type: 'negative', message: 'Not found' });
           break;
         default:
+          $q.notify({ type: 'negative', message: 'An unexpected error occurred' });
           console.log('Error:', error.status, error.message);
       }
     } else if (error instanceof Error) {
