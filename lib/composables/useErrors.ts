@@ -22,7 +22,7 @@ export function useErrors() {
           $q.notify({ type: 'negative', message: 'Not found' });
           break;
         default:
-          $q.notify({ type: 'negative', message: 'An unexpected error occurred' });
+          $q.notify({ type: 'negative', message: 'An unexpected error occurred ' + JSON.stringify(error) });
           console.log('Error:', error.status, error.message);
       }
     } else if (error instanceof Error) {
