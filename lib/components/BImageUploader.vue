@@ -3,6 +3,7 @@
     class="file-input"
     ref="fileInput"
     type="file"
+    crossorigin="anonymous"
     @change="handleAdd"
     @input="handleAdd"
     style="display: none"
@@ -42,11 +43,11 @@
 </template>
 
 <script lang="ts">
-import { Cropper } from 'vue-advanced-cropper';
-import 'vue-advanced-cropper/dist/style.css';
-import axios from 'axios';
-import { defineComponent, onMounted, onUnmounted, ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { Cropper } from "vue-advanced-cropper";
+import "vue-advanced-cropper/dist/style.css";
+import axios from "axios";
+import { defineComponent, onMounted, onUnmounted, ref } from "vue";
+import { useQuasar } from "quasar";
 
 interface Option {
   size: number;
@@ -57,7 +58,7 @@ interface ChangeEvent {
   canvas: HTMLCanvasElement;
 }
 export default defineComponent({
-  name: 'ImageUploadComponent',
+  name: "ImageUploadComponent",
   components: {
     Cropper,
   },
@@ -88,14 +89,14 @@ export default defineComponent({
     const uploadDialog = ref(false);
     const $q = useQuasar();
     const imgSource = ref<string | ArrayBuffer | null>(null);
-    const imgTarget = ref<string>('https://picsum.photos/200');
+    const imgTarget = ref<string>("https://picsum.photos/200");
     const fileInput = ref();
     const cropper = ref();
     const uploading = ref(false);
 
     const option = ref<Option>({
       size: 1,
-      outputType: 'jpeg', // jpeg || png || webp
+      outputType: "jpeg", // jpeg || png || webp
     });
 
     const handleAdd = async (event: Event): Promise<void> => {
@@ -121,14 +122,14 @@ export default defineComponent({
 
       // Create a FormData object and append the Blob to it
       const formData: FormData = new FormData();
-      if (blob) formData.append('file', blob, 'image.jpg'); // 'image' is the field name you want to use
+      if (blob) formData.append("file", blob, "image.jpg"); // 'image' is the field name you want to use
 
       // Now, use Axios to upload the image
       const endPoint = props.postEndPoint;
       axios
         .post(endPoint, formData, {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
         })
         .then(() => {
@@ -137,9 +138,9 @@ export default defineComponent({
           uploadDialog.value = false;
         })
         .catch((error) => {
-          console.error('Error uploading image:', error);
+          console.error("Error uploading image:", error);
           $q.notify({
-            type: 'negative',
+            type: "negative",
             message: error.message,
           });
         });
@@ -171,7 +172,7 @@ export default defineComponent({
     };
 
     function displayFallbackImage() {
-      imgTarget.value = 'https://picsum.photos/200';
+      imgTarget.value = "https://picsum.photos/200";
     }
 
     onMounted(() => {
