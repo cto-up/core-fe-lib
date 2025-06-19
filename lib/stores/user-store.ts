@@ -10,6 +10,7 @@ export const useInternalUserStore = defineStore('user', {
   getters: {
     isLogged: (state) => state.user != null,
     getUser: (state) => state.user,
+    isCustomerAdmin: (state) => state.user?.roles?.includes('CUSTOMER_ADMIN'),
     isAdmin: (state) => state.user?.roles?.includes('ADMIN'),
     isSuperAdmin: (state) => state.user?.roles?.includes('SUPER_ADMIN'),
   },
