@@ -17,7 +17,6 @@ export const useInternalUserStore = defineStore('user', {
   actions: {
     setUser(user: LoggedUser | null) {
       this.user = user;
-      persist: true; //<---------persists user state to local storage!
     },
   },
 });
