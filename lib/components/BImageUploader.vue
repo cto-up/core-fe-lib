@@ -3,7 +3,6 @@
     class="file-input"
     ref="fileInput"
     type="file"
-    crossorigin="anonymous"
     @change="handleAdd"
     @input="handleAdd"
     style="display: none"
@@ -11,6 +10,7 @@
   />
   <q-img
     class="cursor-pointer"
+    crossorigin="anonymous"
     :style="`max-height: ${height}px; max-width: ${width}px;`"
     :src="imgTarget"
     @error="displayFallbackImage"
