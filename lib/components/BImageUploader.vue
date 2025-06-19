@@ -8,7 +8,7 @@
     style="display: none"
     accept="image/*"
   />
-  <q-img
+  <img
     class="cursor-pointer"
     crossorigin="anonymous"
     :style="`max-height: ${height}px; max-width: ${width}px;`"
@@ -16,9 +16,8 @@
     @error="displayFallbackImage"
     @click="fileInput.click()"
     loading="lazy"
-  >
-    <div v-if="showText" class="absolute-bottom text-h6">Choose an Image</div>
-  </q-img>
+  />
+  <div v-if="showText" class="absolute-bottom text-h6">Choose an Image</div>
   <q-dialog v-model="uploadDialog">
     <q-card>
       <q-card-section class="q-pb-none">
