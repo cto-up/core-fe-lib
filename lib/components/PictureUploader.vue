@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onUnmounted } from "vue";
 import { useQuasar } from "quasar";
 
 const props = defineProps<{
@@ -145,10 +145,18 @@ function fetchPicture() {
       if (pictureUrl.value) {
         URL.revokeObjectURL(pictureUrl.value);
       }
+
+      // Instead of creating a blob URL, convert to a data URL
       const typedBlob = blob.type
         ? blob
         : new Blob([blob], { type: "image/webp" });
-      pictureUrl.value = URL.createObjectURL(typedBlob);
+
+      // Use FileReader to create a data URL instead of a blob URL
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        pictureUrl.value = e.target?.result as string;
+      };
+      reader.readAsDataURL(typedBlob);
     })
     .catch((err) => {
       // if not a 404, log the error
@@ -159,6 +167,13 @@ function fetchPicture() {
       pictureUrl.value = null;
     });
 }
+
+// Clean up any blob URLs when component is unmounted
+onUnmounted(() => {
+  if (pictureUrl.value && pictureUrl.value.startsWith("blob:")) {
+    URL.revokeObjectURL(pictureUrl.value);
+  }
+});
 
 // Initial fetch
 fetchPicture();
