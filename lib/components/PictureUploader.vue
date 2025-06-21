@@ -9,42 +9,32 @@
         class="preview-image"
       />
       <div v-else class="empty-preview">
-        {{ emptyText || 'No image' }}
+        {{ emptyText || "No image" }}
       </div>
     </div>
 
-    <q-file
-      v-model="selectedFile"
-      accept="image/png,image/jpeg,image/webp"
-      @update:model-value="onPictureChange"
-      outlined
-      dense
-      class="q-mt-sm"
-    >
-      <template v-slot:prepend>
-        <q-icon name="photo" />
-      </template>
-    </q-file>
-
-    <q-btn
-      class="q-mt-sm"
-      color="primary"
+    <q-uploader
+      auto-upload
+      ref="uploader"
+      class="q-mt-sm full-width"
       :label="uploadLabel || 'Upload'"
-      :loading="pictureLoading"
-      :disable="!selectedPicture || pictureLoading"
-      @click="uploadPicture"
-      icon="cloud_upload"
-    />
+      :accept="acceptedFormats"
+      :multiple="false"
+      :factory="factoryFn"
+      @uploaded="onUploaded"
+      @added="onFileAdded"
+    >
+    </q-uploader>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useQuasar } from 'quasar';
+import { ref } from "vue";
+import { useQuasar } from "quasar";
 
 const props = defineProps<{
   fetchEndpoint: () => Promise<Blob>;
-  uploadEndpoint: (formData: { picture: Blob }) => Promise<unknown>;
+  uploadEndpoint: (formData: { picture: Blob }) => Promise<any>;
   alt?: string;
   emptyText?: string;
   uploadLabel?: string;
@@ -52,77 +42,100 @@ const props = defineProps<{
 
 const $q = useQuasar();
 const pictureUrl = ref<string | null>(null);
-const pictureLoading = ref(false);
-const selectedPicture = ref<File | null>(null);
-const selectedFile = ref<File | null>(null);
+const uploader = ref(null);
+const acceptedFormats = "image/png,image/jpeg,image/webp";
 
-function onPictureChange() {
-  if (!selectedFile.value) return;
+// Factory function for q-uploader
+function factoryFn(files: File[]) {
+  console.log("Factory function called with files:", files);
+  const file = files[0];
 
-  const img = new window.Image();
-  const reader = new FileReader();
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      console.error("No file selected");
+      reject(new Error("No file selected"));
+      return;
+    }
 
-  reader.onload = (event) => {
-    img.onload = () => {
-      // Resize if needed
-      const maxSize = 1080;
-      let { width, height } = img;
-      if (width > maxSize || height > maxSize) {
-        if (width > height) {
-          height = Math.round(height * (maxSize / width));
-          width = maxSize;
-        } else {
-          width = Math.round(width * (maxSize / height));
-          height = maxSize;
-        }
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = width;
-      canvas.height = height;
-      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+    const img = new window.Image();
+    const reader = new FileReader();
 
-      // Convert to webp
-      canvas.toBlob(
-        (blob) => {
-          if (blob) {
-            selectedPicture.value = new File([blob], 'picture.webp', {
-              type: 'image/webp',
-            });
+    reader.onload = (event) => {
+      img.onload = () => {
+        // Resize if needed
+        const maxSize = 1080;
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          if (width > height) {
+            height = Math.round(height * (maxSize / width));
+            width = maxSize;
+          } else {
+            width = Math.round(width * (maxSize / height));
+            height = maxSize;
           }
-        },
-        'image/webp',
-        0.92,
-      );
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+
+        // Convert to webp
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              const webpFile = new File([blob], "picture.webp", {
+                type: "image/webp",
+              });
+
+              // Create FormData with the processed image
+              const formData = { picture: webpFile };
+
+              // Use the provided uploadEndpoint
+              props
+                .uploadEndpoint(formData)
+                .then(() => {
+                  fetchPicture();
+                  resolve({
+                    name: file.name,
+                    size: blob.size,
+                    type: "image/webp",
+                    url: URL.createObjectURL(blob),
+                    uploadedSize: blob.size,
+                    status: "uploaded",
+                  });
+                })
+                .catch((err) => {
+                  console.error("Failed to upload picture:", err);
+                  reject(err?.response || new Error("Upload error"));
+                });
+            } else {
+              reject(new Error("Failed to process image"));
+            }
+          },
+          "image/webp",
+          0.92
+        );
+      };
+      img.src = event.target!.result as string;
     };
-    img.src = event.target.result as string;
-  };
-  reader.readAsDataURL(selectedFile.value);
+    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.readAsDataURL(file);
+  });
 }
 
-function uploadPicture() {
-  if (!selectedPicture.value) return;
-  pictureLoading.value = true;
-  props
-    .uploadEndpoint({ picture: selectedPicture.value })
-    .then(() => {
-      pictureLoading.value = false;
-      selectedPicture.value = null;
-      selectedFile.value = null;
-      fetchPicture();
-      $q.notify({
-        type: 'positive',
-        message: 'Image updated successfully',
-        icon: 'check_circle',
-      });
-    })
-    .catch((err) => {
-      pictureLoading.value = false;
-      $q.notify({
-        type: 'negative',
-        message: err?.response || 'Upload error',
-        icon: 'error',
-      });
-    });
+function onUploaded() {
+  fetchPicture();
+  $q.notify({
+    type: "positive",
+    message: "Image updated successfully",
+    icon: "check_circle",
+  });
+}
+
+function onFileAdded() {
+  // This is triggered when files are added to the uploader
+  // You can add additional logic here if needed
 }
 
 function fetchPicture() {
@@ -134,10 +147,15 @@ function fetchPicture() {
       }
       const typedBlob = blob.type
         ? blob
-        : new Blob([blob], { type: 'image/webp' });
+        : new Blob([blob], { type: "image/webp" });
       pictureUrl.value = URL.createObjectURL(typedBlob);
     })
-    .catch(() => {
+    .catch((err) => {
+      // if not a 404, log the error
+      if (err.status !== 404) {
+        console.log(err);
+        console.error("Failed to fetch picture:", err);
+      }
       pictureUrl.value = null;
     });
 }
