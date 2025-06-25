@@ -13,7 +13,7 @@ export interface SSEHandlerOptions<T> {
   onProgress?: (progress: number) => void;
   stateUpdater?: (updater: (prev: T) => T) => void;
   getStateValue?: (state: T) => string | null;
-  stateKey?: string;
+  stateKey?: keyof T;
 }
 
 export function handleSSEProgress<T>(
@@ -53,11 +53,13 @@ export function handleSSEProgress<T>(
               case 'MSG':
                 if (options.stateUpdater && options.stateKey !== undefined && options.getStateValue) {
                   options.stateUpdater(prev => {
-                    const currentContent = options.getStateValue(prev) || "";
+                    const currentContent = options.getStateValue!(prev) || "";
+                    // Set loading to false if progress is 100%
+                    const isLoading = event.progress ? event.progress < 100 : true;
                     return {
                       ...prev,
-                      [options.stateKey]: {
-                        loading: event.progress ? event.progress < 100 : true,
+                      [options.stateKey as keyof T]: {
+                        loading: isLoading,
                         content: currentContent + (event.message || ''),
                         error: null
                       }
@@ -74,9 +76,9 @@ export function handleSSEProgress<T>(
                 if (options.stateUpdater && options.stateKey !== undefined && options.getStateValue) {
                   options.stateUpdater(prev => ({
                     ...prev,
-                    [options.stateKey]: {
+                    [options.stateKey as keyof T]: {
                       loading: false,
-                      content: options.getStateValue(prev),
+                      content: options.getStateValue?.(prev),
                       error: event.message
                     }
                   }));
@@ -86,7 +88,7 @@ export function handleSSEProgress<T>(
               default:
                 break;
             }
-
+            
             if (event.progress !== undefined) {
               options.onProgress?.(event.progress);
             }
