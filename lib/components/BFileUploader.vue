@@ -31,7 +31,7 @@ import axios from "axios";
 
 import { computed, defineComponent, ref } from "vue";
 import { type QRejectedEntry, type QUploader, useQuasar } from "quasar";
-import { EventType, ExtractJSONObject } from "../types/received-events";
+import { handleSSEProgress } from "../utils/sseHandler";
 
 interface Option {
   size: number;
@@ -106,6 +106,13 @@ export default defineComponent({
       // Create a FormData object and append the Blob to it
       const formData: FormData = new FormData();
       formData.append("file", selectedFile.value as Blob);
+      // Use refs for tracking position and full response
+      const lastProcessedPosition = ref({
+        current: 0,
+      });
+      const fullResponseText = ref({
+        current: "",
+      });
 
       // Now, use Axios to upload the image
       const endPoint = props.postEndPoint;
@@ -118,44 +125,54 @@ export default defineComponent({
         },
         method: "POST",
         onDownloadProgress: (progressEvent) => {
-          const xhr = progressEvent.event.target as XMLHttpRequest;
-          const { responseText } = xhr;
-          const progressEventsServer = ExtractJSONObject(responseText);
+          handleSSEProgress(
+            progressEvent,
+            lastProcessedPosition.value,
+            fullResponseText.value,
+            {
+              onMessage: (inmessage) => {
+                message.value = inmessage;
+              },
+              onInfo: (inmessage) => {
+                message.value = inmessage;
+              },
+              onError: (inmessage) => {
+                $q.notify({
+                  type: "negative",
+                  message: inmessage,
+                });
+                progress.value = 0;
+                uploader.value?.reset();
+                message.value = "Err: " + inmessage;
+              },
+              onProgress: (inProgress) => {
+                progress.value = inProgress / 100;
 
-          const progressEventServer = progressEventsServer.slice(-1)[0];
-
-          progress.value = progressEventServer.progress / 100;
-
-          uploader.value?.updateFileStatus(
-            selectedFile.value as File,
-            "uploading",
-            10
-          );
-
-          message.value = progressEventServer.message;
-
-          if (progressEventServer.progress === 100) {
-            if (uploader.value != undefined && selectedFile.value != null) {
-              emitUploaded();
-              uploader.value?.updateFileStatus(
-                selectedFile.value as File,
-                "uploaded",
-                10
-              );
-              progress.value = 0;
-              uploader.value.reset();
-              message.value = "Done";
-              //uploader.value?.removeFile(selectedFile.value as File);
+                uploader.value?.updateFileStatus(
+                  selectedFile.value as File,
+                  "uploading",
+                  10
+                );
+                if (progress === 100) {
+                  if (
+                    uploader.value != undefined &&
+                    selectedFile.value != null
+                  ) {
+                    emitUploaded();
+                    uploader.value?.updateFileStatus(
+                      selectedFile.value as File,
+                      "uploaded",
+                      10
+                    );
+                    progress.value = 0;
+                    uploader.value.reset();
+                    message.value = "Done";
+                    //uploader.value?.removeFile(selectedFile.value as File);
+                  }
+                }
+              },
             }
-          } else if (progressEventServer.eventType === EventType.ERROR) {
-            $q.notify({
-              type: "negative",
-              message: progressEventServer.message,
-            });
-            progress.value = 0;
-            uploader.value?.reset();
-            message.value = "Err: " + progressEventServer.message;
-          }
+          );
         },
       })
         .then(() => {
