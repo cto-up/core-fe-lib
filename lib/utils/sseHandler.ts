@@ -1,3 +1,5 @@
+import { type AxiosProgressEvent } from "axios";
+
 export interface SSEEvent {
   eventType: string;
   message: string;
@@ -11,11 +13,11 @@ export interface SSEHandlerOptions<T> {
   onProgress?: (progress: number) => void;
   stateUpdater?: (updater: (prev: T) => T) => void;
   getStateValue?: (state: T) => string | null;
-  stateKey?: any;
+  stateKey?: string;
 }
 
 export function handleSSEProgress<T>(
-  progressEvent: any,
+  progressEvent: AxiosProgressEvent,
   lastProcessedPosition: { current: number },
   fullResponseText: { current: string },
   options: SSEHandlerOptions<T>
