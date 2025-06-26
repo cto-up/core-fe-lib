@@ -81,7 +81,7 @@ export default defineComponent({
     const loading = ref(false);
     const options = ref<Option[]>([]);
     // Initialize internalModel based on multiple prop
-    const internalModel = ref(props.modelValue ?? (props.multiple ? [] : {}));
+    const internalModel = ref(props.modelValue ?? (props.multiple ? [] : ""));
 
     const lastFilterValue = ref("NONSENSE");
 
@@ -116,10 +116,12 @@ export default defineComponent({
 
     const loadOne = async (newValue: string | string[] | undefined) => {
       console.log("loadOne", newValue);
+      if (!newValue && !internalModel.value) {
+        return;
+      }
       if (!newValue) {
         emit("update:label", "");
         emit("update:modelValue", undefined);
-        options.value = [];
         internalModel.value = props.multiple ? [] : "";
 
         if (props.optionExtra) {
@@ -198,7 +200,9 @@ export default defineComponent({
       }
     };
 
-    loadOne(props.modelValue);
+    loadOne(props.modelValue).catch((err) => {
+      handleError(err);
+    });
 
     const onSelect = (val: any) => {
       console.log("onSelect", val);
