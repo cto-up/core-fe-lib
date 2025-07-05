@@ -18,6 +18,7 @@ export type { ColorSchema } from './models/ColorSchema';
 export type { Config } from './models/Config';
 export type { ErrorSchema } from './models/ErrorSchema';
 export { HealthResponse } from './models/HealthResponse';
+export type { Migration } from './models/Migration';
 export type { NewAPIToken } from './models/NewAPIToken';
 export type { NewClientApplication } from './models/NewClientApplication';
 export type { NewConfig } from './models/NewConfig';
