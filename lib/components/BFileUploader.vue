@@ -153,7 +153,7 @@ export default defineComponent({
                   "uploading",
                   10
                 );
-                if (progress === 100) {
+                if (inProgress === 100) {
                   if (
                     uploader.value != undefined &&
                     selectedFile.value != null
