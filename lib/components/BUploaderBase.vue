@@ -27,15 +27,7 @@
       <div v-if="uploading" class="loading-overlay">
         <slot name="loading">
           <div class="loading-spinner"></div>
-          <div class="loading-progress">
-            <div
-              class="progress-bar"
-              :style="`width: ${progress * 100}%`"
-            ></div>
-          </div>
-          <div class="progress-percentage">
-            {{ Math.round((progress || 0) * 100) }}%
-          </div>
+          <div class="loading-text">{{ loadingText || 'Uploading...' }}</div>
         </slot>
       </div>
 
@@ -50,16 +42,19 @@
           :is-hovering="isHovering"
         ></slot>
       </div>
-    </div>
-    <!-- Progress Bar (outside upload zone) -->
-    <div v-if="progress > 0" class="external-progress">
-      <div class="progress-container">
-        <div class="progress-track"></div>
-        <div
-          class="progress-fill"
-          :class="{ error: hasError }"
-          :style="`width: ${progress * 100}%`"
-        ></div>
+
+      <div v-if="progress > 0" class="progress-overlay">
+        <div class="progress-container">
+          <div class="progress-track"></div>
+          <div
+            class="progress-fill"
+            :class="{ error: hasError }"
+            :style="`width: ${progress * 100}%`"
+          ></div>
+        </div>
+        <div class="progress-percentage">
+          {{ Math.round((progress || 0) * 100) }}%
+        </div>
       </div>
     </div>
   </div>
@@ -74,6 +69,7 @@ export default defineComponent({
     accept: { type: String },
     hasContent: { type: Boolean, default: false },
     uploading: { type: Boolean, default: false },
+    loadingText: { type: String, default: 'Uploading...' },
     progress: { type: Number, default: 0 },
     hasError: { type: Boolean, default: false },
     multiple: { type: Boolean, default: false },
@@ -230,13 +226,16 @@ export default defineComponent({
   text-align: center;
 }
 
-.loading-progress {
-  width: 80%;
-  height: 6px;
-  background: #e5e7eb;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 12px;
+.progress-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  z-index: 11;
+  border-top: 1px solid #e5e7eb;
 }
 
 .progress-container {
@@ -259,28 +258,11 @@ export default defineComponent({
   background: linear-gradient(90deg, #ef4444, #f87171);
 }
 
-.progress-text {
-  font-size: 14px;
-  color: #6b7280;
-  text-align: center;
-  font-weight: 500;
-}
-
-.progress-text.error {
-  color: #ef4444;
-}
-
-.progress-bar {
-  height: 100%;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
 .progress-percentage {
   color: #6366f1;
   font-weight: 600;
   font-size: 14px;
+  text-align: center;
 }
 
 @keyframes spin {
