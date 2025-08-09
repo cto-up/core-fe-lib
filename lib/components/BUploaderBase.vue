@@ -61,9 +61,6 @@
           :style="`width: ${progress * 100}%`"
         ></div>
       </div>
-      <div class="progress-text" :class="{ error: hasError }">
-        {{ loadingText }}
-      </div>
     </div>
   </div>
 </template>
@@ -77,7 +74,6 @@ export default defineComponent({
     accept: { type: String },
     hasContent: { type: Boolean, default: false },
     uploading: { type: Boolean, default: false },
-    loadingText: { type: String, default: 'Uploading...' },
     progress: { type: Number, default: 0 },
     hasError: { type: Boolean, default: false },
     multiple: { type: Boolean, default: false },
