@@ -27,7 +27,6 @@
       <div v-if="uploading" class="loading-overlay">
         <slot name="loading">
           <div class="loading-spinner"></div>
-          <div class="loading-text">{{ loadingText || 'Uploading...' }}</div>
           <div class="loading-progress">
             <div
               class="progress-bar"
