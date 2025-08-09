@@ -52,6 +52,20 @@
         ></slot>
       </div>
     </div>
+    <!-- Progress Bar (outside upload zone) -->
+    <div v-if="progress > 0" class="external-progress">
+      <div class="progress-container">
+        <div class="progress-track"></div>
+        <div
+          class="progress-fill"
+          :class="{ error: hasError }"
+          :style="`width: ${progress * 100}%`"
+        ></div>
+      </div>
+      <div class="progress-text" :class="{ error: hasError }">
+        {{ loadingText }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -228,6 +242,37 @@ export default defineComponent({
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 12px;
+}
+
+.progress-container {
+  width: 100%;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-fill.error {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.progress-text {
+  font-size: 14px;
+  color: #6b7280;
+  text-align: center;
+  font-weight: 500;
+}
+
+.progress-text.error {
+  color: #ef4444;
 }
 
 .progress-bar {
