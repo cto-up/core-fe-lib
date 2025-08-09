@@ -33,6 +33,14 @@
           }"
         />
       </q-card-section>
+      <q-card-section class="q-pt-none">
+        <q-linear-progress
+          :value="progress"
+          color="primary"
+          :label="message"
+          label-value
+        />
+      </q-card-section>
       <q-card-actions class="q-pa-md" align="right">
         <b-btn label="Close" v-close-popup />
         <b-btn color="primary" label="Upload" @click="handleUpload" />
@@ -47,6 +55,7 @@ import "vue-advanced-cropper/dist/style.css";
 import axios from "axios";
 import { defineComponent, onMounted, onUnmounted, ref } from "vue";
 import { useQuasar } from "quasar";
+import { handleSSEProgress } from "../utils/sseHandler";
 
 interface Option {
   size: number;
@@ -63,6 +72,10 @@ export default defineComponent({
   },
   props: {
     getEndPoint: {
+      type: String,
+      required: true,
+    },
+    accept: {
       type: String,
       required: true,
     },
@@ -84,7 +97,7 @@ export default defineComponent({
       required: true,
     },
   },
-  setup(props) {
+  setup(props, { emit }) {
     const uploadDialog = ref(false);
     const $q = useQuasar();
     const imgSource = ref<string | ArrayBuffer | null>(null);
@@ -92,6 +105,8 @@ export default defineComponent({
     const fileInput = ref();
     const cropper = ref();
     const uploading = ref(false);
+    const progress = ref(0.0);
+    const message = ref("");
 
     const option = ref<Option>({
       size: 1,
@@ -110,27 +125,69 @@ export default defineComponent({
       }
     };
 
+    const emitUploaded = () => {
+      emit("uploaded");
+    };
+
     const handleUpload = async function () {
       uploading.value = true;
-      let myCanvas: HTMLCanvasElement;
       const { canvas } = cropper.value.getResult();
-      myCanvas = canvas;
+      const myCanvas: HTMLCanvasElement = canvas;
       const blob: Blob | null = await new Promise<Blob | null>((resolve) =>
         myCanvas.toBlob(resolve)
       );
+      message.value = "";
 
+      const lastProcessedPosition = ref({
+        current: 0,
+      });
+      const fullResponseText = ref({
+        current: "",
+      });
       // Create a FormData object and append the Blob to it
       const formData: FormData = new FormData();
       if (blob) formData.append("file", blob, "image.jpg"); // 'image' is the field name you want to use
 
       // Now, use Axios to upload the image
       const endPoint = props.postEndPoint;
-      axios
-        .post(endPoint, formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        })
+      axios({
+        url: endPoint,
+        data: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        method: "POST",
+        onDownloadProgress: (progressEvent) => {
+          handleSSEProgress(
+            progressEvent,
+            lastProcessedPosition.value,
+            fullResponseText.value,
+            {
+              onMessage: (inmessage) => {
+                message.value = inmessage;
+              },
+              onInfo: (inmessage) => {
+                message.value = inmessage;
+              },
+              onError: (inmessage) => {
+                $q.notify({
+                  type: "negative",
+                  message: inmessage,
+                });
+                progress.value = 0;
+                message.value = "Err: " + inmessage;
+              },
+              onProgress: (inProgress) => {
+                progress.value = inProgress / 100;
+
+                if (inProgress === 100) {
+                  emitUploaded();
+                }
+              },
+            }
+          );
+        },
+      })
         .then(() => {
           uploading.value = false;
           imgTarget.value = myCanvas.toDataURL();
@@ -188,9 +245,6 @@ export default defineComponent({
           console.log('Image downloaded successfully:');
           console.log(base64Image);
           imgTarget.value = base64Image; // myCanvas.toDataURL()
-
-
-
         })
         .catch((error) => {
           console.error('Error loading image:', error);
@@ -208,6 +262,8 @@ export default defineComponent({
       fileInput,
       cropper,
       option,
+      progress,
+      message,
       handleAdd,
       handleUpload,
       change,
