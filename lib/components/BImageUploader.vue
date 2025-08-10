@@ -215,12 +215,8 @@ export default defineComponent({
       if (validateFile(file)) {
         imageHasError.value = false;
         revoke();
-        if (props.previewImage) {
-          uploadDialog.value = true;
-          imgSource.value = (await read(file)) as string;
-        } else {
-          handleUpload(file);
-        }
+        uploadDialog.value = true;
+        imgSource.value = (await read(file)) as string;
       }
     };
 
@@ -281,22 +277,17 @@ export default defineComponent({
       emit('uploaded');
     };
 
-    const handleUpload = async function (file?: File) {
+    const handleUpload = async function () {
       uploading.value = true;
       progress.value = 0;
 
       try {
-        let blob: Blob | null = null;
-        if (props.previewImage) {
-          const { canvas } = cropper.value.getResult();
-          const myCanvas: HTMLCanvasElement = canvas;
-          blob = await new Promise<Blob | null>((resolve) =>
-            myCanvas.toBlob(resolve, 'image/jpeg', 0.9),
-          );
-          imgTarget.value = myCanvas.toDataURL();
-        } else if (file) {
-          blob = file;
-        }
+        const { canvas } = cropper.value.getResult();
+        const myCanvas: HTMLCanvasElement = canvas;
+        const blob = await new Promise<Blob | null>((resolve) =>
+          myCanvas.toBlob(resolve, 'image/jpeg', 0.9),
+        );
+        imgTarget.value = myCanvas.toDataURL();
 
         if (!blob) {
           throw new Error('Could not get image blob');
