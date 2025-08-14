@@ -3,7 +3,11 @@
     <div ref="displayContent" class="display-content">
       <h1 class="title">{{ title }}</h1>
       <h2 class="subtitle">{{ subtitle }}</h2>
-      <div class="qr-code-container">
+      <div
+        class="qr-code-container"
+        style="cursor: pointer"
+        @click="$emit('click')"
+      >
         <canvas ref="qrCanvas" class="qr-code"></canvas>
       </div>
     </div>
@@ -32,6 +36,8 @@ const props = withDefaults(defineProps<Props>(), {
   subtitle: '',
   url: '',
 });
+
+defineEmits(['click']);
 
 // Define template refs with proper typing
 const qrCanvas: Ref<HTMLCanvasElement | null> = ref(null);
