@@ -214,6 +214,11 @@ export default defineComponent({
       required: false,
       default: 1048576 * 80, // 80MB default
     },
+    queryParams: {
+      type: Object,
+      required: false,
+      default: () => ({}),
+    },
   },
   setup(props, { emit }) {
     const $q = useQuasar();
@@ -366,9 +371,21 @@ export default defineComponent({
       const fullResponseText = ref({ current: '' });
 
       const endPoint = props.postEndPoint;
+      
+      // Add query parameters if they exist
+      let url = endPoint;
+      if (props.queryParams && Object.keys(props.queryParams).length > 0) {
+        const params = new URLSearchParams();
+        Object.entries(props.queryParams).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            params.append(key, String(value));
+          }
+        });
+        url = `${endPoint}?${params.toString()}`;
+      }
 
       axios({
-        url: endPoint,
+        url: url,
         data: formData,
         headers: {
           'Content-Type': 'multipart/form-data',
