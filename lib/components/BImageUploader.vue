@@ -217,6 +217,8 @@ export default defineComponent({
         revoke();
         uploadDialog.value = true;
         imgSource.value = (await read(file)) as string;
+        uploadDialog.value = true;
+        imgSource.value = (await read(file)) as string;
       }
     };
 
@@ -273,6 +275,10 @@ export default defineComponent({
       isFullscreen.value = !isFullscreen.value;
     };
 
+    const emitUploadedWithURI = (uri: string) => {
+      emit('uploaded-with-uri', uri);
+    };
+
     const emitUploaded = () => {
       emit('uploaded');
     };
@@ -282,12 +288,17 @@ export default defineComponent({
       progress.value = 0;
 
       try {
-        const { canvas } = cropper.value.getResult();
-        const myCanvas: HTMLCanvasElement = canvas;
-        const blob = await new Promise<Blob | null>((resolve) =>
-          myCanvas.toBlob(resolve, 'image/jpeg', 0.9),
-        );
-        imgTarget.value = myCanvas.toDataURL();
+        let blob: Blob | null = null;
+        if (props.previewImage) {
+          const { canvas } = cropper.value.getResult();
+          const myCanvas: HTMLCanvasElement = canvas;
+          blob = await new Promise<Blob | null>((resolve) =>
+            myCanvas.toBlob(resolve, 'image/jpeg', 0.9),
+          );
+          imgTarget.value = myCanvas.toDataURL();
+        } else if (file) {
+          blob = file;
+        }
 
         if (!blob) {
           throw new Error('Could not get image blob');
@@ -318,8 +329,14 @@ export default defineComponent({
               {
                 onMessage: (inmessage) => {
                   message.value = inmessage;
+                  console.log('onMessage received:', inmessage);
                 },
                 onInfo: (inmessage) => {
+                  // if starts with uri: then emit the uri
+                  //uri:/public-api/v1/care/circles/48901819-c9b7-49e6-b965-4e6f7714d26d/files/a6c0242e-721d-4791-83a8-758fd8c565c6
+                  if (inmessage.startsWith('uri:')) {
+                    emitUploadedWithURI(inmessage.substring(4));
+                  }
                   message.value = inmessage;
                 },
                 onError: (inmessage) => {
@@ -336,7 +353,7 @@ export default defineComponent({
                     emitUploaded();
                   }
                 },
-              },
+              }
             );
           },
         });
@@ -348,7 +365,7 @@ export default defineComponent({
           type: 'positive',
           message: 'Image uploaded successfully!',
         });
-      } catch (error: any) {
+      } catch (error) {
         console.error('Error uploading image:', error);
         uploading.value = false;
         $q.notify({
