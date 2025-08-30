@@ -13,7 +13,7 @@ import type { NewAPIToken } from '../models/NewAPIToken';
 import type { NewClientApplication } from '../models/NewClientApplication';
 import type { NewConfig } from '../models/NewConfig';
 import type { NewPrompt } from '../models/NewPrompt';
-import type { NewSignUp } from '../models/NewSignUp';
+import type { NewSignUp } from '../models/NewSignUp-temp';
 import type { NewTenant } from '../models/NewTenant';
 import type { NewTranslation } from '../models/NewTranslation';
 import type { NewUser } from '../models/NewUser';
