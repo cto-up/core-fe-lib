@@ -9,7 +9,7 @@
         class="preview-image"
       />
       <div v-else class="empty-preview">
-        {{ emptyText || "No image" }}
+        {{ emptyText || 'No image' }}
       </div>
     </div>
 
@@ -29,8 +29,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onUnmounted } from "vue";
-import { useQuasar } from "quasar";
+import { ref, onUnmounted } from 'vue';
+import { useQuasar } from 'quasar';
 
 const props = defineProps<{
   fetchEndpoint: () => Promise<Blob>;
@@ -43,17 +43,17 @@ const props = defineProps<{
 const $q = useQuasar();
 const pictureUrl = ref<string | null>(null);
 const uploader = ref(null);
-const acceptedFormats = "image/png,image/jpeg,image/webp";
+const acceptedFormats = 'image/png,image/jpeg,image/webp';
 
 // Factory function for q-uploader
 function factoryFn(files: File[]) {
-  console.log("Factory function called with files:", files);
+  console.log('Factory function called with files:', files);
   const file = files[0];
 
   return new Promise((resolve, reject) => {
     if (!file) {
-      console.error("No file selected");
-      reject(new Error("No file selected"));
+      console.error('No file selected');
+      reject(new Error('No file selected'));
       return;
     }
 
@@ -75,17 +75,17 @@ function factoryFn(files: File[]) {
           }
         }
 
-        const canvas = document.createElement("canvas");
+        const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
-        canvas.getContext("2d")!.drawImage(img, 0, 0, width, height);
+        canvas.getContext('2d')!.drawImage(img, 0, 0, width, height);
 
         // Convert to webp
         canvas.toBlob(
           (blob) => {
             if (blob) {
-              const webpFile = new File([blob], "picture.webp", {
-                type: "image/webp",
+              const webpFile = new File([blob], 'picture.webp', {
+                type: 'image/webp',
               });
 
               // Create FormData with the processed image
@@ -99,27 +99,27 @@ function factoryFn(files: File[]) {
                   resolve({
                     name: file.name,
                     size: blob.size,
-                    type: "image/webp",
+                    type: 'image/webp',
                     url: URL.createObjectURL(blob),
                     uploadedSize: blob.size,
-                    status: "uploaded",
+                    status: 'uploaded',
                   });
                 })
                 .catch((err) => {
-                  console.error("Failed to upload picture:", err);
-                  reject(err?.response || new Error("Upload error"));
+                  console.error('Failed to upload picture:', err);
+                  reject(err?.response || new Error('Upload error'));
                 });
             } else {
-              reject(new Error("Failed to process image"));
+              reject(new Error('Failed to process image'));
             }
           },
-          "image/webp",
+          'image/webp',
           0.92
         );
       };
       img.src = event.target!.result as string;
     };
-    reader.onerror = () => reject(new Error("Failed to read file"));
+    reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsDataURL(file);
   });
 }
@@ -127,9 +127,9 @@ function factoryFn(files: File[]) {
 function onUploaded() {
   fetchPicture();
   $q.notify({
-    type: "positive",
-    message: "Image updated successfully",
-    icon: "check_circle",
+    type: 'positive',
+    message: 'Image updated successfully',
+    icon: 'check_circle',
   });
 }
 
@@ -149,7 +149,7 @@ function fetchPicture() {
       // Instead of creating a blob URL, convert to a data URL
       const typedBlob = blob.type
         ? blob
-        : new Blob([blob], { type: "image/webp" });
+        : new Blob([blob], { type: 'image/webp' });
 
       // Use FileReader to create a data URL instead of a blob URL
       const reader = new FileReader();
@@ -162,7 +162,7 @@ function fetchPicture() {
       // if not a 404, log the error
       if (err.status !== 404) {
         console.log(err);
-        console.error("Failed to fetch picture:", err);
+        console.error('Failed to fetch picture:', err);
       }
       pictureUrl.value = null;
     });
@@ -170,7 +170,7 @@ function fetchPicture() {
 
 // Clean up any blob URLs when component is unmounted
 onUnmounted(() => {
-  if (pictureUrl.value && pictureUrl.value.startsWith("blob:")) {
+  if (pictureUrl.value && pictureUrl.value.startsWith('blob:')) {
     URL.revokeObjectURL(pictureUrl.value);
   }
 });
@@ -201,6 +201,18 @@ fetchPicture();
     border: 1px solid #eee;
     background: #fafafa;
     color: #999;
+  }
+}
+
+.body--dark .picture-uploader {
+  .preview-image,
+  .empty-preview {
+    border: 1px solid #4b5563;
+    background: #1f2937;
+  }
+
+  .empty-preview {
+    color: #9ca3af;
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="file-upload-container">
+  <div class="file-upload-container b-file-uploader">
     <BUploaderBase
       ref="uploaderBase"
       :accept="accept"
@@ -371,7 +371,7 @@ export default defineComponent({
       const fullResponseText = ref({ current: '' });
 
       const endPoint = props.postEndPoint;
-      
+
       // Add query parameters if they exist
       let url = endPoint;
       if (props.queryParams && Object.keys(props.queryParams).length > 0) {
@@ -425,7 +425,7 @@ export default defineComponent({
                   }, 2000);
                 }
               },
-            },
+            }
           );
         },
       })
@@ -495,7 +495,42 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style>
+/* Non-scoped styles for dark mode */
+.body--dark .b-file-uploader .file-display {
+  background: var(--q-dark-page, #121212);
+  border-color: var(--q-grey-8, #424242);
+}
+.body--dark .b-file-uploader .file-icon,
+.body--dark .b-file-uploader .replace-btn,
+.body--dark .b-file-uploader .upload-icon {
+  color: var(--q-primary);
+}
+.body--dark .b-file-uploader .file-name {
+  color: var(--q-grey-2, #f5f5f5);
+}
+.body--dark .b-file-uploader .file-meta,
+.body--dark .b-file-uploader .secondary-text {
+  color: var(--q-grey-5, #bdbdbd);
+}
+.body--dark .b-file-uploader .action-btn {
+  background: var(--q-grey-9, #212121);
+  border-color: var(--q-grey-8, #424242);
+}
+.body--dark .b-file-uploader .action-btn:hover {
+  background: var(--q-grey-8, #424242);
+}
+.body--dark .b-file-uploader .remove-btn,
+.body--dark .b-file-uploader .upload-icon.error-icon,
+.body--dark .b-file-uploader .error-text {
+  color: var(--q-negative);
+}
+.body--dark .b-file-uploader .upload-icon.dragging:not(.error-icon) {
+  filter: brightness(1.2);
+}
+.body--dark .b-file-uploader .upload-text {
+  color: var(--q-grey-3, #eeeeee);
+}
 .file-upload-container {
   display: flex;
   justify-content: center;

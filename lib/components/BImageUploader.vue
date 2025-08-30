@@ -1,5 +1,5 @@
 <template>
-  <div class="image-upload-container">
+  <div class="image-upload-container b-image-uploader">
     <BUploaderBase
       ref="uploaderBase"
       :accept="accept"
@@ -293,7 +293,7 @@ export default defineComponent({
           const { canvas } = cropper.value.getResult();
           const myCanvas: HTMLCanvasElement = canvas;
           blob = await new Promise<Blob | null>((resolve) =>
-            myCanvas.toBlob(resolve, 'image/jpeg', 0.9),
+            myCanvas.toBlob(resolve, 'image/jpeg', 0.9)
           );
           imgTarget.value = myCanvas.toDataURL();
         } else if (file) {
@@ -437,6 +437,32 @@ export default defineComponent({
   },
 });
 </script>
+
+<style>
+.body--dark .b-image-uploader .upload-icon {
+  color: var(--q-primary);
+}
+.body--dark .b-image-uploader .upload-text {
+  color: var(--q-grey-3);
+}
+.body--dark .b-image-uploader .secondary-text {
+  color: var(--q-grey-5);
+}
+.body--dark .b-image-uploader .dialog-header,
+.body--dark .b-image-uploader .dialog-actions {
+  border-color: var(--q-separator-color);
+}
+.body--dark .b-image-uploader .cancel-btn {
+  color: var(--q-grey-5);
+}
+.body--dark .b-image-uploader .vue-advanced-cropper,
+.body--dark .b-image-uploader .vue-advanced-cropper__background {
+  background: var(--q-dark-page);
+}
+.body--dark .b-image-uploader .vue-simple-handler {
+  border-color: var(--q-dark);
+}
+</style>
 
 <style scoped>
 .image-upload-container {

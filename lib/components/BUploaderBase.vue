@@ -132,7 +132,7 @@ export default defineComponent({
 });
 </script>
 
-<style scoped>
+<style>
 .uploader-base-container {
   width: 100%;
   margin: 0 auto;
@@ -289,5 +289,77 @@ export default defineComponent({
   justify-content: center;
   text-align: center;
   width: 100%;
+}
+
+/* Dark Mode Styles */
+.body--dark .upload-zone {
+  border: 5px dashed #4b5563 !important;
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4) !important;
+}
+
+.body--dark .upload-zone:hover:not(.uploading):not(.has-content) {
+  border-color: #818cf8 !important;
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
+  box-shadow: 0 8px 25px -8px rgba(129, 140, 248, 0.3) !important;
+}
+
+.body--dark .upload-zone.dragging {
+  border-color: #a5b4fc !important;
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
+  box-shadow: 0 12px 40px -12px rgba(165, 180, 252, 0.4) !important;
+}
+
+.body--dark .upload-zone.has-content {
+  border: 2px solid #4b5563 !important;
+  background: #1f2937 !important;
+}
+
+.body--dark .upload-zone.has-content:hover {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4) !important;
+}
+
+.body--dark .upload-zone.error {
+  border-color: #f87171 !important;
+  background: linear-gradient(135deg, #5f2120 0%, #4c1d1d 100%) !important;
+}
+
+.body--dark .upload-zone.uploading {
+  border-color: #818cf8 !important;
+  background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
+}
+
+.body--dark .loading-overlay {
+  background: rgba(31, 41, 55, 0.95) !important;
+}
+
+.body--dark .loading-spinner {
+  border: 3px solid #4b5563 !important;
+  border-top: 3px solid #818cf8 !important;
+}
+
+.body--dark .loading-text {
+  color: #d1d5db !important;
+}
+
+.body--dark .progress-overlay {
+  background: rgba(31, 41, 55, 0.8) !important;
+  border-top: 1px solid #4b5563 !important;
+}
+
+.body--dark .progress-container {
+  background: #4b5563 !important;
+}
+
+.body--dark .progress-fill {
+  background: linear-gradient(90deg, #818cf8, #a78bfa) !important;
+}
+
+.body--dark .progress-fill.error {
+  background: linear-gradient(90deg, #f87171, #fb923c) !important;
+}
+
+.body--dark .progress-percentage {
+  color: #818cf8 !important;
 }
 </style>
