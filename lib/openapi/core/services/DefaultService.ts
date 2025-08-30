@@ -13,6 +13,7 @@ import type { NewAPIToken } from '../models/NewAPIToken';
 import type { NewClientApplication } from '../models/NewClientApplication';
 import type { NewConfig } from '../models/NewConfig';
 import type { NewPrompt } from '../models/NewPrompt';
+import type { NewSignup } from '../models/NewSignup';
 import type { NewTenant } from '../models/NewTenant';
 import type { NewTranslation } from '../models/NewTranslation';
 import type { NewUser } from '../models/NewUser';
@@ -802,6 +803,95 @@ export class DefaultService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/public-api/v1/tenant',
+        });
+    }
+    /**
+     * Creates a new user for the current tenant.
+     * @param requestBody User to add to the store
+     * @returns User user response
+     * @throws ApiError
+     */
+    public static signup(
+        requestBody: NewSignup,
+    ): CancelablePromise<User> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/public-api/v1/signup',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid input`,
+                403: `Signup not allowed for this tenant`,
+            },
+        });
+    }
+    /**
+     * Verify user's email address using verification token
+     * @param requestBody Email verification token
+     * @returns any Email verified successfully
+     * @throws ApiError
+     */
+    public static verifyEmail(
+        requestBody: {
+            /**
+             * Email verification token received via email
+             */
+            token: string;
+        },
+    ): CancelablePromise<{
+        message?: string;
+        email_verified?: boolean;
+    }> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/public-api/v1/verify-email',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid or expired token`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Resend email verification link to authenticated user
+     * @returns any Verification email sent successfully
+     * @throws ApiError
+     */
+    public static resendEmailVerification(): CancelablePromise<{
+        message?: string;
+    }> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/me/email-verification/resend',
+            errors: {
+                400: `Bad request - user already verified or invalid request`,
+                401: `Unauthorized - user not authenticated`,
+                429: `Too many requests - rate limit exceeded`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Get current user's email verification status
+     * @returns any Email verification status retrieved successfully
+     * @throws ApiError
+     */
+    public static getMyEmailVerificationStatus(): CancelablePromise<{
+        email?: string;
+        email_verified?: boolean;
+        /**
+         * Timestamp when last verification email was sent
+         */
+        verification_sent_at?: string;
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/me/email-verification/status',
+            errors: {
+                401: `Unauthorized - user not authenticated`,
+                500: `Internal server error`,
+            },
         });
     }
     /**

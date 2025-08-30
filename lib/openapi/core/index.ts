@@ -23,6 +23,7 @@ export type { NewAPIToken } from './models/NewAPIToken';
 export type { NewClientApplication } from './models/NewClientApplication';
 export type { NewConfig } from './models/NewConfig';
 export { NewPrompt } from './models/NewPrompt';
+export type { NewSignup } from './models/NewSignup';
 export type { NewTenant } from './models/NewTenant';
 export type { NewTranslation } from './models/NewTranslation';
 export type { NewUser } from './models/NewUser';
