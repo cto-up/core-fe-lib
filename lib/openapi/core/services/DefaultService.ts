@@ -690,7 +690,7 @@ export class DefaultService {
      */
     public static uploadProfilePicture(
         formData: {
-            fileName?: Blob;
+            file?: Blob;
         },
     ): CancelablePromise<User> {
         return __request(OpenAPI, {
