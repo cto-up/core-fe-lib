@@ -1,0 +1,105 @@
+// =============================================================================
+// CORE-FE-LIB THEME CONFIGURATION (theme-config.scss)
+// =============================================================================
+// This file allows host applications to override library defaults
+// Import this BEFORE importing the main library styles
+
+// Example usage in host application:
+// 
+// // In your main SCSS file:
+// // Override library variables
+// $lib-primary: #your-primary-color;
+// $lib-secondary: #your-secondary-color;
+// 
+// // Then import library styles
+// @import '@your-org/core-fe-lib/styles/index.scss';
+
+// Host application can override these variables by defining them before importing
+// the library styles. The !default flag ensures they won't override existing values.
+
+// Example override configuration:
+/*
+// Host application's main.scss or similar:
+
+// Override library theme colors to match your brand
+$lib-primary: #1e40af;        // Your brand primary
+$lib-secondary: #3b82f6;      // Your brand secondary
+$lib-tertiary: #dbeafe;       // Your brand tertiary
+$lib-accent: #f59e0b;         // Your brand accent
+
+// Override semantic colors if needed
+$lib-success: #10b981;
+$lib-error: #ef4444;
+$lib-warning: #f59e0b;
+$lib-info: #3b82f6;
+
+// Override neutral colors to match your design system
+$lib-gray-50: #f8fafc;
+$lib-gray-100: #f1f5f9;
+$lib-gray-200: #e2e8f0;
+$lib-gray-300: #cbd5e1;
+$lib-gray-400: #94a3b8;
+$lib-gray-500: #64748b;
+$lib-gray-600: #475569;
+$lib-gray-700: #334155;
+$lib-gray-800: #1e293b;
+$lib-gray-900: #0f172a;
+
+// Override typography
+$lib-font-family-sans: 'Your Font', system-ui, sans-serif;
+
+// Override spacing, borders, shadows, etc.
+$lib-radius-md: 8px;
+$lib-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+// Then import the library styles
+@import '@your-org/core-fe-lib/styles/index.scss';
+*/
+
+// CSS Custom Properties for runtime theme switching
+// These can be updated via JavaScript for dynamic theming
+:root {
+  // Primary colors
+  --lib-primary: #{$lib-primary};
+  --lib-secondary: #{$lib-secondary};
+  --lib-tertiary: #{$lib-tertiary};
+  --lib-accent: #{$lib-accent};
+
+  // Semantic colors
+  --lib-success: #{$lib-success};
+  --lib-error: #{$lib-error};
+  --lib-warning: #{$lib-warning};
+  --lib-info: #{$lib-info};
+
+  // Neutral colors
+  --lib-white: #{$lib-white};
+  --lib-black: #{$lib-black};
+  --lib-gray-50: #{$lib-gray-50};
+  --lib-gray-100: #{$lib-gray-100};
+  --lib-gray-200: #{$lib-gray-200};
+  --lib-gray-300: #{$lib-gray-300};
+  --lib-gray-400: #{$lib-gray-400};
+  --lib-gray-500: #{$lib-gray-500};
+  --lib-gray-600: #{$lib-gray-600};
+  --lib-gray-700: #{$lib-gray-700};
+  --lib-gray-800: #{$lib-gray-800};
+  --lib-gray-900: #{$lib-gray-900};
+}
+
+// Dark theme overrides
+.body--dark {
+  // Adjust colors for dark mode if needed
+  --lib-primary: #{lighten($lib-primary, 10%)};
+  --lib-secondary: #{lighten($lib-secondary, 10%)};
+}
+
+// Utility function for JavaScript theme switching
+// Example: setLibraryTheme({ primary: '#ff0000', secondary: '#00ff00' })
+/*
+function setLibraryTheme(colors) {
+  const root = document.documentElement;
+  Object.entries(colors).forEach(([key, value]) => {
+    root.style.setProperty(`--lib-${key}`, value);
+  });
+}
+*/

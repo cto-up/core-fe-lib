@@ -1,0 +1,179 @@
+// =============================================================================
+// CORE-FE-LIB MIXINS (_mixins.scss)
+// =============================================================================
+// Self-contained mixins for the component library
+
+// Theme mixins - compatible with Quasar's theme system
+@mixin lib-light-theme {
+  :root &,
+  .body--light & {
+    @content;
+  }
+}
+
+@mixin lib-dark-theme {
+  .body--dark & {
+    @content;
+  }
+}
+
+// Responsive mixins
+@mixin lib-mobile {
+  @media (max-width: 767px) {
+    @content;
+  }
+}
+
+@mixin lib-tablet {
+  @media (min-width: 768px) and (max-width: 1023px) {
+    @content;
+  }
+}
+
+@mixin lib-desktop {
+  @media (min-width: 1024px) {
+    @content;
+  }
+}
+
+// Flex utilities
+@mixin lib-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin lib-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+// Glass morphism effect
+@mixin lib-glass($opacity: 0.25) {
+  backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(255, 255, 255, $opacity);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+@mixin lib-glass-dark($opacity: 0.25) {
+  backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(17, 24, 39, $opacity);
+  border: 1px solid rgba(255, 255, 255, 0.125);
+}
+
+// Button base styles
+@mixin lib-button-base {
+  backdrop-filter: blur(8px);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: $lib-radius-md;
+  font-family: $lib-font-family-sans;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  outline: none;
+  position: relative;
+  overflow: hidden;
+
+  &:focus-visible {
+    outline: 2px solid $lib-primary;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Card styles
+@mixin lib-card-base {
+  border-radius: $lib-radius-lg;
+  box-shadow: $lib-shadow-sm;
+  transition: all $lib-transition-normal;
+  overflow: hidden;
+
+  &:hover {
+    box-shadow: $lib-shadow-lg;
+    transform: translateY(-2px);
+  }
+}
+
+// Input styles
+@mixin lib-input-base {
+  width: 100%;
+  border: 2px solid transparent;
+  border-radius: $lib-radius-md;
+  padding: map-get($lib-spacing, md);
+  font-family: $lib-font-family-sans;
+  font-size: map-get($lib-font-sizes, base);
+  transition: all $lib-transition-fast;
+  outline: none;
+
+  &:focus {
+    border-color: $lib-primary;
+    box-shadow: 0 0 0 3px rgba($lib-primary, 0.1);
+  }
+}
+
+// Utility mixins
+@mixin lib-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin lib-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// Animation mixins
+@mixin lib-fade-in($duration: $lib-transition-normal) {
+  animation: lib-fade-in $duration ease-out;
+}
+
+@mixin lib-slide-up($duration: $lib-transition-normal) {
+  animation: lib-slide-up $duration ease-out;
+}
+
+// Keyframes
+@keyframes lib-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes lib-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes lib-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

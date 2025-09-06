@@ -1,0 +1,51 @@
+// =============================================================================
+// CORE-FE-LIB MAIN STYLES (index.scss)
+// =============================================================================
+// Main entry point for the component library styles
+// Import this file in your application to get all library styles
+
+// Import base styles
+@import 'variables';
+@import 'mixins';
+
+// Global library styles
+.core-fe-lib {
+  // Base font family for all library components
+  font-family: $lib-font-family-sans;
+  
+  // Ensure proper box-sizing
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  
+  // Focus styles for accessibility
+  *:focus-visible {
+    outline: 2px solid $lib-primary;
+    outline-offset: 2px;
+  }
+  
+  // Selection colors
+  ::selection {
+    background-color: $lib-primary;
+    color: $lib-white;
+  }
+}
+
+// Utility classes
+.lib-sr-only {
+  @include lib-visually-hidden;
+}
+
+.lib-truncate {
+  @include lib-truncate;
+}
+
+.lib-fade-in {
+  @include lib-fade-in;
+}
+
+.lib-slide-up {
+  @include lib-slide-up;
+}

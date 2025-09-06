@@ -132,64 +132,171 @@ export default defineComponent({
 });
 </script>
 
-<style>
+<style lang="scss" scoped>
+// Import SCSS modules
+@use 'sass:color';
+
+// Import library styles
+@import '../styles/variables';
+@import '../styles/mixins';
+
 .uploader-base-container {
   width: 100%;
   margin: 0 auto;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .upload-zone {
   position: relative;
-  border: 5px dashed #e0e7ff;
   border-radius: 16px;
-  background: linear-gradient(135deg, #f8faff 0%, #f1f5ff 100%);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   min-height: 200px;
   padding: 24px;
-}
 
-.upload-zone:hover:not(.uploading):not(.has-content) {
-  border-color: #6366f1;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8efff 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px -8px rgba(99, 102, 241, 0.3);
-}
+  // Light theme defaults
+  @include lib-light-theme {
+    border: 5px dashed rgba($lib-secondary, 0.6);
+    background: linear-gradient(
+      135deg,
+      mix($lib-tertiary, $lib-white, 30%) 0%,
+      mix($lib-secondary, $lib-white, 20%) 100%
+    );
+    box-shadow: 0 4px 6px -1px rgba($lib-primary, 0.1);
+  }
 
-.upload-zone.dragging {
-  border-color: #4f46e5;
-  background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
-  transform: scale(1.02);
-  box-shadow: 0 12px 40px -12px rgba(79, 70, 229, 0.4);
-}
+  // Dark theme
+  @include lib-dark-theme {
+    border: 5px dashed rgba($lib-secondary, 0.4);
+    background: linear-gradient(
+      135deg,
+      mix($lib-gray-700, $lib-primary, 90%) 0%,
+      mix($lib-gray-800, $lib-primary, 95%) 100%
+    );
+    box-shadow: 0 4px 6px -1px rgba($lib-black, 0.4);
+  }
 
-.upload-zone.has-content {
-  border: 2px solid #e5e7eb;
-  background: #ffffff;
-  cursor: default;
-  padding: 16px;
-}
+  &:hover:not(.uploading):not(.has-content) {
+    transform: translateY(-2px);
 
-.upload-zone.has-content:hover {
-  transform: none;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
+    @include lib-light-theme {
+      border-color: $lib-primary;
+      background: linear-gradient(
+        135deg,
+        mix($lib-tertiary, $lib-white, 40%) 0%,
+        mix($lib-secondary, $lib-white, 30%) 100%
+      );
+      box-shadow: 0 8px 25px -8px rgba($lib-primary, 0.3);
+    }
 
-.upload-zone.error {
-  border-color: #ef4444;
-  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
-}
+    @include lib-dark-theme {
+      border-color: mix($lib-secondary, $lib-white, 70%);
+      background: linear-gradient(
+        135deg,
+        mix($lib-gray-600, $lib-primary, 85%) 0%,
+        mix($lib-gray-700, $lib-primary, 90%) 100%
+      );
+      box-shadow: 0 8px 25px -8px rgba($lib-secondary, 0.3);
+    }
+  }
 
-.upload-zone.uploading {
-  pointer-events: none;
-  border-color: #6366f1;
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8efff 100%);
+  &.dragging {
+    transform: scale(1.02);
+
+    @include lib-light-theme {
+      border-color: color.scale($lib-primary, $lightness: -10%);
+      background: linear-gradient(
+        135deg,
+        mix($lib-secondary, $lib-white, 40%) 0%,
+        mix($lib-primary, $lib-white, 30%) 100%
+      );
+      box-shadow: 0 12px 40px -12px rgba($lib-primary, 0.4);
+    }
+
+    @include lib-dark-theme {
+      border-color: $lib-secondary;
+      background: linear-gradient(
+        135deg,
+        mix($lib-gray-600, $lib-secondary, 80%) 0%,
+        mix($lib-gray-700, $lib-secondary, 85%) 100%
+      );
+      box-shadow: 0 12px 40px -12px rgba($lib-secondary, 0.4);
+    }
+  }
+
+  &.has-content {
+    cursor: default;
+    padding: 16px;
+
+    @include lib-light-theme {
+      border: 2px solid $lib-gray-200;
+      background: $lib-white;
+    }
+
+    @include lib-dark-theme {
+      border: 2px solid $lib-gray-600;
+      background: $lib-gray-800;
+    }
+
+    &:hover {
+      transform: none;
+
+      @include lib-light-theme {
+        box-shadow: 0 4px 6px -1px rgba($lib-primary, 0.1);
+      }
+
+      @include lib-dark-theme {
+        box-shadow: 0 4px 6px -1px rgba($lib-black, 0.4);
+      }
+    }
+  }
+
+  &.error {
+    @include lib-light-theme {
+      border-color: $lib-error;
+      background: linear-gradient(
+        135deg,
+        mix($lib-negative, $lib-white, 15%) 0%,
+        mix($lib-error, $lib-white, 10%) 100%
+      );
+    }
+
+    @include lib-dark-theme {
+      border-color: $lib-negative;
+      background: linear-gradient(
+        135deg,
+        mix($lib-gray-700, $lib-error, 85%) 0%,
+        mix($lib-gray-800, $lib-error, 90%) 100%
+      );
+    }
+  }
+
+  &.uploading {
+    pointer-events: none;
+
+    @include lib-light-theme {
+      border-color: $lib-primary;
+      background: linear-gradient(
+        135deg,
+        mix($lib-secondary, $lib-white, 25%) 0%,
+        mix($lib-primary, $lib-white, 20%) 100%
+      );
+    }
+
+    @include lib-dark-theme {
+      border-color: mix($lib-secondary, $lib-white, 70%);
+      background: linear-gradient(
+        135deg,
+        mix($lib-gray-600, $lib-primary, 85%) 0%,
+        mix($lib-gray-700, $lib-primary, 90%) 100%
+      );
+    }
+  }
 }
 
 /* Loading Overlay */
@@ -199,7 +306,6 @@ export default defineComponent({
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
@@ -207,23 +313,46 @@ export default defineComponent({
   justify-content: center;
   z-index: 10;
   border-radius: 14px;
+
+  @include lib-light-theme {
+    background: rgba($lib-white, 0.95);
+  }
+
+  @include lib-dark-theme {
+    background: rgba($lib-gray-800, 0.95);
+  }
 }
 
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
-  border-top: 3px solid #6366f1;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: lib-spin 1s linear infinite;
   margin-bottom: 16px;
+
+  @include lib-light-theme {
+    border: 3px solid $lib-gray-200;
+    border-top: 3px solid $lib-primary;
+  }
+
+  @include lib-dark-theme {
+    border: 3px solid $lib-gray-600;
+    border-top: 3px solid $lib-secondary;
+  }
 }
 
 .loading-text {
-  color: #374151;
   font-weight: 500;
   margin-bottom: 16px;
   text-align: center;
+
+  @include lib-light-theme {
+    color: $lib-gray-700;
+  }
+
+  @include lib-dark-theme {
+    color: $lib-gray-300;
+  }
 }
 
 .progress-overlay {
@@ -232,47 +361,83 @@ export default defineComponent({
   left: 0;
   right: 0;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(4px);
   z-index: 11;
-  border-top: 1px solid #e5e7eb;
+
+  @include lib-light-theme {
+    background: rgba($lib-white, 0.8);
+    border-top: 1px solid $lib-gray-200;
+  }
+
+  @include lib-dark-theme {
+    background: rgba($lib-gray-800, 0.8);
+    border-top: 1px solid $lib-gray-600;
+  }
 }
 
 .progress-container {
   width: 100%;
   height: 8px;
-  background: #e5e7eb;
   border-radius: 4px;
   overflow: hidden;
   margin-bottom: 8px;
+
+  @include lib-light-theme {
+    background: $lib-gray-200;
+  }
+
+  @include lib-dark-theme {
+    background: $lib-gray-600;
+  }
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
   border-radius: 4px;
   transition: width 0.3s ease;
-}
 
-.progress-fill.error {
-  background: linear-gradient(90deg, #ef4444, #f87171);
+  @include lib-light-theme {
+    background: linear-gradient(90deg, $lib-primary, $lib-secondary);
+  }
+
+  @include lib-dark-theme {
+    background: linear-gradient(
+      90deg,
+      mix($lib-secondary, $lib-white, 70%),
+      mix($lib-accent, $lib-white, 60%)
+    );
+  }
+
+  &.error {
+    @include lib-light-theme {
+      background: linear-gradient(90deg, $lib-error, $lib-negative);
+    }
+
+    @include lib-dark-theme {
+      background: linear-gradient(
+        90deg,
+        $lib-negative,
+        mix($lib-accent, $lib-error, 70%)
+      );
+    }
+  }
 }
 
 .progress-percentage {
-  color: #6366f1;
   font-weight: 600;
   font-size: 14px;
   text-align: center;
+
+  @include lib-light-theme {
+    color: $lib-primary;
+  }
+
+  @include lib-dark-theme {
+    color: mix($lib-secondary, $lib-white, 70%);
+  }
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
+// Keyframes are now imported from _mixins.scss
 
 .content-display {
   width: 100%;
@@ -289,77 +454,5 @@ export default defineComponent({
   justify-content: center;
   text-align: center;
   width: 100%;
-}
-
-/* Dark Mode Styles */
-.body--dark .upload-zone {
-  border: 5px dashed #4b5563 !important;
-  background: linear-gradient(135deg, #374151 0%, #1f2937 100%) !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4) !important;
-}
-
-.body--dark .upload-zone:hover:not(.uploading):not(.has-content) {
-  border-color: #818cf8 !important;
-  background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
-  box-shadow: 0 8px 25px -8px rgba(129, 140, 248, 0.3) !important;
-}
-
-.body--dark .upload-zone.dragging {
-  border-color: #a5b4fc !important;
-  background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
-  box-shadow: 0 12px 40px -12px rgba(165, 180, 252, 0.4) !important;
-}
-
-.body--dark .upload-zone.has-content {
-  border: 2px solid #4b5563 !important;
-  background: #1f2937 !important;
-}
-
-.body--dark .upload-zone.has-content:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4) !important;
-}
-
-.body--dark .upload-zone.error {
-  border-color: #f87171 !important;
-  background: linear-gradient(135deg, #5f2120 0%, #4c1d1d 100%) !important;
-}
-
-.body--dark .upload-zone.uploading {
-  border-color: #818cf8 !important;
-  background: linear-gradient(135deg, #4b5563 0%, #374151 100%) !important;
-}
-
-.body--dark .loading-overlay {
-  background: rgba(31, 41, 55, 0.95) !important;
-}
-
-.body--dark .loading-spinner {
-  border: 3px solid #4b5563 !important;
-  border-top: 3px solid #818cf8 !important;
-}
-
-.body--dark .loading-text {
-  color: #d1d5db !important;
-}
-
-.body--dark .progress-overlay {
-  background: rgba(31, 41, 55, 0.8) !important;
-  border-top: 1px solid #4b5563 !important;
-}
-
-.body--dark .progress-container {
-  background: #4b5563 !important;
-}
-
-.body--dark .progress-fill {
-  background: linear-gradient(90deg, #818cf8, #a78bfa) !important;
-}
-
-.body--dark .progress-fill.error {
-  background: linear-gradient(90deg, #f87171, #fb923c) !important;
-}
-
-.body--dark .progress-percentage {
-  color: #818cf8 !important;
 }
 </style>
