@@ -1,8 +1,8 @@
 <template>
   <div class="qr-display">
     <div ref="displayContent" class="display-content">
-      <h1 class="title">{{ title }}</h1>
-      <h2 class="subtitle">{{ subtitle }}</h2>
+      <h1 v-if="title" class="title">{{ title }}</h1>
+      <h2 v-if="subtitle" class="subtitle">{{ subtitle }}</h2>
       <div
         class="qr-code-container"
         style="cursor: pointer"
@@ -29,12 +29,14 @@ interface Props {
   title: string;
   subtitle: string;
   url: string;
+  size: number;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
   subtitle: '',
   url: '',
+  size: 200,
 });
 
 defineEmits(['click']);
@@ -48,7 +50,7 @@ const generateQR = (text: string, canvas: HTMLCanvasElement): void => {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const size = 200;
+  const size = props.size;
   canvas.width = size;
   canvas.height = size;
 
@@ -216,7 +218,6 @@ watch(
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
   font-family: Arial, sans-serif;
 }
 
