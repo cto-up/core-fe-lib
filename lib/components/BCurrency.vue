@@ -10,12 +10,12 @@
 </template>
 
 <script lang="ts">
-import { ValidationRule } from "quasar";
-import { defineComponent, PropType, computed, ref } from "vue";
-import { ErrorMessage } from "../../dev/src/components/types";
+import { type ValidationRule } from 'quasar';
+import { defineComponent, type PropType, computed, ref } from 'vue';
+import { type ErrorMessage } from './types';
 
 export default defineComponent({
-  name: "BCurrencyInput",
+  name: 'BCurrencyInput',
   props: {
     label: {
       type: String,
@@ -26,7 +26,7 @@ export default defineComponent({
     },
     modelValue: {
       type: String,
-      default: "EUR",
+      default: 'EUR',
     },
     rules: {
       type: Object as PropType<ValidationRule[]>,
@@ -44,24 +44,24 @@ export default defineComponent({
   },
 
   setup(props, { emit }) {
-    const theCurrency = ref(props.modelValue ? props.modelValue : "EUR");
+    const theCurrency = ref(props.modelValue ? props.modelValue : 'EUR');
 
     const errorMessage = computed(() => {
       if (props.errorMessages) {
-        return props.errorMessages.map((e) => e.$message).join(" ");
+        return props.errorMessages.map((e) => e.$message).join(' ');
       }
-      return "";
+      return '';
     });
 
     const emitModel = () => {
-      emit("update:modelValue", theCurrency.value);
+      emit('update:modelValue', theCurrency.value);
     };
     const updateCurrency = (currency: string) => {
       theCurrency.value = currency;
       emitModel();
     };
 
-    const options = ["EUR", "USD", "VND", "RON"];
+    const options = ['EUR', 'USD', 'VND', 'RON'];
 
     return {
       theCurrency,
