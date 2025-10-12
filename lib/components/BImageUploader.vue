@@ -222,16 +222,16 @@ export default defineComponent({
       }
     };
 
-    const onFileSelected = (event: Event) => {
+    const onFileSelected = async (event: Event) => {
       const target = event.target as HTMLInputElement;
       if (target.files?.[0]) {
-        processFile(target.files[0]);
+        await processFile(target.files[0]);
       }
     };
 
-    const onFileDropped = (files: FileList) => {
+    const onFileDropped = async (files: FileList) => {
       if (files[0]) {
-        processFile(files[0]);
+        await processFile(files[0]);
       }
     };
 
@@ -289,16 +289,13 @@ export default defineComponent({
 
       try {
         let blob: Blob | null = null;
-        if (props.previewImage) {
-          const { canvas } = cropper.value.getResult();
-          const myCanvas: HTMLCanvasElement = canvas;
-          blob = await new Promise<Blob | null>((resolve) =>
-            myCanvas.toBlob(resolve, 'image/jpeg', 0.9)
-          );
-          imgTarget.value = myCanvas.toDataURL();
-        } else if (file) {
-          blob = file;
-        }
+
+        const { canvas } = cropper.value.getResult();
+        const myCanvas: HTMLCanvasElement = canvas;
+        blob = await new Promise<Blob | null>((resolve) =>
+          myCanvas.toBlob(resolve, 'image/jpeg', 0.9),
+        );
+        imgTarget.value = myCanvas.toDataURL();
 
         if (!blob) {
           throw new Error('Could not get image blob');
@@ -353,7 +350,7 @@ export default defineComponent({
                     emitUploaded();
                   }
                 },
-              }
+              },
             );
           },
         });
