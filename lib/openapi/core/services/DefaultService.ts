@@ -454,6 +454,23 @@ export class DefaultService {
         });
     }
     /**
+     * Returns a user based on their email
+     * @param email email of user to fetch
+     * @returns User user response
+     * @throws ApiError
+     */
+    public static getUserByEmail(
+        email: string,
+    ): CancelablePromise<User> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/users/by-email/{email}',
+            path: {
+                'email': email,
+            },
+        });
+    }
+    /**
      * Returns a user based on a single ID, if the user does not have access to the user
      * @param userid ID of user to fetch
      * @param tenantid ID of tenant
@@ -1673,7 +1690,6 @@ export class DefaultService {
      * @param name Name of prompt to execute
      * @param provider LLM Provider
      * @param llm LLM to use for execution
-     * @param output Output format of the prompt execution
      * @param maxTokens Maximum number of tokens to generate
      * @param temperature Temperature for LLM generation (0.0-1.0)
      * @returns PromptResponse Prompt execution result
@@ -1703,7 +1719,6 @@ export class DefaultService {
         name?: string,
         provider?: 'OPENAI' | 'MISTRAL' | 'GOOGLEAI' | 'ANTHROPIC' | 'OLLAMA',
         llm?: string,
-        output?: 'text' | 'markdown' | 'json',
         maxTokens?: number,
         temperature: number = 0.7,
     ): CancelablePromise<PromptResponse> {
@@ -1715,7 +1730,6 @@ export class DefaultService {
                 'name': name,
                 'provider': provider,
                 'llm': llm,
-                'output': output,
                 'maxTokens': maxTokens,
                 'temperature': temperature,
             },
