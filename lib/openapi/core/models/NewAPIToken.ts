@@ -11,10 +11,6 @@ export type NewAPIToken = {
      */
     clientApplicationId: string;
     /**
-     * Name of the client application
-     */
-    applicationName: string;
-    /**
      * First few characters of the token for identification
      */
     tokenPrefix: string;
