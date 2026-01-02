@@ -3,7 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 export enum Role {
-    CUSTOMER_ADMIN = 'CUSTOMER_ADMIN',
+    USER = 'USER',
     ADMIN = 'ADMIN',
+    CUSTOMER_ADMIN = 'CUSTOMER_ADMIN',
     SUPER_ADMIN = 'SUPER_ADMIN',
 }
