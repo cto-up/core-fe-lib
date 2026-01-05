@@ -39,5 +39,6 @@ export type { User } from './models/User';
 export { UserActionSchema } from './models/UserActionSchema';
 export type { UserProfileSchema } from './models/UserProfileSchema';
 
+export { AuthService } from './services/AuthService';
 export { DefaultService } from './services/DefaultService';
 export { HealthService } from './services/HealthService';

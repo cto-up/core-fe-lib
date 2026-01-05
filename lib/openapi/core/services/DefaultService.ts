@@ -241,6 +241,54 @@ export class DefaultService {
         });
     }
     /**
+     * Check if a user exists globally by email
+     *
+     * @param email Email address to check
+     * @returns any User existence check result
+     * @throws ApiError
+     */
+    public static checkUserExists(
+        email: string,
+    ): CancelablePromise<{
+        /**
+         * Whether the user exists
+         */
+        exists: boolean;
+        /**
+         * User information if exists
+         */
+        user?: {
+            /**
+             * User ID
+             */
+            id?: string;
+            /**
+             * User name
+             */
+            name?: string;
+            /**
+             * User email
+             */
+            email?: string;
+            /**
+             * Number of tenants user belongs to
+             */
+            tenantCount?: number;
+            /**
+             * Whether user is already a member of the current tenant
+             */
+            isMemberOfCurrentTenant?: boolean;
+        };
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/users/check',
+            query: {
+                'email': email,
+            },
+        });
+    }
+    /**
      * Returns a user based on a single ID, if the user does not have access to the user
      * @param userid ID of user to fetch
      * @returns User user response
@@ -292,6 +340,37 @@ export class DefaultService {
             url: '/api/v1/users/{userid}',
             path: {
                 'userid': userid,
+            },
+        });
+    }
+    /**
+     * Add an existing user to the current tenant (create membership)
+     *
+     * @param userid User ID
+     * @param requestBody Membership details
+     * @returns User Membership created successfully
+     * @throws ApiError
+     */
+    public static addUserMembership(
+        userid: string,
+        requestBody: {
+            /**
+             * Roles to assign to the user in this tenant
+             */
+            roles: Array<Role>;
+        },
+    ): CancelablePromise<User> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/users/{userid}/membership',
+            path: {
+                'userid': userid,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad request (e.g., user already a member)`,
+                404: `User not found`,
             },
         });
     }
@@ -471,6 +550,59 @@ export class DefaultService {
         });
     }
     /**
+     * Check if a user exists globally by email (Super Admin)
+     *
+     * @param tenantid Tenant ID to check membership against
+     * @param email Email address to check
+     * @returns any User existence check result
+     * @throws ApiError
+     */
+    public static checkUserExistsFromSuperAdmin(
+        tenantid: string,
+        email: string,
+    ): CancelablePromise<{
+        /**
+         * Whether the user exists
+         */
+        exists: boolean;
+        /**
+         * User information if exists
+         */
+        user?: {
+            /**
+             * User ID
+             */
+            id?: string;
+            /**
+             * User name
+             */
+            name?: string;
+            /**
+             * User email
+             */
+            email?: string;
+            /**
+             * Number of tenants user belongs to
+             */
+            tenantCount?: number;
+            /**
+             * Whether user is already a member of the specified tenant
+             */
+            isMemberOfTenant?: boolean;
+        };
+    }> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/check',
+            path: {
+                'tenantid': tenantid,
+            },
+            query: {
+                'email': email,
+            },
+        });
+    }
+    /**
      * Returns a user based on a single ID, if the user does not have access to the user
      * @param userid ID of user to fetch
      * @param tenantid ID of tenant
@@ -531,6 +663,40 @@ export class DefaultService {
             path: {
                 'userid': userid,
                 'tenantid': tenantid,
+            },
+        });
+    }
+    /**
+     * Add an existing user to a specific tenant (create membership) - Super Admin
+     *
+     * @param tenantid Tenant ID
+     * @param userid User ID
+     * @param requestBody Membership details
+     * @returns User Membership created successfully
+     * @throws ApiError
+     */
+    public static addUserMembershipFromSuperAdmin(
+        tenantid: string,
+        userid: string,
+        requestBody: {
+            /**
+             * Roles to assign to the user in this tenant
+             */
+            roles: Array<Role>;
+        },
+    ): CancelablePromise<User> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/membership',
+            path: {
+                'tenantid': tenantid,
+                'userid': userid,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Bad request (e.g., user already a member)`,
+                404: `User not found`,
             },
         });
     }
