@@ -375,6 +375,28 @@ export class DefaultService {
         });
     }
     /**
+     * Remove a user from the current tenant (delete membership only, not the user)
+     *
+     * @param userid User ID
+     * @returns void
+     * @throws ApiError
+     */
+    public static removeUserFromTenant(
+        userid: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/users/{userid}/remove-from-tenant',
+            path: {
+                'userid': userid,
+            },
+            errors: {
+                403: `Forbidden - insufficient permissions`,
+                404: `User or membership not found`,
+            },
+        });
+    }
+    /**
      * Act on user
      * @param userid ID of user
      * @param requestBody Project to add to the store
@@ -697,6 +719,31 @@ export class DefaultService {
             errors: {
                 400: `Bad request (e.g., user already a member)`,
                 404: `User not found`,
+            },
+        });
+    }
+    /**
+     * Remove a user from a specific tenant (delete membership only, not the user)
+     *
+     * @param tenantid Tenant ID
+     * @param userid User ID
+     * @returns void
+     * @throws ApiError
+     */
+    public static removeUserFromTenantFromSuperAdmin(
+        tenantid: string,
+        userid: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/remove-from-tenant',
+            path: {
+                'tenantid': tenantid,
+                'userid': userid,
+            },
+            errors: {
+                403: `Forbidden - insufficient permissions`,
+                404: `User or membership not found`,
             },
         });
     }
