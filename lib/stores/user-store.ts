@@ -1,5 +1,10 @@
 import { type LoggedUser } from '../models/logged-user';
-import { defineStore, getActivePinia, setActivePinia, createPinia } from 'pinia';
+import {
+  defineStore,
+  getActivePinia,
+  setActivePinia,
+  createPinia,
+} from 'pinia';
 import { Role } from '../openapi/core/models/Role';
 
 export interface RoleDefinition {
@@ -31,12 +36,11 @@ export const Roles: Record<Role, RoleDefinition> = {
 export function hasPrivilege(userRoles: string[], requiredRole: Role): boolean {
   const requiredLevel = Roles[requiredRole].privilegeLevel;
 
-  return userRoles.some(roleStr => {
+  return userRoles.some((roleStr) => {
     const role = roleStr as Role;
     return Roles[role]?.privilegeLevel >= requiredLevel;
   });
 }
-
 
 export const useInternalUserStore = defineStore('user', {
   state: () => {
@@ -47,10 +51,13 @@ export const useInternalUserStore = defineStore('user', {
   getters: {
     isLogged: (state) => state.user != null,
     getUser: (state) => state.user,
-    isCustomerAdmin: (state) => state.user?.roles?.includes(Role.CUSTOMER_ADMIN),
+    isCustomerAdmin: (state) =>
+      state.user?.roles?.includes(Role.CUSTOMER_ADMIN),
     isAdmin: (state) => state.user?.roles?.includes(Role.ADMIN),
     isSuperAdmin: (state) => state.user?.roles?.includes(Role.SUPER_ADMIN),
-    hasPrivilege: (state) => (requiredRole: Role) => hasPrivilege(state.user?.roles ?? [], requiredRole),
+    hasRole: (state) => !!state.user?.roles?.length,
+    hasPrivilege: (state) => (requiredRole: Role) =>
+      hasPrivilege(state.user?.roles ?? [], requiredRole),
   },
   actions: {
     setUser(user: LoggedUser | null) {
