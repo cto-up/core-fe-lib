@@ -32,4 +32,22 @@ export class MfaService {
             url: '/api/v1/mfa/settings/init',
         });
     }
+    /**
+     * Disable WebAuthn
+     * Completely removes all WebAuthn credentials for the current user using Admin API
+     * @returns any WebAuthn disabled successfully
+     * @throws ApiError
+     */
+    public static disableWebAuthn(): CancelablePromise<{
+        message?: string;
+    }> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/v1/mfa/webauthn',
+            errors: {
+                401: `Unauthorized - authentication required`,
+                500: `Internal server error`,
+            },
+        });
+    }
 }
