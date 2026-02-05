@@ -20,7 +20,6 @@ export type { ErrorSchema } from './models/ErrorSchema';
 export { HealthResponse } from './models/HealthResponse';
 export type { Identify } from './models/Identify';
 export { MFAStatus } from './models/MFAStatus';
-export type { Migration } from './models/Migration';
 export type { NewAPIToken } from './models/NewAPIToken';
 export type { NewClientApplication } from './models/NewClientApplication';
 export type { NewConfig } from './models/NewConfig';

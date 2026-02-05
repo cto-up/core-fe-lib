@@ -8,7 +8,6 @@ import type { APITokenCreated } from '../models/APITokenCreated';
 import type { APITokenRevoke } from '../models/APITokenRevoke';
 import type { ClientApplication } from '../models/ClientApplication';
 import type { Config } from '../models/Config';
-import type { Migration } from '../models/Migration';
 import type { NewAPIToken } from '../models/NewAPIToken';
 import type { NewClientApplication } from '../models/NewClientApplication';
 import type { NewConfig } from '../models/NewConfig';
@@ -2122,33 +2121,6 @@ export class DefaultService {
                 403: `Forbidden`,
                 404: `Translation not found`,
             },
-        });
-    }
-    /**
-     * Returns core migration information
-     * @returns Migration core migration response
-     * @throws ApiError
-     */
-    public static getCoreMigration(): CancelablePromise<Migration> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/superadmin-api/v1/migrations/core',
-        });
-    }
-    /**
-     * Updates core migration information
-     * @param requestBody Migration information to update
-     * @returns void
-     * @throws ApiError
-     */
-    public static updateCoreMigration(
-        requestBody: Migration,
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/superadmin-api/v1/migrations/core/update',
-            body: requestBody,
-            mediaType: 'application/json',
         });
     }
 }
