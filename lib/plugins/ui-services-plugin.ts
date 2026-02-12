@@ -27,7 +27,6 @@ import type {
   ToastOptions,
   ConfirmDialogOptions,
 } from "../authentication/types/ui-services";
-import { useI18n } from "vue-i18n";
 
 /**
  * Configuration for UI services plugin
@@ -66,8 +65,6 @@ interface UiServicesPluginConfig {
 export function createUiServicesPlugin(config: UiServicesPluginConfig) {
   return {
     install(app: App) {
-      const { t } = useI18n();
-
       // Create notification service
       let notificationService: NotificationService;
 
