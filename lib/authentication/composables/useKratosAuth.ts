@@ -3,10 +3,10 @@
  *
  */
 
-import { ref, computed } from "vue";
+import { ref, computed, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { useToast } from "@/components/ui/toast/use-toast";
+import { notificationServiceKey } from "../../plugins/injection-keys";
 import {
   kratosService,
   type KratosSession,
@@ -21,8 +21,14 @@ export const useKratosAuth = () => {
   const router = useRouter();
   const route = useRoute();
   const { t } = useI18n();
-  const { toast } = useToast();
+  const notifications = inject(notificationServiceKey);
   const userStore = useUserStore();
+
+  if (!notifications) {
+    throw new Error(
+      "NotificationService not provided. Ensure the UI services are provided at the app level."
+    );
+  }
 
   const session = ref<KratosSession | null>(null);
   const isLoading = ref(false);
@@ -117,10 +123,7 @@ export const useKratosAuth = () => {
       const redirectTo = (route.query["from"] as string) || "/";
       router.push(redirectTo);
 
-      toast({
-        title: t("auth.success"),
-        description: t("auth.loginSuccess"),
-      });
+      notifications.success(t("auth.success"), t("auth.loginSuccess"));
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{
         ui?: { messages?: Array<{ text: string }> };
@@ -135,11 +138,7 @@ export const useKratosAuth = () => {
         axiosError.message ||
         t("auth.loginError");
 
-      toast({
-        variant: "destructive",
-        title: t("auth.error"),
-        description: errorMessage,
-      });
+      notifications.error(t("auth.error"), errorMessage);
       throw error;
     } finally {
       isLoading.value = false;
@@ -206,10 +205,7 @@ export const useKratosAuth = () => {
       // Redirect to profile or home
       router.push("/user/me/profile");
 
-      toast({
-        title: t("auth.success"),
-        description: t("auth.registrationSuccess"),
-      });
+      notifications.success(t("auth.success"), t("auth.registrationSuccess"));
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{
         ui?: { messages?: Array<{ text: string }> };
@@ -223,11 +219,7 @@ export const useKratosAuth = () => {
         axiosError.message ||
         t("auth.registrationError");
 
-      toast({
-        variant: "destructive",
-        title: t("auth.error"),
-        description: errorMessage,
-      });
+      notifications.error(t("auth.error"), errorMessage);
       throw error;
     } finally {
       isLoading.value = false;
@@ -247,19 +239,15 @@ export const useKratosAuth = () => {
 
       router.push({ name: "home" });
 
-      toast({
-        title: t("auth.success"),
-        description: t("auth.logoutSuccess"),
-      });
+      notifications.success(t("auth.success"), t("auth.logoutSuccess"));
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       console.error("Logout error:", error);
 
-      toast({
-        variant: "destructive",
-        title: t("auth.error"),
-        description: axiosError.message || t("auth.logoutError"),
-      });
+      notifications.error(
+        t("auth.error"),
+        axiosError.message || t("auth.logoutError")
+      );
     } finally {
       isLoading.value = false;
     }
@@ -292,19 +280,18 @@ export const useKratosAuth = () => {
         csrf_token: csrfToken, // Include CSRF token
       });
 
-      toast({
-        title: t("auth.success"),
-        description: t("auth.passwordResetEmailSent"),
-      });
+      notifications.success(
+        t("auth.success"),
+        t("auth.passwordResetEmailSent")
+      );
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       console.error("Password reset error:", error);
 
-      toast({
-        variant: "destructive",
-        title: t("auth.error"),
-        description: axiosError.message || t("auth.passwordResetError"),
-      });
+      notifications.error(
+        t("auth.error"),
+        axiosError.message || t("auth.passwordResetError")
+      );
       throw error;
     } finally {
       isLoading.value = false;

@@ -1,9 +1,11 @@
-import { ref, onMounted } from "vue";
+import { ref, onMounted, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import { MfaService } from "core-fe-lib/openapi/core";
 import { kratosService } from "../services/kratos.service";
-import { useToast } from "@/components/ui/toast/use-toast";
-import { useDialog } from "@/composables/useDialog";
+import {
+  notificationServiceKey,
+  dialogServiceKey,
+} from "../../plugins/injection-keys";
 import { getUserFriendlyMessage } from "../utils/kratos-error-processor";
 import type { SettingsFlowNode } from "../types/kratos-errors";
 import {
@@ -93,8 +95,19 @@ function base64urlToArrayBuffer(base64url: string): ArrayBuffer {
 
 export function useMfa() {
   const { t } = useI18n();
-  const { toast } = useToast();
-  const { confirmDialog } = useDialog();
+  const notifications = inject(notificationServiceKey);
+  const dialog = inject(dialogServiceKey);
+
+  if (!notifications) {
+    throw new Error(
+      "NotificationService not provided. Ensure the UI services are provided at the app level."
+    );
+  }
+  if (!dialog) {
+    throw new Error(
+      "DialogService not provided. Ensure the UI services are provided at the app level."
+    );
+  }
 
   const loading = ref(true);
 
@@ -149,13 +162,10 @@ export function useMfa() {
     } catch (error) {
       console.error("Failed to load MFA status:", error);
 
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.loadError"),
-        description:
-          getUserFriendlyMessage(error) ??
-          t("core.mfa.notifications.loadError"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.loadError"),
+        getUserFriendlyMessage(error) ?? t("core.mfa.notifications.loadError")
+      );
     } finally {
       loading.value = false;
     }
@@ -189,11 +199,10 @@ export function useMfa() {
 
       if (totpUnlinkNode) {
         // TOTP is already enabled
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.totpAlreadyEnabled"),
-          description: t("core.mfa.notifications.totpAlreadyEnabledDesc"),
-        });
+        notifications.error(
+          t("core.mfa.notifications.totpAlreadyEnabled"),
+          t("core.mfa.notifications.totpAlreadyEnabledDesc")
+        );
         // Refresh status to ensure UI is in sync
         await loadMFAStatus();
         return;
@@ -219,12 +228,10 @@ export function useMfa() {
       } else {
         // No QR code found - this shouldn't happen if totp_unlink wasn't present
         console.error("❌ No TOTP QR code found in flow");
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.totpSetupError"),
-          description:
-            "No QR code available. Please try again or contact support.",
-        });
+        notifications.error(
+          t("core.mfa.notifications.totpSetupError"),
+          "No QR code available. Please try again or contact support."
+        );
         return;
       }
 
@@ -232,13 +239,11 @@ export function useMfa() {
       totpSetupStep.value = "qr";
     } catch (error: unknown) {
       console.error("❌ Failed to setup TOTP:", error);
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.totpSetupError"),
-        description:
-          getUserFriendlyMessage(error) ??
-          t("core.mfa.notifications.totpSetupError"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.totpSetupError"),
+        getUserFriendlyMessage(error) ??
+          t("core.mfa.notifications.totpSetupError")
+      );
     }
   }
 
@@ -310,12 +315,10 @@ export function useMfa() {
         );
 
         if (hasRolesError) {
-          toast({
-            variant: "destructive",
-            title: "Configuration Error",
-            description:
-              "Your identity schema includes 'roles' in traits. Please contact support to fix your Kratos identity schema.",
-          });
+          notifications.error(
+            "Configuration Error",
+            "Your identity schema includes 'roles' in traits. Please contact support to fix your Kratos identity schema."
+          );
           return;
         }
 
@@ -329,11 +332,10 @@ export function useMfa() {
       }
 
       if (error) {
-        toast({
-          variant: "destructive",
-          title: "Re-authentication Required",
-          description: getUserFriendlyMessage(error) ?? String(error),
-        });
+        notifications.error(
+          "Re-authentication Required",
+          getUserFriendlyMessage(error) ?? String(error)
+        );
         return;
       }
 
@@ -402,13 +404,11 @@ export function useMfa() {
       }
     } catch (error: unknown) {
       console.error("❌ Failed to generate recovery codes:", error);
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.recoveryError"),
-        description:
-          getUserFriendlyMessage(error) ??
-          t("core.mfa.notifications.recoveryError"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.recoveryError"),
+        getUserFriendlyMessage(error) ??
+          t("core.mfa.notifications.recoveryError")
+      );
       // Fall back to closing the modal
       showTOTPSetup.value = false;
     }
@@ -445,21 +445,18 @@ export function useMfa() {
 
       await loadMFAStatus();
 
-      toast({
-        title: t("core.mfa.notifications.totpEnabled"),
-        description: t("core.mfa.notifications.setupComplete"),
-      });
+      notifications.success(
+        t("core.mfa.notifications.totpEnabled"),
+        t("core.mfa.notifications.setupComplete")
+      );
     } catch (error) {
       console.error("❌ Failed to confirm recovery codes:", error);
 
       // Check for the specific error message
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.recoveryError"),
-        description:
-          getUserFriendlyMessage(error) ??
-          t("core.mfa.notifications.setupError"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.recoveryError"),
+        getUserFriendlyMessage(error) ?? t("core.mfa.notifications.setupError")
+      );
     }
   }
 
@@ -474,7 +471,7 @@ export function useMfa() {
   }
 
   async function disableTOTP() {
-    const confirmed = await confirmDialog({
+    const confirmed = await dialog.confirm({
       title: t("core.mfa.confirmations.disableTotp"),
       message: t("core.mfa.confirmations.disableTotpDescription"),
       ok: t("actions.confirm"),
@@ -498,19 +495,17 @@ export function useMfa() {
       });
 
       await loadMFAStatus();
-      toast({
-        title: t("core.mfa.notifications.totpDisabled"),
-        description: t("core.mfa.notifications.totpDisabled"),
-      });
+      notifications.success(
+        t("core.mfa.notifications.totpDisabled"),
+        t("core.mfa.notifications.totpDisabled")
+      );
     } catch (error: unknown) {
       console.error("❌ Failed to disable TOTP:", error);
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.totpDisableError"),
-        description:
-          getUserFriendlyMessage(error) ??
-          t("core.mfa.notifications.totpDisableError"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.totpDisableError"),
+        getUserFriendlyMessage(error) ??
+          t("core.mfa.notifications.totpDisableError")
+      );
     }
   }
 
@@ -518,11 +513,10 @@ export function useMfa() {
     try {
       const session = await kratosService.getSession();
       if (!session) {
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.notAuthenticated"),
-          description: "Please log in to set up WebAuthn",
-        });
+        notifications.error(
+          t("core.mfa.notifications.notAuthenticated"),
+          "Please log in to set up WebAuthn"
+        );
         return;
       }
 
@@ -569,12 +563,10 @@ export function useMfa() {
       if (!webauthnNodes || webauthnNodes.length === 0) {
         console.error("❌ No WebAuthn nodes in settings flow");
         console.error("Available groups:", Array.from(availableGroups));
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.webauthnError"),
-          description:
-            "WebAuthn is not available in this settings flow. Please refresh and try again.",
-        });
+        notifications.error(
+          t("core.mfa.notifications.webauthnError"),
+          "WebAuthn is not available in this settings flow. Please refresh and try again."
+        );
         return;
       }
 
@@ -584,11 +576,10 @@ export function useMfa() {
 
       if (!csrf) {
         console.error("❌ No CSRF token found in flow");
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.webauthnError"),
-          description: "Missing CSRF token. Please refresh and try again.",
-        });
+        notifications.error(
+          t("core.mfa.notifications.webauthnError"),
+          "Missing CSRF token. Please refresh and try again."
+        );
         return;
       }
 
@@ -615,12 +606,10 @@ export function useMfa() {
 
       if (!triggerNode?.attributes?.value) {
         console.error("❌ No WebAuthn challenge found in trigger node");
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.webauthnError"),
-          description:
-            "WebAuthn challenge not found. Please refresh and try again.",
-        });
+        notifications.error(
+          t("core.mfa.notifications.webauthnError"),
+          "WebAuthn challenge not found. Please refresh and try again."
+        );
         return;
       }
 
@@ -703,10 +692,10 @@ export function useMfa() {
       });
 
       await loadMFAStatus();
-      toast({
-        title: t("core.mfa.notifications.webauthnEnabled"),
-        description: t("core.mfa.notifications.webauthnEnabled"),
-      });
+      notifications.success(
+        t("core.mfa.notifications.webauthnEnabled"),
+        t("core.mfa.notifications.webauthnEnabled")
+      );
     } catch (error: unknown) {
       const webauthnError = error as {
         name?: string;
@@ -723,31 +712,27 @@ export function useMfa() {
 
       // Handle specific WebAuthn errors
       if (webauthnError?.name === "NotAllowedError") {
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.webauthnError"),
-          description: "Security key registration was cancelled or timed out",
-        });
+        notifications.error(
+          t("core.mfa.notifications.webauthnError"),
+          "Security key registration was cancelled or timed out"
+        );
       } else if (webauthnError?.name === "NotSupportedError") {
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.webauthnError"),
-          description: "WebAuthn is not supported by your browser",
-        });
+        notifications.error(
+          t("core.mfa.notifications.webauthnError"),
+          "WebAuthn is not supported by your browser"
+        );
       } else {
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.webauthnError"),
-          description:
-            getUserFriendlyMessage(error) ??
-            t("core.mfa.notifications.webauthnError"),
-        });
+        notifications.error(
+          t("core.mfa.notifications.webauthnError"),
+          getUserFriendlyMessage(error) ??
+            t("core.mfa.notifications.webauthnError")
+        );
       }
     }
   }
 
   async function disableWebAuthn() {
-    const confirmed = await confirmDialog({
+    const confirmed = await dialog.confirm({
       title: t("core.mfa.confirmations.disableWebauthn"),
       message: t("core.mfa.confirmations.disableWebauthnDescription"),
       ok: t("actions.confirm"),
@@ -763,20 +748,18 @@ export function useMfa() {
       console.log("✅ WebAuthn disabled successfully via Admin API");
 
       await loadMFAStatus();
-      toast({
-        title: t("core.mfa.notifications.webauthnDisabled"),
-        description: t("core.mfa.notifications.webauthnDisabled"),
-      });
+      notifications.success(
+        t("core.mfa.notifications.webauthnDisabled"),
+        t("core.mfa.notifications.webauthnDisabled")
+      );
     } catch (error: unknown) {
       console.error("❌ Failed to disable WebAuthn:", error);
 
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.webauthnDisableError"),
-        description:
-          getUserFriendlyMessage(error) ??
-          t("core.mfa.notifications.webauthnDisableError"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.webauthnDisableError"),
+        getUserFriendlyMessage(error) ??
+          t("core.mfa.notifications.webauthnDisableError")
+      );
     }
   }
 
@@ -835,13 +818,11 @@ export function useMfa() {
     } catch (error: unknown) {
       console.error("Failed to generate recovery codes:", error);
 
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.recoveryError"),
-        description:
-          getUserFriendlyMessage(error) ??
-          t("core.mfa.notifications.recoveryError"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.recoveryError"),
+        getUserFriendlyMessage(error) ??
+          t("core.mfa.notifications.recoveryError")
+      );
     }
   }
 
@@ -859,10 +840,10 @@ export function useMfa() {
   async function copyRecoveryCodes() {
     const content = recoveryCodes.value.join("\n");
     await navigator.clipboard.writeText(content);
-    toast({
-      title: t("core.mfa.notifications.recoveryCopied"),
-      description: t("core.mfa.notifications.recoveryCopied"),
-    });
+    notifications.success(
+      t("core.mfa.notifications.recoveryCopied"),
+      t("core.mfa.notifications.recoveryCopied")
+    );
   }
 
   // Handlers for standalone recovery codes modal (with forced interaction)
@@ -906,25 +887,22 @@ export function useMfa() {
 
       await loadMFAStatus();
 
-      toast({
-        title: t("core.mfa.notifications.recoveryGenerated"),
-        description: t("core.mfa.notifications.setupComplete"),
-      });
+      notifications.success(
+        t("core.mfa.notifications.recoveryGenerated"),
+        t("core.mfa.notifications.setupComplete")
+      );
     } catch (error) {
       console.error("❌ Failed to confirm recovery codes:", error);
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.recoveryError"),
-        description:
-          getUserFriendlyMessage(error) ??
-          t("core.mfa.notifications.setupError"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.recoveryError"),
+        getUserFriendlyMessage(error) ?? t("core.mfa.notifications.setupError")
+      );
     }
   }
 
   async function cancelRecoveryCodesModal() {
     if (!recoveryCodesInteracted.value) {
-      const confirmed = await confirmDialog({
+      const confirmed = await dialog.confirm({
         title: t("core.mfa.confirmations.cancelRecoveryCodes"),
         message: t("core.mfa.confirmations.cancelRecoveryCodesDescription"),
         ok: t("actions.confirm"),

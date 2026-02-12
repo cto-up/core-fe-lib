@@ -1,11 +1,12 @@
 import { useI18n } from "vue-i18n";
+import { inject } from "vue";
 import {
   kratosService,
   type KratosFlowNode,
   type TotpLoginFlowData,
   type LookupSecretLoginFlowData,
 } from "../services/kratos.service";
-import { useToast } from "@/components/ui/toast/use-toast";
+import { notificationServiceKey } from "../../plugins/injection-keys";
 import { useAal2Store } from "../stores/aal2-store";
 import { buildWebAuthnVerifyUrl } from "../utils/auth-domain";
 
@@ -27,8 +28,14 @@ export function submitWebAuthnVerification() {
 
 export function useAal2() {
   const { t } = useI18n();
-  const { toast } = useToast();
+  const notifications = inject(notificationServiceKey);
   const aal2Store = useAal2Store();
+
+  if (!notifications) {
+    throw new Error(
+      "NotificationService not provided. Ensure the UI services are provided at the app level."
+    );
+  }
 
   // Register the flow initializer with the store
   aal2Store.registerInitializer(promptAal2Verification);
@@ -43,11 +50,10 @@ export function useAal2() {
       const session = await kratosService.getSession();
       if (!session?.identity?.traits?.email) {
         console.error("❌ No session or email found for AAL2 verification");
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.verificationError"),
-          description: "Unable to verify session. Please log in again.",
-        });
+        notifications.error(
+          t("core.mfa.notifications.verificationError"),
+          "Unable to verify session. Please log in again."
+        );
         return;
       }
 
@@ -71,11 +77,10 @@ export function useAal2() {
 
       if (availableMethods.length === 0) {
         console.error("❌ No MFA methods available for AAL2 verification");
-        toast({
-          variant: "destructive",
-          title: t("core.mfa.notifications.noMethodsAvailable"),
-          description: t("core.mfa.notifications.noMethodsAvailableDesc"),
-        });
+        notifications.error(
+          t("core.mfa.notifications.noMethodsAvailable"),
+          t("core.mfa.notifications.noMethodsAvailableDesc")
+        );
         return;
       }
 
@@ -139,11 +144,10 @@ export function useAal2() {
       });
     } catch (error) {
       console.error("Failed to initialize AAL2 verification:", error);
-      toast({
-        variant: "destructive",
-        title: t("core.mfa.notifications.verificationError"),
-        description: t("core.mfa.notifications.verificationErrorDesc"),
-      });
+      notifications.error(
+        t("core.mfa.notifications.verificationError"),
+        t("core.mfa.notifications.verificationErrorDesc")
+      );
     }
   }
 
@@ -176,10 +180,10 @@ export function useAal2() {
 
       // Success - resolve the verification
       aal2Store.resolveVerification(true);
-      toast({
-        title: t("core.mfa.notifications.verificationSuccess"),
-        description: t("core.mfa.notifications.verificationSuccessDesc"),
-      });
+      notifications.success(
+        t("core.mfa.notifications.verificationSuccess"),
+        t("core.mfa.notifications.verificationSuccessDesc")
+      );
     } catch (error: unknown) {
       console.error("TOTP verification failed:", error);
       aal2Store.updateState({
@@ -215,10 +219,10 @@ export function useAal2() {
 
       // Success - resolve the verification
       aal2Store.resolveVerification(true);
-      toast({
-        title: t("core.mfa.notifications.verificationSuccess"),
-        description: t("core.mfa.notifications.verificationSuccessDesc"),
-      });
+      notifications.success(
+        t("core.mfa.notifications.verificationSuccess"),
+        t("core.mfa.notifications.verificationSuccessDesc")
+      );
     } catch (error: unknown) {
       console.error("Lookup verification failed:", error);
       aal2Store.updateState({
