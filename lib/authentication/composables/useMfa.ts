@@ -112,7 +112,7 @@ export function useMfa() {
   const totpSecretKey = ref("");
   const totpCode = ref("");
   const totpError = ref("");
-  const settingsFlowId = ref<string | null>(null);
+  const settingsFlowId = ref<string | undefined>();
   const csrfToken = ref<string>("");
 
   const showRecoveryCodes = ref(false);
@@ -257,14 +257,10 @@ export function useMfa() {
         csrfToken: csrfToken.value ? "present" : "missing",
       });
 
-      const response = await kratosService.submitSettingsMethod(
-        settingsFlowId.value,
-        "totp",
-        {
-          totp_code: totpCode.value,
-          csrf_token: csrfToken.value,
-        }
-      );
+      await kratosService.submitSettingsMethod(settingsFlowId.value, "totp", {
+        totp_code: totpCode.value,
+        csrf_token: csrfToken.value,
+      });
 
       // TOTP verified successfully - now move to recovery codes stage
       console.log("✅ TOTP verified, generating recovery codes...");
