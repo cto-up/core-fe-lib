@@ -1,5 +1,5 @@
 // utils/kratosError.ts
-import type { AxiosError } from "axios";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import type {
   ParsedKratosError,
   KratosUIMessage,
@@ -8,6 +8,7 @@ import type {
   KratosGenericError,
   KratosFlowError,
 } from "../types/kratos-errors";
+import { useAal2Store } from "../stores/aal2-store";
 
 /**
  * Common Kratos error IDs
@@ -22,6 +23,78 @@ export const KratosErrorIds = {
   SECURITY_CSRF_VIOLATION: "security_csrf_violation",
   SECURITY_IDENTITY_MISMATCH: "security_identity_mismatch",
 } as const;
+
+/**
+ * Check if an error is an AAL2 requirement
+ */
+export function isAal2Required(error: unknown): boolean {
+  const kratosError = extractKratosError(error);
+  return (
+    kratosError?.id === KratosErrorIds.SESSION_AAL2_REQUIRED ||
+    (kratosError?.message?.includes("Authenticator Assurance Level") ?? false)
+  );
+}
+
+/**
+ * Handle AAL2 errors automatically in axios interceptor
+ */
+export async function handleAal2Error(
+  error: AxiosError,
+  originalRequest: InternalAxiosRequestConfig & { _aal2Retry?: boolean }
+): Promise<unknown> {
+  // Check if this is an AAL2 error
+  if (!isAal2Required(error)) {
+    return Promise.reject(error);
+  }
+
+  // Prevent infinite retry loops
+  if (originalRequest._aal2Retry) {
+    console.error("❌ AAL2 verification already attempted, failing request");
+    return Promise.reject(error);
+  }
+
+  // Get the AAL2 store
+  const aal2Store = useAal2Store();
+
+  // Prevent multiple simultaneous AAL2 prompts
+  if (aal2Store.state.show) {
+    console.log("⏳ AAL2 verification already in progress, waiting...");
+    // Wait for the existing verification to complete
+    const verified = await new Promise<boolean>((resolve) => {
+      const checkInterval = setInterval(() => {
+        if (!aal2Store.state.show) {
+          clearInterval(checkInterval);
+          // Assume success if dialog was closed
+          resolve(true);
+        }
+      }, 100);
+    });
+
+    if (!verified) {
+      return Promise.reject(error);
+    }
+  } else {
+    console.log("🔐 AAL2 required, prompting user for verification...");
+
+    try {
+      const verified = await aal2Store.triggerVerification();
+
+      if (!verified) {
+        console.log("❌ AAL2 verification cancelled by user");
+        return Promise.reject(error);
+      }
+
+      console.log("✅ AAL2 verified, retrying original request...");
+    } catch (verificationError) {
+      console.error("❌ AAL2 verification failed:", verificationError);
+      return Promise.reject(error);
+    }
+  }
+
+  // Mark request as retried and retry
+  originalRequest._aal2Retry = true;
+  return axios(originalRequest);
+}
 
 /**
  * Extracts Kratos error information from an Axios error response

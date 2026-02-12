@@ -23,6 +23,8 @@ export { getAuthOrigin, buildWebAuthnVerifyUrl } from "./utils/auth-domain";
 export { updateUserFromSession } from "./utils/kratos-update-user";
 export {
   KratosErrorIds,
+  isAal2Required,
+  handleAal2Error,
   extractKratosError,
   extractValidationErrors,
   getUserFriendlyMessage,
