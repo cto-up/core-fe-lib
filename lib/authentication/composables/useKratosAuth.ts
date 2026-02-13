@@ -3,7 +3,7 @@
  *
  */
 
-import { ref, computed, inject } from "vue";
+import { computed, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { notificationServiceKey } from "../../plugins/injection-keys";
@@ -30,33 +30,31 @@ export const useKratosAuth = () => {
     );
   }
 
-  const session = ref<KratosSession | null>(null);
-  const isLoading = ref(false);
+  /**
+   * Current session from store
+   */
+  const session = computed(() => userStore.session);
 
   /**
-   * Check if user is logged in
+   * Auth loading state from store
    */
-  const isLoggedIn = computed(() => {
-    return session.value?.active ?? false;
-  });
+  const isLoading = computed(() => userStore.isLoading);
 
   /**
    * Get current session
    */
   const getCurrentSession = async (): Promise<KratosSession | null> => {
     try {
-      isLoading.value = true;
+      userStore.setIsLoading(true);
       const currentSession = await kratosService.getSession();
-      session.value = currentSession;
       await updateUserFromSession(currentSession);
       return currentSession;
     } catch (error) {
       console.error("Error getting session:", error);
-      session.value = null;
-      userStore.setUser(null);
+      await updateUserFromSession(null);
       return null;
     } finally {
-      isLoading.value = false;
+      userStore.setIsLoading(false);
     }
   };
 
@@ -65,7 +63,7 @@ export const useKratosAuth = () => {
    */
   const signMeIn = async (email: string, password: string) => {
     try {
-      isLoading.value = true;
+      userStore.setIsLoading(true);
 
       // Initialize login flow to get CSRF token
       const flow = await kratosService.initLoginFlow(
@@ -111,7 +109,6 @@ export const useKratosAuth = () => {
 
       // Extract session from login response if available
       if (loginResponse && "active" in loginResponse && loginResponse.active) {
-        session.value = loginResponse as KratosSession;
         await updateUserFromSession(loginResponse as KratosSession);
         console.log("✅ User set from login response");
       } else {
@@ -141,7 +138,7 @@ export const useKratosAuth = () => {
       notifications.error(t("auth.error"), errorMessage);
       throw error;
     } finally {
-      isLoading.value = false;
+      userStore.setIsLoading(false);
     }
   };
 
@@ -156,7 +153,7 @@ export const useKratosAuth = () => {
     tenantSubdomain?: string
   ) => {
     try {
-      isLoading.value = true;
+      userStore.setIsLoading(true);
 
       // Store tenant context if provided (for post-registration webhook)
       if (tenantSubdomain) {
@@ -222,7 +219,7 @@ export const useKratosAuth = () => {
       notifications.error(t("auth.error"), errorMessage);
       throw error;
     } finally {
-      isLoading.value = false;
+      userStore.setIsLoading(false);
     }
   };
 
@@ -231,11 +228,10 @@ export const useKratosAuth = () => {
    */
   const signMeOut = async () => {
     try {
-      isLoading.value = true;
+      userStore.setIsLoading(true);
       await kratosService.logout();
 
-      session.value = null;
-      userStore.setUser(null);
+      await updateUserFromSession(null);
 
       router.push({ name: "home" });
 
@@ -249,7 +245,7 @@ export const useKratosAuth = () => {
         axiosError.message || t("auth.logoutError")
       );
     } finally {
-      isLoading.value = false;
+      userStore.setIsLoading(false);
     }
   };
 
@@ -258,7 +254,7 @@ export const useKratosAuth = () => {
    */
   const requestPasswordReset = async (email: string) => {
     try {
-      isLoading.value = true;
+      userStore.setIsLoading(true);
 
       // Initialize recovery flow to get CSRF token
       const flow = await kratosService.initRecoveryFlow();
@@ -294,7 +290,7 @@ export const useKratosAuth = () => {
       );
       throw error;
     } finally {
-      isLoading.value = false;
+      userStore.setIsLoading(false);
     }
   };
 
@@ -315,7 +311,6 @@ export const useKratosAuth = () => {
   return {
     session,
     isLoading,
-    isLoggedIn,
     getCurrentSession,
     signMeIn,
     signMeUp,

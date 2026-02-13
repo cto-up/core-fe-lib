@@ -17,8 +17,11 @@ export async function updateUserFromSession(
 
   if (!kratosSession) {
     userStore.setUser(null);
+    userStore.setSession(null);
     return;
   }
+
+  userStore.setSession(kratosSession);
 
   // Global roles are in metadata_public.global_roles (e.g., SUPER_ADMIN)
   const globalRoles =

@@ -1,11 +1,13 @@
-import { type LoggedUser } from '../models/logged-user';
+import { type LoggedUser } from "../models/logged-user";
 import {
   defineStore,
   getActivePinia,
   setActivePinia,
   createPinia,
-} from 'pinia';
-import { Role } from '../openapi/core/models/Role';
+} from "pinia";
+import { Role } from "../openapi/core/models/Role";
+
+import type { KratosSession } from "../authentication/services/kratos.service";
 
 export interface RoleDefinition {
   key: Role;
@@ -42,15 +44,18 @@ export function hasPrivilege(userRoles: string[], requiredRole: Role): boolean {
   });
 }
 
-export const useInternalUserStore = defineStore('user', {
+export const useInternalUserStore = defineStore("user", {
   state: () => {
     return {
       user: null as null | LoggedUser,
+      session: null as null | KratosSession,
+      isLoading: false,
     };
   },
   getters: {
-    isLogged: (state) => state.user != null,
+    isLogged: (state) => state.session?.active ?? false,
     getUser: (state) => state.user,
+    getIsLoading: (state) => state.isLoading,
     isCustomerAdmin: (state) =>
       state.user?.roles?.includes(Role.CUSTOMER_ADMIN),
     isAdmin: (state) => state.user?.roles?.includes(Role.ADMIN),
@@ -62,6 +67,12 @@ export const useInternalUserStore = defineStore('user', {
   actions: {
     setUser(user: LoggedUser | null) {
       this.user = user;
+    },
+    setSession(session: KratosSession | null) {
+      this.session = session;
+    },
+    setIsLoading(isLoading: boolean) {
+      this.isLoading = isLoading;
     },
   },
 });
