@@ -11,7 +11,7 @@ export interface KratosStandardError {
     status: string;
     reason: string;
     message: string;
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
   };
   redirect_browser_to?: string;
 }
@@ -62,7 +62,7 @@ export interface KratosUIMessage {
   id: number;
   text: string;
   type: "info" | "error" | "success";
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
 }
 
 /**
@@ -103,7 +103,7 @@ export type KratosNodeAttributes =
 export interface KratosInputAttributes {
   name: string;
   type: string;
-  value?: any;
+  value?: unknown;
   required?: boolean;
   disabled?: boolean;
   node_type: "input";
@@ -140,7 +140,7 @@ export interface KratosTextAttributes {
     id: number;
     text: string;
     type: string;
-    context?: Record<string, any>;
+    context?: Record<string, unknown>;
   };
   id: string;
   node_type: "text";
@@ -158,19 +158,13 @@ export interface KratosScriptAttributes {
 }
 
 /**
- * Simple string error
- * Sometimes Kratos returns just a string
- */
-export type KratosStringError = string;
-
-/**
  * Union type for all possible Kratos error formats
  */
 export type KratosErrorResponse =
   | KratosStandardError
   | KratosGenericError
   | KratosFlowError
-  | KratosStringError
+  | string
   | { message: string } // Sometimes just { message: "error" }
   | { error: string }; // Sometimes { error: "description" }
 
@@ -186,7 +180,7 @@ export interface ParsedKratosError {
   redirectTo?: string;
   uiMessages?: KratosUIMessage[];
   validationErrors?: KratosValidationError[];
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   flowId?: string;
 }
 

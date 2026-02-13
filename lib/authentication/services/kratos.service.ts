@@ -133,11 +133,18 @@ export interface LookupSecretLoginFlowData extends BaseLoginFlowData {
   lookup_secret: string;
 }
 
+/** WebAuthn authentication for AAL2 */
+export interface WebAuthnLoginFlowData extends BaseLoginFlowData {
+  method: "webauthn";
+  webauthn_login: string;
+}
+
 /** Discriminated union: only one method type allowed per call */
 export type LoginFlowData =
   | PasswordLoginFlowData
   | TotpLoginFlowData
-  | LookupSecretLoginFlowData;
+  | LookupSecretLoginFlowData
+  | WebAuthnLoginFlowData;
 
 class KratosService {
   private readonly client: AxiosInstance;

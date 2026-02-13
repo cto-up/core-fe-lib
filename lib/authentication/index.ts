@@ -15,6 +15,7 @@ export type {
   PasswordLoginFlowData,
   TotpLoginFlowData,
   LookupSecretLoginFlowData,
+  WebAuthnLoginFlowData,
   LoginFlowData,
 } from "./services/kratos.service";
 

@@ -398,10 +398,10 @@ export function handleKratosError(
         router.push(url.pathname + url.search);
       } catch {
         // If URL parsing fails, use the redirect as-is
-        window.location.href = kratosError.redirectTo;
+        globalThis.location.href = kratosError.redirectTo;
       }
     } else {
-      window.location.href = kratosError.redirectTo;
+      globalThis.location.href = kratosError.redirectTo;
     }
     return true;
   }
