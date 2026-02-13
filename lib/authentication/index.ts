@@ -1,3 +1,7 @@
+// Configuration
+export { configureKratos } from "./services/kratos-config";
+export type { KratosConfig } from "./services/kratos-config";
+
 // Composables
 export { useKratosAuth } from "./composables/useKratosAuth";
 export { useAal2, submitWebAuthnVerification } from "./composables/useAal2";

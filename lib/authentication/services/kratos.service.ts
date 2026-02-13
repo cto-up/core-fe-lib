@@ -5,8 +5,19 @@
  * for authentication and identity management.
  */
 
+/**
+ * Kratos flow types
+ */
+export enum KratosFlowType {
+  Login = "login",
+  Registration = "registration",
+  Recovery = "recovery",
+  Settings = "settings",
+  Verification = "verification",
+}
+
 import axios, { type AxiosInstance, type AxiosError } from "axios";
-import { kratosConfig, KratosFlowType } from "@/config/kratos";
+import { getKratosConfig } from "./kratos-config";
 
 /** Extensible traits object for identity */
 type TraitsRecord = Record<string, string | undefined>;
@@ -149,7 +160,7 @@ export type LoginFlowData =
 class KratosService {
   private readonly client: AxiosInstance;
   constructor() {
-    const baseURL = kratosConfig.publicUrl;
+    const baseURL = getKratosConfig().publicUrl;
 
     this.client = axios.create({
       baseURL: baseURL,
@@ -481,4 +492,18 @@ class KratosService {
   }
 }
 
-export const kratosService = new KratosService();
+let _instance: KratosService | null = null;
+
+/**
+ * Lazily-initialized singleton.
+ * Defers construction until first access so that `configureKratos()` has time to run.
+ */
+export const kratosService: KratosService = new Proxy({} as KratosService, {
+  get(_target, prop) {
+    if (!_instance) {
+      _instance = new KratosService();
+    }
+    const value = Reflect.get(_instance, prop, _instance);
+    return typeof value === "function" ? value.bind(_instance) : value;
+  },
+});
