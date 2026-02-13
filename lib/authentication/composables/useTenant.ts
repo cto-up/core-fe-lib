@@ -30,7 +30,7 @@ export function useTenant() {
 
   // Get tenant from subdomain in URL
   const currentSubdomain = computed(() => {
-    const hostname = window.location.hostname;
+    const hostname = globalThis.location.hostname;
     const parts = hostname.split(".");
 
     // If localhost or IP, no subdomain

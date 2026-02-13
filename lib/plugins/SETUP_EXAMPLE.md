@@ -9,7 +9,8 @@
  */
 
 import { createApp } from "vue";
-import { createUiServicesPlugin } from "@/authentication/plugins/ui-services-plugin";
+import { createUiServicesPlugin } from "core-fe-lib/plugins/ui-services-plugin";
+
 import { useToast } from "@/components/ui/toast/use-toast";
 import { useDialog } from "@/composables/useDialog";
 import App from "./App.vue";

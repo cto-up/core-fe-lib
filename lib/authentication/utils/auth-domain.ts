@@ -7,7 +7,7 @@
  * Extracts the base domain and builds auth.{baseDomain}
  */
 export function getAuthOrigin(): string {
-  const url = new URL(window.location.href);
+  const url = new URL(globalThis.location.href);
   const hostParts = url.hostname.split(".");
 
   // Extract base domain (e.g., ctoup.localhost from corpb.ctoup.localhost)
@@ -33,6 +33,6 @@ export function getAuthOrigin(): string {
  */
 export function buildWebAuthnVerifyUrl(returnTo?: string): string {
   const authOrigin = getAuthOrigin();
-  const returnUrl = returnTo || window.location.href;
+  const returnUrl = returnTo || globalThis.location.href;
   return `${authOrigin}/verify/webauthn?return_to=${encodeURIComponent(returnUrl)}`;
 }
