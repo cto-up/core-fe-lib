@@ -1,15 +1,13 @@
+// ============================================================================
+// CORE (framework-agnostic, zero Vue/React dependencies)
+// ============================================================================
+
 // Configuration
-export { configureKratos } from "./services/kratos-config";
-export type { KratosConfig } from "./services/kratos-config";
+export { configureKratos } from "./core/kratos-config";
+export type { KratosConfig } from "./core/kratos-config";
 
-// Composables
-export { useKratosAuth } from "./composables/useKratosAuth";
-export { useAal2, submitWebAuthnVerification } from "./composables/useAal2";
-export { useTenant } from "./composables/useTenant";
-export { useMfa } from "./composables/useMfa";
-
-// Services
-export { kratosService } from "./services/kratos.service";
+// Kratos service
+export { kratosService } from "./core/kratos-service";
 export type {
   KratosSession,
   KratosFlow,
@@ -21,15 +19,13 @@ export type {
   LookupSecretLoginFlowData,
   WebAuthnLoginFlowData,
   LoginFlowData,
-} from "./services/kratos.service";
+} from "./core/kratos-service";
 
-// Utils
-export {
-  getAuthOrigin,
-  buildWebAuthnVerifyUrl,
-  buildWebAuthnRegisterUrl,
-} from "./utils/auth-domain";
-export { updateUserFromSession } from "./utils/kratos-update-user";
+// AAL2 manager (pure state machine)
+export { Aal2Manager } from "./core/aal2-manager";
+export type { Aal2VerificationState, IStateStore } from "./core/aal2-manager";
+
+// Error processing
 export {
   KratosErrorIds,
   isAal2Required,
@@ -40,12 +36,20 @@ export {
   shouldRedirect,
   handleKratosError,
   isKratosErrorId,
-} from "./utils/kratos-error-processor";
+} from "./core/kratos-error-processor";
 
+// Flow helpers
 export {
   getSecretFromFlow,
   extractRecoveryCodes,
-} from "./utils/kratos-flow-helpers";
+} from "./core/kratos-flow-helpers";
+
+// Auth domain helpers
+export {
+  getAuthOrigin,
+  buildWebAuthnVerifyUrl,
+  buildWebAuthnRegisterUrl,
+} from "./core/auth-domain";
 
 // Types
 export type {
@@ -63,4 +67,5 @@ export type {
   KratosErrorResponse,
   ParsedKratosError,
   KratosValidationError,
-} from "./types/kratos-errors";
+  SettingsFlowNode,
+} from "./core/types/kratos-errors";

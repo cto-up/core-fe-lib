@@ -1,4 +1,10 @@
-// utils/kratosError.ts
+/**
+ * Kratos error processing utilities (framework-agnostic)
+ *
+ * The handleAal2Error function takes an aal2Store parameter
+ * so this module has zero framework dependencies.
+ */
+
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import type {
   ParsedKratosError,
@@ -7,8 +13,7 @@ import type {
   KratosStandardError,
   KratosGenericError,
   KratosFlowError,
-} from "../types/kratos-errors";
-import { useAal2Store } from "../stores/aal2-store";
+} from "./types/kratos-errors";
 
 /**
  * Common Kratos error IDs
@@ -35,36 +40,36 @@ export function isAal2Required(error: unknown): boolean {
   );
 }
 
+/** Minimal interface for the AAL2 store needed by handleAal2Error */
+interface Aal2StoreForInterceptor {
+  state: { show: boolean };
+  triggerVerification: () => Promise<boolean>;
+}
+
 /**
- * Handle AAL2 errors automatically in axios interceptor
+ * Handle AAL2 errors automatically in axios interceptor.
+ * Takes the aal2Store as a parameter to stay framework-agnostic.
  */
 export async function handleAal2Error(
   error: AxiosError,
-  originalRequest: InternalAxiosRequestConfig & { _aal2Retry?: boolean }
+  originalRequest: InternalAxiosRequestConfig & { _aal2Retry?: boolean },
+  aal2Store: Aal2StoreForInterceptor
 ): Promise<unknown> {
-  // Check if this is an AAL2 error
   if (!isAal2Required(error)) {
     return Promise.reject(error);
   }
 
-  // Prevent infinite retry loops
   if (originalRequest._aal2Retry) {
     console.error("❌ AAL2 verification already attempted, failing request");
     return Promise.reject(error);
   }
 
-  // Get the AAL2 store
-  const aal2Store = useAal2Store();
-
-  // Prevent multiple simultaneous AAL2 prompts
   if (aal2Store.state.show) {
     console.log("⏳ AAL2 verification already in progress, waiting...");
-    // Wait for the existing verification to complete
     const verified = await new Promise<boolean>((resolve) => {
       const checkInterval = setInterval(() => {
         if (!aal2Store.state.show) {
           clearInterval(checkInterval);
-          // Assume success if dialog was closed
           resolve(true);
         }
       }, 100);
@@ -91,7 +96,6 @@ export async function handleAal2Error(
     }
   }
 
-  // Mark request as retried and retry
   originalRequest._aal2Retry = true;
   return axios(originalRequest);
 }
@@ -104,11 +108,12 @@ export function extractKratosError(error: unknown): ParsedKratosError | null {
   if (!isAxiosError(error)) {
     console.log(JSON.stringify(error));
 
+    const anyError = error as Record<string, Record<string, unknown>> | null;
     const newError = {
-      id: error?.body?.code || "unknown_error",
-      status: error?.status,
+      id: anyError?.body?.code || "unknown_error",
+      status: (anyError as Record<string, unknown>)?.status,
       reason: "",
-      message: error?.body?.message || "Network error",
+      message: anyError?.body?.message || "Network error",
     };
     return newError as ParsedKratosError;
   }
@@ -126,7 +131,6 @@ export function extractKratosError(error: unknown): ParsedKratosError | null {
     };
   }
 
-  // Handle string errors
   if (typeof data === "string") {
     return {
       code: status,
@@ -136,7 +140,6 @@ export function extractKratosError(error: unknown): ParsedKratosError | null {
     };
   }
 
-  // Handle standard error format with nested error object
   if (isStandardError(data)) {
     return {
       id: data.error.id,
@@ -149,7 +152,6 @@ export function extractKratosError(error: unknown): ParsedKratosError | null {
     };
   }
 
-  // Handle generic error format
   if (isGenericError(data)) {
     return {
       code: data.error.code || status,
@@ -159,7 +161,6 @@ export function extractKratosError(error: unknown): ParsedKratosError | null {
     };
   }
 
-  // Handle flow error format (login, registration, settings, etc.)
   if (isFlowError(data)) {
     const uiMessages = extractUIMessages(data);
     const validationErrors = extractValidationErrorsFromFlow(data);
@@ -176,31 +177,30 @@ export function extractKratosError(error: unknown): ParsedKratosError | null {
     };
   }
 
-  // Handle simple { message: "error" } format
-  if (data.message && typeof data.message === "string") {
+  const anyData = data as Record<string, unknown>;
+
+  if (anyData.message && typeof anyData.message === "string") {
     return {
-      id: data.code,
+      id: anyData.code as string | undefined,
       code: status,
       status: statusText,
-      reason: data.message,
-      message: data.message,
+      reason: anyData.message,
+      message: anyData.message,
     };
   }
 
-  // Handle simple { error: "description" } format
-  if (data.error && typeof data.error === "string") {
+  if (anyData.error && typeof anyData.error === "string") {
     return {
-      id: data.code,
+      id: anyData.code as string | undefined,
       code: status,
       status: statusText,
-      reason: data.error,
-      message: data.error,
+      reason: anyData.error,
+      message: anyData.error,
     };
   }
 
-  // Fallback for unknown formats
   return {
-    id: data.code,
+    id: anyData.code as string | undefined,
     code: status,
     status: statusText,
     reason: "An unknown error occurred",
@@ -211,31 +211,35 @@ export function extractKratosError(error: unknown): ParsedKratosError | null {
 /**
  * Type guards for different error formats
  */
-function isStandardError(data: any): data is KratosStandardError {
+function isStandardError(data: unknown): data is KratosStandardError {
+  const d = data as Record<string, unknown>;
   return (
-    data.error &&
-    typeof data.error === "object" &&
-    "message" in data.error &&
-    ("id" in data.error || "code" in data.error)
+    !!d.error &&
+    typeof d.error === "object" &&
+    "message" in (d.error as Record<string, unknown>) &&
+    ("id" in (d.error as Record<string, unknown>) ||
+      "code" in (d.error as Record<string, unknown>))
   );
 }
 
-function isGenericError(data: any): data is KratosGenericError {
+function isGenericError(data: unknown): data is KratosGenericError {
+  const d = data as Record<string, unknown>;
   return (
-    data.error &&
-    typeof data.error === "object" &&
-    "message" in data.error &&
-    !("id" in data.error)
+    !!d.error &&
+    typeof d.error === "object" &&
+    "message" in (d.error as Record<string, unknown>) &&
+    !("id" in (d.error as Record<string, unknown>))
   );
 }
 
-function isFlowError(data: any): data is KratosFlowError {
+function isFlowError(data: unknown): data is KratosFlowError {
+  const d = data as Record<string, unknown>;
   return (
-    data.id &&
-    data.type &&
-    data.ui &&
-    typeof data.ui === "object" &&
-    Array.isArray(data.ui.nodes)
+    !!d.id &&
+    !!d.type &&
+    !!d.ui &&
+    typeof d.ui === "object" &&
+    Array.isArray((d.ui as Record<string, unknown>).nodes)
   );
 }
 
@@ -246,15 +250,13 @@ function isAxiosError(error: unknown): error is AxiosError {
 /**
  * Extracts UI messages from Kratos flow response
  */
-function extractUIMessages(data: any): KratosUIMessage[] {
+function extractUIMessages(data: KratosFlowError): KratosUIMessage[] {
   const messages: KratosUIMessage[] = [];
 
-  // Check for UI messages at the flow level
   if (data.ui?.messages && Array.isArray(data.ui.messages)) {
     messages.push(...data.ui.messages);
   }
 
-  // Check for node-level messages
   if (data.ui?.nodes && Array.isArray(data.ui.nodes)) {
     for (const node of data.ui.nodes) {
       if (node.messages && Array.isArray(node.messages)) {
@@ -269,20 +271,24 @@ function extractUIMessages(data: any): KratosUIMessage[] {
 /**
  * Extracts validation errors from flow nodes
  */
-function extractValidationErrorsFromFlow(data: any): KratosValidationError[] {
+function extractValidationErrorsFromFlow(
+  data: KratosFlowError
+): KratosValidationError[] {
   const validationErrors: KratosValidationError[] = [];
 
   if (data.ui?.nodes && Array.isArray(data.ui.nodes)) {
     for (const node of data.ui.nodes) {
       if (node.messages && node.messages.length > 0) {
-        const fieldName = node.attributes?.name || "unknown";
+        const fieldName =
+          (node.attributes as unknown as Record<string, unknown>)?.name ||
+          "unknown";
         const errorMessages = node.messages.filter(
           (msg: KratosUIMessage) => msg.type === "error"
         );
 
         if (errorMessages.length > 0) {
           validationErrors.push({
-            field: fieldName,
+            field: String(fieldName),
             messages: errorMessages,
           });
         }
@@ -293,36 +299,27 @@ function extractValidationErrorsFromFlow(data: any): KratosValidationError[] {
   return validationErrors;
 }
 
-/**
- * Gets reason from UI messages
- */
 function getReasonFromUIMessages(messages?: KratosUIMessage[]): string {
   if (!messages || messages.length === 0) {
     return "An error occurred";
   }
-
   const errorMessage = messages.find((msg) => msg.type === "error");
   return errorMessage?.text || messages[0].text || "An error occurred";
 }
 
-/**
- * Gets message from UI messages
- */
 function getMessageFromUIMessages(messages?: KratosUIMessage[]): string {
   if (!messages || messages.length === 0) {
     return "An error occurred";
   }
-
   const errorMessages = messages.filter((msg) => msg.type === "error");
   if (errorMessages.length > 0) {
     return errorMessages.map((msg) => msg.text).join(". ");
   }
-
   return messages[0].text || "An error occurred";
 }
 
 /**
- * Extracts validation errors - now handles all error formats
+ * Extracts validation errors - handles all error formats
  */
 export function extractValidationErrors(
   error: unknown
@@ -341,7 +338,6 @@ export function getUserFriendlyMessage(error: unknown): string | null {
     return null;
   }
 
-  // Prioritize specific reason over generic message
   if (
     kratosError.reason &&
     kratosError.reason !== kratosError.message &&
@@ -353,9 +349,6 @@ export function getUserFriendlyMessage(error: unknown): string | null {
   return kratosError.message || kratosError.reason || "An error occurred";
 }
 
-/**
- * Checks if a message is generic
- */
 function isGenericMessage(message: string): boolean {
   const genericMessages = [
     "The requested action was forbidden",
@@ -366,7 +359,6 @@ function isGenericMessage(message: string): boolean {
     "Not Found",
     "Internal Server Error",
   ];
-
   return genericMessages.includes(message);
 }
 
@@ -397,7 +389,6 @@ export function handleKratosError(
         const url = new URL(kratosError.redirectTo);
         router.push(url.pathname + url.search);
       } catch {
-        // If URL parsing fails, use the redirect as-is
         globalThis.location.href = kratosError.redirectTo;
       }
     } else {

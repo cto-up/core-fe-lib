@@ -58,7 +58,7 @@ export interface KratosSession {
       status: string;
     }>;
     metadata_public?: MetadataRecord & {
-      global_roles?: string[]; // Global roles (SUPER_ADMIN only)
+      global_roles?: string[];
       tenant_memberships?: Array<{
         tenant_id: string;
         roles: string[];
@@ -98,7 +98,7 @@ export interface KratosIdentity {
     subdomain?: string;
   };
   metadata_public?: MetadataRecord & {
-    global_roles?: string[]; // Global roles (SUPER_ADMIN only)
+    global_roles?: string[];
     tenant_memberships?: Array<{
       tenant_id: string;
       roles: string[];
@@ -164,7 +164,7 @@ class KratosService {
 
     this.client = axios.create({
       baseURL: baseURL,
-      withCredentials: true, // Important for session cookies
+      withCredentials: true,
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
@@ -184,12 +184,10 @@ class KratosService {
       return response.data;
     } catch (error: unknown) {
       const axiosError = error as AxiosErrorResponse;
-      // 401 means not authenticated - this is expected, not an error
       if (axiosError.response?.status === 401) {
         console.log("ℹ️  No active session (401)");
         return null;
       }
-      // Other errors should still throw
       console.error("❌ Error getting session:", error);
       throw error;
     }
@@ -197,7 +195,6 @@ class KratosService {
 
   /**
    * Initialize a login flow
-   * IMPORTANT: This sets a CSRF cookie that must be sent with submitLoginFlow
    */
   async initLoginFlow(refresh = false, returnTo?: string): Promise<KratosFlow> {
     const params = new URLSearchParams();
@@ -218,7 +215,6 @@ class KratosService {
       ),
     });
 
-    // Log all cookies after flow init
     console.log("🍪 Cookies in document after flow init:", document.cookie);
 
     return response.data;
@@ -226,8 +222,6 @@ class KratosService {
 
   /**
    * Initialize an AAL2 upgrade flow
-   * Used when a user needs to verify their second factor to perform privileged operations
-   * IMPORTANT: User must already be authenticated at AAL1
    */
   async initAal2UpgradeFlow(returnTo?: string): Promise<KratosFlow> {
     const params = new URLSearchParams();
@@ -256,26 +250,6 @@ class KratosService {
 
   /**
    * Submit login flow with type-safe method-specific data
-   *
-   * @param flowId - The login flow ID from initLoginFlow or initAal2UpgradeFlow
-   * @param data - Login credentials with method-specific fields enforced by TypeScript
-   *
-   * @example
-   * // Password authentication
-   * submitLoginFlow(flowId, {
-   *   method: "password",
-   *   csrf_token: token,
-   *   identifier: email,
-   *   password: pwd
-   * })
-   *
-   * // TOTP authentication
-   * submitLoginFlow(flowId, {
-   *   method: "totp",
-   *   csrf_token: token,
-   *   identifier: email,
-   *   totp_code: code
-   * })
    */
   async submitLoginFlow(
     flowId: string,
@@ -310,7 +284,7 @@ class KratosService {
       traits: { email: string; name?: string };
       password: string;
       method: string;
-      csrf_token?: string; // CSRF token from flow UI
+      csrf_token?: string;
     }
   ): Promise<KratosFlowResponse> {
     const response = await this.client.post(
@@ -336,7 +310,7 @@ class KratosService {
     data: {
       email: string;
       method: string;
-      csrf_token?: string; // CSRF token from flow UI
+      csrf_token?: string;
     }
   ): Promise<KratosFlowResponse> {
     const response = await this.client.post(
@@ -397,11 +371,8 @@ class KratosService {
    */
   async logout(): Promise<void> {
     try {
-      // Get logout flow
       const response = await this.client.get("/self-service/logout/browser");
       const logoutToken = response.data.logout_token;
-
-      // Submit logout
       await this.client.get(`/self-service/logout?token=${logoutToken}`);
     } catch (error) {
       console.error("Logout error:", error);
@@ -440,7 +411,6 @@ class KratosService {
       aal: session.authenticator_assurance_level || "aal1",
     };
 
-    // Check credentials
     if (session.identity?.credentials?.totp?.config) {
       status.totp_enabled = true;
     }
@@ -460,20 +430,14 @@ class KratosService {
 
   /**
    * Submit settings flow with method-specific data
-   * IMPORTANT: Only submit method-specific fields to avoid schema validation errors
    */
   async submitSettingsMethod(
     flowId: string,
     method: string,
     data: Record<string, unknown>
   ): Promise<KratosFlowResponse> {
-    // Only include the method and the provided data fields
-    // Do NOT include other flow fields like traits, profile, etc.
-    const payload: Record<string, unknown> = {
-      method,
-    };
+    const payload: Record<string, unknown> = { method };
 
-    // Add only the specific fields for this method
     Object.keys(data).forEach((key) => {
       payload[key] = data[key];
     });

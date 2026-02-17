@@ -1,20 +1,21 @@
 /**
- * Kratos Auth Composable
- *
+ * Vue composable for Kratos authentication
+ * Calls kratosService directly — router/i18n/notifications are
+ * inherently Vue concerns, no need to abstract them.
  */
 
 import { computed, inject } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { notificationServiceKey } from "../../plugins/injection-keys";
+import { useUserStore } from "core-fe-lib/stores/user-store";
+import { updateUserFromSession } from "./kratos-update-user";
 import {
   kratosService,
   type KratosSession,
   type KratosFlowNode,
   type PasswordLoginFlowData,
-} from "../services/kratos.service";
-import { useUserStore } from "core-fe-lib/stores/user-store";
-import { updateUserFromSession } from "../utils/kratos-update-user";
+} from "../core/kratos-service";
 import type { AxiosError } from "axios";
 
 export const useKratosAuth = () => {
@@ -30,20 +31,10 @@ export const useKratosAuth = () => {
     );
   }
 
-  /**
-   * Current session from store
-   */
   const session = computed(() => userStore.session);
-
-  /**
-   * Auth loading state from store
-   */
   const isLoading = computed(() => userStore.isLoading);
 
-  /**
-   * Get current session
-   */
-  const getCurrentSession = async (): Promise<KratosSession | null> => {
+  async function getCurrentSession(): Promise<KratosSession | null> {
     try {
       userStore.setIsLoading(true);
       const currentSession = await kratosService.getSession();
@@ -56,68 +47,43 @@ export const useKratosAuth = () => {
     } finally {
       userStore.setIsLoading(false);
     }
-  };
+  }
 
-  /**
-   * Sign in with email and password
-   */
-  const signMeIn = async (email: string, password: string) => {
+  async function signMeIn(email: string, password: string): Promise<void> {
     try {
       userStore.setIsLoading(true);
 
-      // Initialize login flow to get CSRF token
-      const flow = await kratosService.initLoginFlow(
-        false,
-        route.query["from"] as string
-      );
+      const returnTo = route.query["from"] as string;
+      const flow = await kratosService.initLoginFlow(false, returnTo);
 
-      console.log("🔐 Login flow initialized:", flow.id);
-
-      // Extract CSRF token from flow UI nodes
       const csrfNode = flow.ui.nodes.find(
         (node: KratosFlowNode) => node.attributes?.name === "csrf_token"
       );
       const csrfToken = String(csrfNode?.attributes?.value || "");
 
-      console.log("🎫 CSRF token extracted:", {
-        found: !!csrfToken,
-        tokenLength: csrfToken.length,
-        tokenPreview: csrfToken.substring(0, 20) + "...",
-      });
-
       if (!csrfToken) {
         throw new Error("CSRF token not found in login flow");
       }
 
-      // Submit login with CSRF token
-      // IMPORTANT: Send csrf_token exactly as received, no encoding
       const loginData: PasswordLoginFlowData = {
         method: "password",
-        csrf_token: csrfToken, // Send exactly as received
+        csrf_token: csrfToken,
         identifier: email,
         password: password,
       };
-
-      console.log("📤 Submitting login to flow:", flow.id);
 
       const loginResponse = await kratosService.submitLoginFlow(
         flow.id,
         loginData
       );
 
-      console.log("✅ Login successful");
-
-      // Extract session from login response if available
       if (loginResponse && "active" in loginResponse && loginResponse.active) {
         await updateUserFromSession(loginResponse as KratosSession);
-        console.log("✅ User set from login response");
       } else {
-        // Fallback: fetch session if not in response
         await getCurrentSession();
       }
 
-      // Redirect to intended page or home
-      const redirectTo = (route.query["from"] as string) || "/";
+      const redirectTo = returnTo || "/";
       router.push(redirectTo);
 
       notifications.success(
@@ -129,8 +95,6 @@ export const useKratosAuth = () => {
         ui?: { messages?: Array<{ text: string }> };
         error?: { message?: string };
       }>;
-      console.error("❌ Login error:", error);
-      console.error("Error response:", axiosError.response?.data);
 
       const errorMessage =
         axiosError.response?.data?.ui?.messages?.[0]?.text ||
@@ -143,30 +107,23 @@ export const useKratosAuth = () => {
     } finally {
       userStore.setIsLoading(false);
     }
-  };
+  }
 
-  /**
-   * Sign up with email and password
-   * Optionally associates user with tenant based on subdomain
-   */
-  const signMeUp = async (
+  async function signMeUp(
     email: string,
     password: string,
     name?: string,
     tenantSubdomain?: string
-  ) => {
+  ): Promise<void> {
     try {
       userStore.setIsLoading(true);
 
-      // Store tenant context if provided (for post-registration webhook)
       if (tenantSubdomain) {
         sessionStorage.setItem("pending_tenant", tenantSubdomain);
       }
 
-      // Initialize registration flow to get CSRF token
       const flow = await kratosService.initRegistrationFlow();
 
-      // Extract CSRF token from flow UI nodes
       const csrfNode = flow.ui.nodes.find(
         (node: KratosFlowNode) => node.attributes?.name === "csrf_token"
       );
@@ -176,33 +133,24 @@ export const useKratosAuth = () => {
         throw new Error("CSRF token not found in registration flow");
       }
 
-      // Prepare traits with tenant information
       const traits: { email: string; name?: string; subdomain?: string } = {
         email,
         name: name || "",
       };
 
-      // If tenant subdomain is provided, include it in traits
-      // This will be stored in identity metadata by Kratos
       if (tenantSubdomain) {
         traits.subdomain = tenantSubdomain;
       }
 
-      // Submit registration with CSRF token
       await kratosService.submitRegistrationFlow(flow.id, {
         traits,
         password,
         method: "password",
-        csrf_token: csrfToken, // Include CSRF token
+        csrf_token: csrfToken,
       });
 
-      // Get session after successful registration
       await getCurrentSession();
-
-      // Clear pending tenant
       sessionStorage.removeItem("pending_tenant");
-
-      // Redirect to profile or home
       router.push("/user/me/profile");
 
       notifications.success(
@@ -214,7 +162,6 @@ export const useKratosAuth = () => {
         ui?: { messages?: Array<{ text: string }> };
         error?: { message?: string };
       }>;
-      console.error("Registration error:", error);
 
       const errorMessage =
         axiosError.response?.data?.ui?.messages?.[0]?.text ||
@@ -227,28 +174,20 @@ export const useKratosAuth = () => {
     } finally {
       userStore.setIsLoading(false);
     }
-  };
+  }
 
-  /**
-   * Sign out
-   */
-  const signMeOut = async () => {
+  async function signMeOut(): Promise<void> {
     try {
       userStore.setIsLoading(true);
       await kratosService.logout();
-
       await updateUserFromSession(null);
-
       router.push({ name: "home" });
-
       notifications.success(
         t("core.auth.success"),
         t("core.auth.logoutSuccess")
       );
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
-      console.error("Logout error:", error);
-
       notifications.error(
         t("core.auth.error"),
         axiosError.message || t("core.auth.logoutError")
@@ -256,19 +195,14 @@ export const useKratosAuth = () => {
     } finally {
       userStore.setIsLoading(false);
     }
-  };
+  }
 
-  /**
-   * Request password reset
-   */
-  const requestPasswordReset = async (email: string) => {
+  async function requestPasswordReset(email: string): Promise<void> {
     try {
       userStore.setIsLoading(true);
 
-      // Initialize recovery flow to get CSRF token
       const flow = await kratosService.initRecoveryFlow();
 
-      // Extract CSRF token from flow UI nodes
       const csrfNode = flow.ui.nodes.find(
         (node: KratosFlowNode) => node.attributes?.name === "csrf_token"
       );
@@ -278,11 +212,10 @@ export const useKratosAuth = () => {
         throw new Error("CSRF token not found in recovery flow");
       }
 
-      // Submit recovery request with CSRF token
       await kratosService.submitRecoveryFlow(flow.id, {
         email,
         method: "link",
-        csrf_token: csrfToken, // Include CSRF token
+        csrf_token: csrfToken,
       });
 
       notifications.success(
@@ -291,8 +224,6 @@ export const useKratosAuth = () => {
       );
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
-      console.error("Password reset error:", error);
-
       notifications.error(
         t("core.auth.error"),
         axiosError.message || t("core.auth.passwordResetError")
@@ -301,21 +232,17 @@ export const useKratosAuth = () => {
     } finally {
       userStore.setIsLoading(false);
     }
-  };
+  }
 
-  /**
-   * Get session token for API calls
-   */
-  const getSessionToken = async (): Promise<string | null> => {
+  async function getSessionToken(): Promise<string | null> {
     try {
       const currentSession = await kratosService.getSession();
-      // Kratos uses session cookies, but you can also use the session ID
       return currentSession?.id || null;
     } catch (error) {
       console.error("Error getting session token:", error);
       return null;
     }
-  };
+  }
 
   return {
     session,

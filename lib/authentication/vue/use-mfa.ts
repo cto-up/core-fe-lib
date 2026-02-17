@@ -1,22 +1,19 @@
 import { ref, onMounted, inject } from "vue";
 import { useI18n } from "vue-i18n";
 import { MfaService } from "core-fe-lib/openapi/core";
-import { kratosService } from "../services/kratos.service";
+import { kratosService } from "../core/kratos-service";
 import {
   notificationServiceKey,
   dialogServiceKey,
 } from "../../plugins/injection-keys";
-import { getUserFriendlyMessage } from "../utils/kratos-error-processor";
-import type { SettingsFlowNode } from "../types/kratos-errors";
+import { getUserFriendlyMessage } from "../core/kratos-error-processor";
+import type { SettingsFlowNode } from "../core/types/kratos-errors";
 import {
   extractRecoveryCodes,
   getSecretFromFlow,
-} from "../utils/kratos-flow-helpers";
-import { buildWebAuthnRegisterUrl } from "../utils/auth-domain";
+} from "../core/kratos-flow-helpers";
+import { buildWebAuthnRegisterUrl } from "../core/auth-domain";
 
-/**
- * Type for nodes returned from settings flow/response
- */
 interface FlowNode extends SettingsFlowNode {
   attributes: {
     name?: string;
@@ -25,9 +22,6 @@ interface FlowNode extends SettingsFlowNode {
   };
 }
 
-/**
- * Helper function to find a node by attribute name
- */
 function findNodeByName(
   nodes: FlowNode[] | undefined,
   name: string
@@ -36,9 +30,6 @@ function findNodeByName(
   return nodes.find((node) => node.attributes?.name === name);
 }
 
-/**
- * Helper function to find nodes by group
- */
 function findNodesByGroup(
   nodes: FlowNode[] | undefined,
   group: string
@@ -47,9 +38,6 @@ function findNodesByGroup(
   return nodes.filter((node) => node.group === group);
 }
 
-/**
- * Helper function to find a node by group and type
- */
 function findNodeByGroupAndType(
   nodes: FlowNode[] | undefined,
   group: string,
@@ -59,9 +47,6 @@ function findNodeByGroupAndType(
   return nodes.find((node) => node.group === group && node.type === type);
 }
 
-/**
- * Helper function to convert ArrayBuffer to base64url
- */
 function arrayBufferToBase64url(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = "";
@@ -69,24 +54,14 @@ function arrayBufferToBase64url(buffer: ArrayBuffer): string {
     binary += String.fromCharCode(bytes[i]);
   }
   const base64 = window.btoa(binary);
-  // Convert base64 to base64url (RFC 4648)
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
-/**
- * Helper function to convert base64url to ArrayBuffer
- */
-
 function base64urlToArrayBuffer(base64url: string): ArrayBuffer {
-  // Convert base64url to base64
   const base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
   const padding = "=".repeat((4 - (base64.length % 4)) % 4);
   const base64Padded = base64 + padding;
-
-  // Decode base64 to binary string
   const binaryString = window.atob(base64Padded);
-
-  // Convert binary string to ArrayBuffer
   const bytes = new Uint8Array(binaryString.length);
   for (let i = 0; i < binaryString.length; i++) {
     bytes[i] = binaryString.charCodeAt(i);
@@ -134,23 +109,62 @@ export function useMfa() {
   const recoveryCodesInteracted = ref(false);
 
   onMounted(async () => {
-    // Check if we need to refresh the session for MFA setup
-    // This ensures the session is fresh enough for privileged operations
     const urlParams = new URLSearchParams(globalThis.location.search);
     const needsRefresh = urlParams.get("refresh");
 
     if (needsRefresh === "true") {
-      // User just re-authenticated, remove the query param
       globalThis.history.replaceState({}, "", globalThis.location.pathname);
     }
 
     await loadMFAStatus();
+
+    // Replay pending action that was interrupted by WebAuthn AAL2 redirect
+    await replayPendingMfaAction();
   });
+
+  const PENDING_MFA_ACTION_KEY = "pending_mfa_action";
+
+  function setPendingMfaAction(action: string) {
+    sessionStorage.setItem(PENDING_MFA_ACTION_KEY, action);
+  }
+
+  function consumePendingMfaAction(): string | null {
+    const action = sessionStorage.getItem(PENDING_MFA_ACTION_KEY);
+    sessionStorage.removeItem(PENDING_MFA_ACTION_KEY);
+    return action;
+  }
+
+  /**
+   * Replay a pending MFA action that was interrupted by a WebAuthn AAL2 redirect.
+   * After WebAuthn completes on the auth subdomain, the browser navigates back
+   * and the session is now at AAL2 — so the action can succeed.
+   */
+  async function replayPendingMfaAction() {
+    const action = consumePendingMfaAction();
+    if (!action) return;
+
+    console.log("🔄 Replaying pending MFA action:", action);
+
+    try {
+      if (action === "disable_totp") {
+        await executeDisableTotp();
+      } else if (action === "disable_webauthn") {
+        await executeDisableWebAuthn();
+      } else if (action === "generate_recovery_codes") {
+        await executeGenerateRecoveryCodes();
+      }
+    } catch (error) {
+      console.error("❌ Failed to replay pending MFA action:", error);
+      notifications.error(
+        t("core.mfa.notifications.loadError"),
+        getUserFriendlyMessage(error) ?? t("core.mfa.notifications.loadError")
+      );
+    }
+  }
 
   async function loadMFAStatus() {
     try {
       loading.value = true;
-      // Use our backend API instead of Kratos directly
       const status = await MfaService.getMfaStatus();
       mfaStatus.value = status;
 
@@ -162,7 +176,6 @@ export function useMfa() {
       });
     } catch (error) {
       console.error("Failed to load MFA status:", error);
-
       notifications.error(
         t("core.mfa.notifications.loadError"),
         getUserFriendlyMessage(error) ?? t("core.mfa.notifications.loadError")
@@ -174,7 +187,6 @@ export function useMfa() {
 
   async function setupTOTP() {
     try {
-      // Initialize settings flow through our backend
       const flow = await MfaService.initializeSettingsFlow();
 
       if (!flow.id) {
@@ -182,7 +194,6 @@ export function useMfa() {
       }
 
       settingsFlowId.value = flow.id;
-
       const flowNodes = (flow.ui?.nodes as FlowNode[] | undefined) || [];
 
       console.log("🔍 Settings flow initialized:", {
@@ -195,39 +206,30 @@ export function useMfa() {
         })),
       });
 
-      // Check if TOTP is already enabled (totp_unlink button present)
       const totpUnlinkNode = findNodeByName(flowNodes, "totp_unlink");
-
       if (totpUnlinkNode) {
-        // TOTP is already enabled
         notifications.error(
           t("core.mfa.notifications.totpAlreadyEnabled"),
           t("core.mfa.notifications.totpAlreadyEnabledDesc")
         );
-        // Refresh status to ensure UI is in sync
         await loadMFAStatus();
         return;
       }
 
-      // Extract CSRF token from the flow
       const csrfNode = findNodeByName(flowNodes, "csrf_token");
       if (csrfNode?.attributes?.value) {
         csrfToken.value = csrfNode.attributes.value as string;
       }
 
-      // Find TOTP node in flow - it's an img node with the QR code
       const totpNode = findNodeByGroupAndType(flowNodes, "totp", "img");
-
       if (totpNode?.attributes?.src) {
-        // The QR code is a base64 image
         totpQRCode.value = `<img src="${totpNode.attributes.src}" alt="QR Code" class="mx-auto" />`;
-
-        // Try to extract the secret key from the flow
-        const secret = await getSecretFromFlow(flow);
+        const secret = await getSecretFromFlow(
+          flow as unknown as Record<string, unknown>
+        );
         totpSecretKey.value =
           secret || "Scan QR code with your authenticator app";
       } else {
-        // No QR code found - this shouldn't happen if totp_unlink wasn't present
         console.error("❌ No TOTP QR code found in flow");
         notifications.error(
           t("core.mfa.notifications.totpSetupError"),
@@ -268,13 +270,8 @@ export function useMfa() {
         csrf_token: csrfToken.value,
       });
 
-      // TOTP verified successfully - now move to recovery codes stage
       console.log("✅ TOTP verified, generating recovery codes...");
-
-      // Generate recovery codes immediately
       await generateRecoveryCodesForSetup();
-
-      // Move to recovery stage (don't close modal)
       totpSetupStep.value = "recovery";
       totpCode.value = "";
       totpError.value = "";
@@ -285,9 +282,7 @@ export function useMfa() {
           statusText?: string;
           data?: {
             id?: string;
-            ui?: {
-              nodes?: FlowNode[];
-            };
+            ui?: { nodes?: FlowNode[] };
           };
         };
       } | null;
@@ -299,7 +294,6 @@ export function useMfa() {
         error,
       });
 
-      // Check if it's a validation error with a new flow
       if (
         axiosError?.response?.status === 400 &&
         axiosError.response?.data?.id
@@ -308,7 +302,6 @@ export function useMfa() {
         const newFlowNodes =
           (newFlow.ui?.nodes as FlowNode[] | undefined) || [];
 
-        // Check if it's the roles validation error
         const hasRolesError = newFlowNodes.some((node: FlowNode) =>
           node.messages?.some((msg) =>
             msg.text?.includes('additionalProperties "roles" not allowed')
@@ -323,7 +316,6 @@ export function useMfa() {
           return;
         }
 
-        // Update flow ID and CSRF token from the error response
         settingsFlowId.value = newFlow.id;
         const newCsrfNode = findNodeByName(newFlowNodes, "csrf_token");
         if (newCsrfNode?.attributes?.value) {
@@ -356,41 +348,32 @@ export function useMfa() {
 
   async function generateRecoveryCodesForSetup() {
     try {
-      // Initialize a new settings flow for recovery codes
       const flow = await MfaService.initializeSettingsFlow();
-
       const flowNodes = (flow.ui?.nodes as FlowNode[] | undefined) || [];
 
-      // Extract CSRF token
       const csrfNode = findNodeByName(flowNodes, "csrf_token");
       const csrf = (csrfNode?.attributes?.value as string) || "";
 
       console.log("🔑 Generating recovery codes with flow:", flow.id);
 
-      // First, regenerate the codes
       const response = await kratosService.submitSettingsMethod(
         flow.id || "",
         "lookup_secret",
-        {
-          lookup_secret_regenerate: true,
-          csrf_token: csrf,
-        }
+        { lookup_secret_regenerate: true, csrf_token: csrf }
       );
 
       console.log("✅ Recovery codes generated:", response);
-
-      // Extract the codes from the response
-      recoveryCodes.value = extractRecoveryCodes(response);
+      recoveryCodes.value = extractRecoveryCodes(
+        response as Record<string, unknown>
+      );
 
       if (recoveryCodes.value.length === 0) {
         throw new Error("No recovery codes returned from Kratos");
       }
 
-      // Store the new flow ID and CSRF for the confirmation step
       const responseData = response as Record<string, unknown>;
-      const responseId = responseData.id;
-      if (typeof responseId === "string") {
-        settingsFlowId.value = responseId;
+      if (typeof responseData.id === "string") {
+        settingsFlowId.value = responseData.id;
       }
 
       const responseUINodes = (
@@ -410,7 +393,6 @@ export function useMfa() {
         getUserFriendlyMessage(error) ??
           t("core.mfa.notifications.recoveryError")
       );
-      // Fall back to closing the modal
       showTOTPSetup.value = false;
     }
   }
@@ -426,19 +408,14 @@ export function useMfa() {
         settingsFlowId.value
       );
 
-      // Confirm the recovery codes
       await kratosService.submitSettingsMethod(
         settingsFlowId.value,
         "lookup_secret",
-        {
-          lookup_secret_confirm: true,
-          csrf_token: csrfToken.value,
-        }
+        { lookup_secret_confirm: true, csrf_token: csrfToken.value }
       );
 
       console.log("🎉 Recovery codes confirmed, TOTP setup complete!");
 
-      // Close modal and refresh status
       showTOTPSetup.value = false;
       totpSetupStep.value = "qr";
       recoveryCodesInteracted.value = false;
@@ -452,8 +429,6 @@ export function useMfa() {
       );
     } catch (error) {
       console.error("❌ Failed to confirm recovery codes:", error);
-
-      // Check for the specific error message
       notifications.error(
         t("core.mfa.notifications.recoveryError"),
         getUserFriendlyMessage(error) ?? t("core.mfa.notifications.setupError")
@@ -471,6 +446,29 @@ export function useMfa() {
     recoveryCodesInteracted.value = true;
   }
 
+  /**
+   * Execute the actual TOTP disable (no confirmation dialog).
+   * Used both directly and as a replay after WebAuthn AAL2 redirect.
+   */
+  async function executeDisableTotp() {
+    const flow = await MfaService.initializeSettingsFlow();
+    const flowNodes = (flow.ui?.nodes as FlowNode[] | undefined) || [];
+
+    const csrfNode = findNodeByName(flowNodes, "csrf_token");
+    const csrf = (csrfNode?.attributes?.value as string) || "";
+
+    await kratosService.submitSettingsMethod(flow.id || "", "totp", {
+      totp_unlink: true,
+      csrf_token: csrf,
+    });
+
+    await loadMFAStatus();
+    notifications.success(
+      t("core.mfa.notifications.totpDisabled"),
+      t("core.mfa.notifications.totpDisabled")
+    );
+  }
+
   async function disableTOTP() {
     const confirmed = await dialog.confirm({
       title: t("core.mfa.confirmations.disableTotp"),
@@ -481,26 +479,16 @@ export function useMfa() {
 
     if (!confirmed) return;
 
+    // Store pending action before attempting — if AAL2 WebAuthn triggers
+    // a full page redirect, we can replay this on return.
+    setPendingMfaAction("disable_totp");
+
     try {
-      const flow = await MfaService.initializeSettingsFlow();
-
-      const flowNodes = (flow.ui?.nodes as FlowNode[] | undefined) || [];
-
-      // Extract CSRF token
-      const csrfNode = findNodeByName(flowNodes, "csrf_token");
-      const csrf = (csrfNode?.attributes?.value as string) || "";
-
-      await kratosService.submitSettingsMethod(flow.id || "", "totp", {
-        totp_unlink: true,
-        csrf_token: csrf,
-      });
-
-      await loadMFAStatus();
-      notifications.success(
-        t("core.mfa.notifications.totpDisabled"),
-        t("core.mfa.notifications.totpDisabled")
-      );
+      await executeDisableTotp();
+      // Success — clear the pending action
+      consumePendingMfaAction();
     } catch (error: unknown) {
+      consumePendingMfaAction();
       console.error("❌ Failed to disable TOTP:", error);
       notifications.error(
         t("core.mfa.notifications.totpDisableError"),
@@ -518,15 +506,9 @@ export function useMfa() {
       registerUrl,
     });
 
-    // Navigate to auth subdomain for same-origin WebAuthn ceremony
     globalThis.location.href = registerUrl;
   }
 
-  /**
-   * Perform the actual WebAuthn registration ceremony.
-   * Called from the auth subdomain RegisterWebauthnPage.
-   * Returns true on success, throws on failure.
-   */
   async function performWebAuthnRegistration(): Promise<void> {
     const session = await kratosService.getSession();
     if (!session?.identity?.traits?.email) {
@@ -562,8 +544,6 @@ export function useMfa() {
     if (email) {
       displayName = email as string;
     }
-    // Step 1: Extract the WebAuthn challenge from the trigger button
-    // The challenge is already present in the flow's webauthn_register_trigger node
 
     const triggerNode = findNodeByName(flowNodes, "webauthn_register_trigger");
     if (!triggerNode?.attributes?.value) {
@@ -574,10 +554,8 @@ export function useMfa() {
       throw new Error("WebAuthn challenge not found");
     }
 
-    // Parse the challenge from the trigger button's value
     const publicKeyOptions = JSON.parse(String(triggerNode.attributes.value));
 
-    // Convert base64url strings to ArrayBuffers for WebAuthn API
     interface PublicKeyCredentialCreationOptionsExt extends Omit<
       PublicKeyCredentialCreationOptions,
       "challenge" | "user" | "excludeCredentials"
@@ -608,7 +586,6 @@ export function useMfa() {
           ) || [],
       };
 
-    // Step 2: Call the browser's WebAuthn API
     const credential = await navigator.credentials.create({
       publicKey:
         publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
@@ -618,7 +595,6 @@ export function useMfa() {
       throw new Error("WebAuthn credential creation was cancelled");
     }
 
-    // Step 3: Format the credential response for Kratos
     const credentialResponse = credential as PublicKeyCredential;
     const response =
       credentialResponse.response as AuthenticatorAttestationResponse;
@@ -633,12 +609,24 @@ export function useMfa() {
       },
     };
 
-    // Step 4: Submit the credential back to Kratos
     await kratosService.submitSettingsMethod(flow.id || "", "webauthn", {
       webauthn_register: JSON.stringify(credentialData),
       webauthn_register_displayname: displayName,
       csrf_token: csrf,
     });
+  }
+
+  /**
+   * Execute the actual WebAuthn disable (no confirmation dialog).
+   */
+  async function executeDisableWebAuthn() {
+    await MfaService.disableWebAuthn();
+    console.log("✅ WebAuthn disabled successfully via Admin API");
+    await loadMFAStatus();
+    notifications.success(
+      t("core.mfa.notifications.webauthnDisabled"),
+      t("core.mfa.notifications.webauthnDisabled")
+    );
   }
 
   async function disableWebAuthn() {
@@ -651,20 +639,14 @@ export function useMfa() {
 
     if (!confirmed) return;
 
+    setPendingMfaAction("disable_webauthn");
+
     try {
-      // Use backend endpoint that calls Kratos Admin API to delete WebAuthn credentials
-      await MfaService.disableWebAuthn();
-
-      console.log("✅ WebAuthn disabled successfully via Admin API");
-
-      await loadMFAStatus();
-      notifications.success(
-        t("core.mfa.notifications.webauthnDisabled"),
-        t("core.mfa.notifications.webauthnDisabled")
-      );
+      await executeDisableWebAuthn();
+      consumePendingMfaAction();
     } catch (error: unknown) {
+      consumePendingMfaAction();
       console.error("❌ Failed to disable WebAuthn:", error);
-
       notifications.error(
         t("core.mfa.notifications.webauthnDisableError"),
         getUserFriendlyMessage(error) ??
@@ -673,61 +655,61 @@ export function useMfa() {
     }
   }
 
+  /**
+   * Execute the actual recovery codes generation (no confirmation dialog).
+   * Used both directly and as a replay after WebAuthn AAL2 redirect.
+   */
+  async function executeGenerateRecoveryCodes() {
+    const flow = await MfaService.initializeSettingsFlow();
+    const flowNodes = (flow.ui?.nodes as FlowNode[] | undefined) || [];
+
+    const csrfNode = findNodeByName(flowNodes, "csrf_token");
+    const csrf = (csrfNode?.attributes?.value as string) || "";
+
+    const regenerateResponse = await kratosService.submitSettingsMethod(
+      flow.id || "",
+      "lookup_secret",
+      { lookup_secret_regenerate: true, csrf_token: csrf }
+    );
+
+    console.log("✅ Recovery codes regenerated:", regenerateResponse);
+    recoveryCodes.value = extractRecoveryCodes(
+      regenerateResponse as Record<string, unknown>
+    );
+
+    if (recoveryCodes.value.length === 0) {
+      throw new Error("No recovery codes returned from Kratos");
+    }
+
+    const regenerateData = regenerateResponse as Record<string, unknown>;
+    if (typeof regenerateData.id === "string") {
+      settingsFlowId.value = regenerateData.id;
+    }
+
+    const regenerateUINodes = (
+      regenerateData.ui && typeof regenerateData.ui === "object"
+        ? (regenerateData.ui as Record<string, unknown>).nodes
+        : undefined
+    ) as FlowNode[] | undefined;
+
+    const newCsrfNode = findNodeByName(regenerateUINodes, "csrf_token");
+    if (newCsrfNode?.attributes?.value) {
+      csrfToken.value = newCsrfNode.attributes.value as string;
+    }
+
+    recoveryCodesInteracted.value = false;
+    showRecoveryCodes.value = true;
+  }
+
   async function generateRecoveryCodes() {
+    setPendingMfaAction("generate_recovery_codes");
+
     try {
-      const flow = await MfaService.initializeSettingsFlow();
-
-      const flowNodes = (flow.ui?.nodes as FlowNode[] | undefined) || [];
-
-      // Extract CSRF token
-      const csrfNode = findNodeByName(flowNodes, "csrf_token");
-      const csrf = (csrfNode?.attributes?.value as string) || "";
-
-      // Step 1: Regenerate the codes first
-      const regenerateResponse = await kratosService.submitSettingsMethod(
-        flow.id || "",
-        "lookup_secret",
-        {
-          lookup_secret_regenerate: true,
-          csrf_token: csrf,
-        }
-      );
-
-      console.log("✅ Recovery codes regenerated:", regenerateResponse);
-
-      // Extract the codes from the regenerate response
-      recoveryCodes.value = extractRecoveryCodes(regenerateResponse);
-
-      if (recoveryCodes.value.length === 0) {
-        throw new Error("No recovery codes returned from Kratos");
-      }
-
-      // Store flow info for later confirmation (after user saves codes)
-      const regenerateData = regenerateResponse as Record<string, unknown>;
-      const regenerateId = regenerateData.id;
-      if (typeof regenerateId === "string") {
-        settingsFlowId.value = regenerateId;
-      }
-
-      const regenerateUINodes = (
-        regenerateData.ui && typeof regenerateData.ui === "object"
-          ? (regenerateData.ui as Record<string, unknown>).nodes
-          : undefined
-      ) as FlowNode[] | undefined;
-
-      const newCsrfNode = findNodeByName(regenerateUINodes, "csrf_token");
-      if (newCsrfNode?.attributes?.value) {
-        csrfToken.value = newCsrfNode.attributes.value as string;
-      }
-
-      // Reset interaction flag and show modal
-      recoveryCodesInteracted.value = false;
-      showRecoveryCodes.value = true;
-
-      // Note: Codes are NOT confirmed yet - user must click "I Have Saved These Codes"
+      await executeGenerateRecoveryCodes();
+      consumePendingMfaAction();
     } catch (error: unknown) {
+      consumePendingMfaAction();
       console.error("Failed to generate recovery codes:", error);
-
       notifications.error(
         t("core.mfa.notifications.recoveryError"),
         getUserFriendlyMessage(error) ??
@@ -756,7 +738,6 @@ export function useMfa() {
     );
   }
 
-  // Handlers for standalone recovery codes modal (with forced interaction)
   function handleCopyRecoveryCodesStandalone() {
     copyRecoveryCodes();
     recoveryCodesInteracted.value = true;
@@ -778,19 +759,14 @@ export function useMfa() {
         settingsFlowId.value
       );
 
-      // Confirm the codes (this saves them to Kratos)
       await kratosService.submitSettingsMethod(
         settingsFlowId.value,
         "lookup_secret",
-        {
-          lookup_secret_confirm: true,
-          csrf_token: csrfToken.value,
-        }
+        { lookup_secret_confirm: true, csrf_token: csrfToken.value }
       );
 
       console.log("🎉 Recovery codes confirmed and saved!");
 
-      // Close modal and refresh status
       showRecoveryCodes.value = false;
       recoveryCodesInteracted.value = false;
       recoveryCodes.value = [];

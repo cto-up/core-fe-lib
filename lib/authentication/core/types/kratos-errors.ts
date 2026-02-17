@@ -1,8 +1,5 @@
-// types/kratos.ts
-
 /**
  * Standard Kratos error response (most common)
- * Used for authentication/authorization errors, session issues, etc.
  */
 export interface KratosStandardError {
   error: {
@@ -18,7 +15,6 @@ export interface KratosStandardError {
 
 /**
  * Generic error response (simpler format)
- * Sometimes used for basic errors
  */
 export interface KratosGenericError {
   error: {
@@ -31,7 +27,6 @@ export interface KratosGenericError {
 
 /**
  * Flow error with UI messages
- * Used in login, registration, settings, recovery, verification flows
  */
 export interface KratosFlowError {
   id: string;
@@ -45,7 +40,6 @@ export interface KratosFlowError {
     messages?: KratosUIMessage[];
     nodes: KratosUINode[];
   };
-  // Error might be embedded here or separate
   error?: {
     id?: string;
     code?: number;
@@ -55,9 +49,6 @@ export interface KratosFlowError {
   };
 }
 
-/**
- * UI Message structure
- */
 export interface KratosUIMessage {
   id: number;
   text: string;
@@ -65,9 +56,6 @@ export interface KratosUIMessage {
   context?: Record<string, unknown>;
 }
 
-/**
- * UI Node structure (for form fields)
- */
 export interface KratosUINode {
   type: "input" | "img" | "a" | "script" | "text";
   group: string;
@@ -82,9 +70,6 @@ export interface KratosUINode {
   };
 }
 
-/**
- * Settings Flow UI Node - used in MFA setup flows
- */
 export interface SettingsFlowNode {
   type: "input" | "img" | "a" | "script" | "text";
   group: string;
@@ -107,11 +92,7 @@ export interface KratosInputAttributes {
   required?: boolean;
   disabled?: boolean;
   node_type: "input";
-  label?: {
-    id: number;
-    text: string;
-    type: string;
-  };
+  label?: { id: number; text: string; type: string };
   pattern?: string;
   autocomplete?: string;
 }
@@ -126,11 +107,7 @@ export interface KratosImageAttributes {
 
 export interface KratosAnchorAttributes {
   href: string;
-  title: {
-    id: number;
-    text: string;
-    type: string;
-  };
+  title: { id: number; text: string; type: string };
   id: string;
   node_type: "a";
 }
@@ -157,20 +134,14 @@ export interface KratosScriptAttributes {
   node_type: "script";
 }
 
-/**
- * Union type for all possible Kratos error formats
- */
 export type KratosErrorResponse =
   | KratosStandardError
   | KratosGenericError
   | KratosFlowError
   | string
-  | { message: string } // Sometimes just { message: "error" }
-  | { error: string }; // Sometimes { error: "description" }
+  | { message: string }
+  | { error: string };
 
-/**
- * Normalized error structure after parsing
- */
 export interface ParsedKratosError {
   id?: string;
   code: number;
