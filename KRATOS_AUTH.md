@@ -36,25 +36,25 @@ WebAuthn credentials are bound to the auth subdomain to ensure same-origin polic
 
 ### 1. Kratos Proxy (Development)
 
-Vite proxies Kratos API to avoid CORS issues:
+Vite proxies both Kratos and backend API through the dev server to avoid CORS issues:
 
 ```typescript
 // vite.config.ts
 server: {
   proxy: {
+    // Proxy Kratos API through Vite dev server
     "/kratos": {
-      target: "http://localhost:4433",
+      target: "http://localhost:4433", // Internal Kratos port
       changeOrigin: true,
       rewrite: (path) => path.replace(/^\/kratos/, ""),
-      configure: (proxy) => {
-        proxy.on("proxyReq", (proxyReq) => {
-              // Normalization: Tell Kratos it's being accessed via the auth domain
-              proxyReq.setHeader("Host", "auth.ctoup.localhost");
-              proxyReq.setHeader("Origin", "http://auth.ctoup.localhost");
-              // Add this to help Kratos understand the proxy setup
-              proxyReq.setHeader("X-Forwarded-Host", "auth.ctoup.localhost");
+      configure: (proxy, _options) => {
+        proxy.on("proxyReq", (proxyReq, req, res) => {
+          // Tell Kratos it's being accessed via the auth domain
+          proxyReq.setHeader("Host", "auth.ctoup.localhost");
+          proxyReq.setHeader("Origin", "http://auth.ctoup.localhost");
+          proxyReq.setHeader("X-Forwarded-Host", "auth.ctoup.localhost");
         });
-        proxy.on("proxyRes", (proxyRes) => {
+        proxy.on("proxyRes", (proxyRes, req, res) => {
           // Normalize cookies for cross-subdomain access
           const sc = proxyRes.headers["set-cookie"];
           if (sc) {
@@ -65,100 +65,196 @@ server: {
         });
       },
     },
+    // Proxy backend API through Vite dev server
+    "/public-api": {
+      target: "http://localhost:7001",
+      changeOrigin: true,
+      cookieDomainRewrite: false,
+      configure: (proxy, _options) => {
+        proxy.on("error", (err, _req, _res) => {
+          console.log("Backend API proxy error", err);
+        });
+        proxy.on("proxyReq", (proxyReq, req, _res) => {
+          // Forward headers for CORS
+          let origin = req.headers.origin || req.headers.Origin;
+          if (!origin && req.headers.referer) {
+            try {
+              const refererUrl = new URL(req.headers.referer);
+              origin = refererUrl.origin;
+            } catch {}
+          }
+          if (origin) {
+            proxyReq.setHeader("X-Forwarded-Origin", origin);
+          }
+        });
+      },
+    },
   },
 }
 ```
 
 ### 2. Library Initialization
 
-Initialize `core-fe-lib` before any API calls:
+Initialize `core-fe-lib` and axios before any API calls. This must be called once at app startup, before creating the Vue app:
 
 ```typescript
-// src/boot/kratos-api.ts
-import { configureKratos } from "core-fe-lib/authentication";
+// src/boot/kratos.ts
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { OpenAPI } from "core-fe-lib/openapi/core";
+import {
+  configureKratos,
+  kratosService,
+  isAal2Required,
+  handleAal2Error,
+  useAal2Store,
+} from "core-fe-lib/authentication/vue";
+import { useRoute } from "vue-router";
 
 export function initializeAuth() {
+  // Set base URL from environment variable
+  // If empty, use relative URLs (for Vite proxy in development)
   const baseURL = import.meta.env.VITE_HTTP_API || "";
   const kratosPublicUrl = baseURL + "/kratos";
 
-  // Configure shared library
+  // Configure the shared Kratos library
   configureKratos({ publicUrl: kratosPublicUrl });
 
-  // Setup axios defaults
+  // Set axios defaults
   axios.defaults.baseURL = baseURL;
   axios.defaults.withCredentials = true;
 
-  // Setup interceptors (see below)
+  // Configure OpenAPI client
+  OpenAPI.BASE = ""; // axios will handle baseURL
+  OpenAPI.WITH_CREDENTIALS = true;
+  OpenAPI.TOKEN = async () => {
+    try {
+      const session = await kratosService.getSession();
+      return session?.id || "";
+    } catch {
+      return ""; // Return empty for public endpoints
+    }
+  };
+
+  // Setup axios interceptors (see below)
 }
 ```
 
 ```typescript
 // src/main.ts
+import { createApp } from "vue";
 import { initializeAuth } from "@/boot/kratos-api";
 
-initializeAuth(); // MUST be called before createApp
+initializeAuth(); // MUST be called before creating the app
+const app = createApp(App);
+// ... rest of setup
 ```
 
 ## Session Management
 
 ### Axios Request Interceptor
 
-Automatically adds session token and tenant context to API requests:
+Automatically adds session token and tenant context to API requests (excludes Kratos self-service flows):
 
 ```typescript
-axios.interceptors.request.use(async (config) => {
-  // Skip Kratos self-service flows
-  if (config.url?.includes("/self-service/")) {
-    return config;
-  }
-
-  // Extract session cookie and send as header
-  const sessionCookie = document.cookie
-    .split(";")
-    .find((c) => c.trim().startsWith("ory_kratos_session="));
-
-  if (sessionCookie) {
-    const sessionToken = sessionCookie.split("=")[1].trim();
-    config.headers["X-Session-Token"] = sessionToken;
-  }
-
-  // Add tenant context from session
-  const session = await kratosService.getSession();
-  if (session?.active) {
-    const tenantID = session.identity.metadata_public?.tenant_id;
-    if (tenantID) {
-      config.headers["X-Tenant-ID"] = tenantID;
+// Inside initializeAuth()
+axios.interceptors.request.use(
+  async (config) => {
+    // Skip modifying Kratos self-service flows (they have their own CSRF tokens)
+    if (
+      config.url?.startsWith(kratosPublicUrl) ||
+      config.url?.includes("/self-service/")
+    ) {
+      return config; // Don't modify Kratos flow requests
     }
-  }
 
-  return config;
-});
+    // Extract session cookie and send as header for backend API
+    const cookies = document.cookie.split(";");
+    const sessionCookie = cookies.find((c) =>
+      c.trim().startsWith("ory_kratos_session=")
+    );
+    if (sessionCookie) {
+      const sessionToken = sessionCookie.split("=")[1].trim();
+      config.headers["X-Session-Token"] = sessionToken;
+    }
+
+    try {
+      // Get current Kratos session for tenant context
+      const session = await kratosService.getSession();
+      if (session?.active) {
+        // Add tenant context from session metadata if available
+        const tenantID = session.identity.metadata_public?.tenant_id;
+        if (tenantID) {
+          config.headers["X-Tenant-ID"] = tenantID;
+        }
+      }
+    } catch {
+      // Silently ignore session errors during recovery/registration flows
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 ```
 
 ### Axios Response Interceptor
 
-Handles AAL2 (MFA) challenges and session expiration:
+Handles AAL2 (MFA) challenges, session expiration, and auth flow protection:
 
 ```typescript
+// Inside initializeAuth()
 axios.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    // Handle AAL2 errors (MFA required)
+    const originalRequest = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+      _aal2Retry?: boolean;
+    };
+
+    // Handle AAL2 errors first (MFA required)
     if (isAal2Required(error)) {
-      return handleAal2Error(error, originalRequest);
+      console.log("🔐 AAL2 required error detected in interceptor");
+      const aal2Store = useAal2Store();
+      return handleAal2Error(error, originalRequest, aal2Store);
     }
 
     // Handle 401 (session expired)
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const session = await kratosService.getSession();
-      if (session?.active) {
-        // Retry with fresh session
-        return axios(originalRequest);
-      } else {
-        // Redirect to signin
-        globalThis.location.href = "/signin";
+      // Don't redirect during auth flows (signin, signup, recovery, etc.)
+      const currentRoute = useRoute();
+      const isAuthFlow = !currentRoute.matched.some(
+        (record) => record.meta.requiresAuth
+      );
+
+      try {
+        // Try to get fresh session
+        const session = await kratosService.getSession();
+
+        if (session?.active) {
+          // Update session token and retry
+          originalRequest.headers["X-Session-Token"] = session.id;
+
+          const tenantID = session.identity.metadata_public?.tenant_id;
+          if (tenantID) {
+            originalRequest.headers["X-Tenant-ID"] = tenantID;
+          }
+
+          return axios(originalRequest);
+        } else if (!isAuthFlow) {
+          // Session is invalid, redirect to signin (but not during auth flows)
+          console.warn("Session expired, redirecting to login");
+          globalThis.location.href = "/signin";
+        }
+      } catch (refreshError) {
+        console.error("Session refresh failed:", refreshError);
+        if (!isAuthFlow) {
+          globalThis.location.href = "/signin";
+        }
+        throw refreshError;
       }
     }
 
@@ -439,12 +535,14 @@ export function buildWebAuthnVerifyUrl(returnTo?: string): string {
 
 ### Nginx Configuration
 
-Proxy Kratos and normalize cookies:
+Proxy Kratos with CORS and origin validation, and proxy backend API:
 
 ```nginx
 # Kratos public API
 location /kratos/ {
     proxy_pass http://kratos:4433/;
+
+    # Spoof headers so Kratos sees auth subdomain as origin
     proxy_set_header Host auth.yourdomain.com;
     proxy_set_header X-Forwarded-Host auth.yourdomain.com;
     proxy_set_header X-Forwarded-Proto $scheme;
