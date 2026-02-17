@@ -12,6 +12,7 @@ import {
   extractRecoveryCodes,
   getSecretFromFlow,
 } from "../utils/kratos-flow-helpers";
+import { buildWebAuthnRegisterUrl } from "../utils/auth-domain";
 
 /**
  * Type for nodes returned from settings flow/response
@@ -510,225 +511,134 @@ export function useMfa() {
   }
 
   async function setupWebAuthn() {
-    try {
-      const session = await kratosService.getSession();
-      if (!session) {
-        notifications.error(
-          t("core.mfa.notifications.notAuthenticated"),
-          "Please log in to set up WebAuthn"
-        );
-        return;
-      }
+    const registerUrl = buildWebAuthnRegisterUrl();
 
-      const flow = await MfaService.initializeSettingsFlow();
+    console.log("🔐 Navigating to auth subdomain for WebAuthn registration:", {
+      currentUrl: globalThis.location.href,
+      registerUrl,
+    });
 
-      const flowNodes = (flow.ui?.nodes as FlowNode[] | undefined) || [];
+    // Navigate to auth subdomain for same-origin WebAuthn ceremony
+    globalThis.location.href = registerUrl;
+  }
 
-      console.log("🔍 Settings flow for WebAuthn:", {
-        flowId: flow.id,
-        allNodes: flowNodes.map((n: FlowNode) => ({
-          type: n.type,
-          group: n.group,
-          name: n.attributes?.name,
-          nodeType: (n.attributes as Record<string, unknown>)?.node_type,
-        })),
-        action: (flow.ui as Record<string, unknown> | undefined)?.action,
-        method: (flow.ui as Record<string, unknown> | undefined)?.method,
-      });
-
-      // Check what groups are available in the flow
-      const availableGroups = new Set(
-        flowNodes.map((n: FlowNode) => n.group).filter(Boolean)
+  /**
+   * Perform the actual WebAuthn registration ceremony.
+   * Called from the auth subdomain RegisterWebauthnPage.
+   * Returns true on success, throws on failure.
+   */
+  async function performWebAuthnRegistration(): Promise<void> {
+    const session = await kratosService.getSession();
+    if (!session?.identity?.traits?.email) {
+      notifications.error(
+        t("core.mfa.notifications.notAuthenticated"),
+        "Please log in to set up WebAuthn"
       );
-      console.log("📋 Available groups in flow:", Array.from(availableGroups));
+      throw new Error("No active session found");
+    }
 
-      // Check if WebAuthn nodes are present in the flow
-      const webauthnNodes = findNodesByGroup(flowNodes, "webauthn");
+    const flow = await MfaService.initializeSettingsFlow();
+    const flowNodes = (flow.ui?.nodes as FlowNode[] | undefined) || [];
 
-      console.log(
-        "🔑 WebAuthn nodes found:",
-        webauthnNodes.length,
-        webauthnNodes.map((n: FlowNode) => ({
-          type: n.type,
-          name: n.attributes?.name,
-          value: n.attributes?.value,
-          disabled: (n.attributes as Record<string, unknown>)?.disabled,
-          required: (n.attributes as Record<string, unknown>)?.required,
-          onclick: (n.attributes as Record<string, unknown>)?.onclick
-            ? "present"
-            : "missing",
-        }))
+    const webauthnNodes = findNodesByGroup(flowNodes, "webauthn");
+    if (!webauthnNodes || webauthnNodes.length === 0) {
+      notifications.error(
+        t("core.mfa.notifications.webauthnError"),
+        "WebAuthn is not available in this settings flow. Please refresh and try again."
       );
+      throw new Error("WebAuthn is not available in this settings flow");
+    }
 
-      if (!webauthnNodes || webauthnNodes.length === 0) {
-        console.error("❌ No WebAuthn nodes in settings flow");
-        console.error("Available groups:", Array.from(availableGroups));
-        notifications.error(
-          t("core.mfa.notifications.webauthnError"),
-          "WebAuthn is not available in this settings flow. Please refresh and try again."
-        );
-        return;
-      }
+    const csrfNode = findNodeByName(flowNodes, "csrf_token");
+    const csrf = (csrfNode?.attributes?.value as string) || "";
+    if (!csrf) {
+      throw new Error("Missing CSRF token");
+    }
 
-      // Extract CSRF token
-      const csrfNode = findNodeByName(flowNodes, "csrf_token");
-      const csrf = (csrfNode?.attributes?.value as string) || "";
+    let displayName = "Security Key";
+    const email = (
+      session?.identity?.traits as Record<string, unknown> | undefined
+    )?.email;
+    if (email) {
+      displayName = email as string;
+    }
+    // Step 1: Extract the WebAuthn challenge from the trigger button
+    // The challenge is already present in the flow's webauthn_register_trigger node
 
-      if (!csrf) {
-        console.error("❌ No CSRF token found in flow");
-        notifications.error(
-          t("core.mfa.notifications.webauthnError"),
-          "Missing CSRF token. Please refresh and try again."
-        );
-        return;
-      }
-
-      // Get user email from session/identity
-      let displayName = "Security Key";
-      const email = (
-        session?.identity?.traits as Record<string, unknown> | undefined
-      )?.email;
-      if (email) {
-        displayName = email as string;
-      }
-
-      console.log(
-        "🔐 Starting WebAuthn registration with display name:",
-        displayName
+    const triggerNode = findNodeByName(flowNodes, "webauthn_register_trigger");
+    if (!triggerNode?.attributes?.value) {
+      notifications.error(
+        t("core.mfa.notifications.webauthnError"),
+        "WebAuthn challenge not found. Please refresh and try again."
       );
+      throw new Error("WebAuthn challenge not found");
+    }
 
-      // Step 1: Extract the WebAuthn challenge from the trigger button
-      // The challenge is already present in the flow's webauthn_register_trigger node
-      const triggerNode = findNodeByName(
-        flowNodes,
-        "webauthn_register_trigger"
-      );
+    // Parse the challenge from the trigger button's value
+    const publicKeyOptions = JSON.parse(String(triggerNode.attributes.value));
 
-      if (!triggerNode?.attributes?.value) {
-        console.error("❌ No WebAuthn challenge found in trigger node");
-        notifications.error(
-          t("core.mfa.notifications.webauthnError"),
-          "WebAuthn challenge not found. Please refresh and try again."
-        );
-        return;
-      }
+    // Convert base64url strings to ArrayBuffers for WebAuthn API
+    interface PublicKeyCredentialCreationOptionsExt extends Omit<
+      PublicKeyCredentialCreationOptions,
+      "challenge" | "user" | "excludeCredentials"
+    > {
+      challenge: ArrayBuffer;
+      user: Omit<PublicKeyCredentialCreationOptions["user"], "id"> & {
+        id: ArrayBuffer;
+      };
+      excludeCredentials?: Array<
+        Omit<PublicKeyCredentialDescriptor, "id"> & { id: ArrayBuffer }
+      >;
+    }
 
-      // Parse the challenge from the trigger button's value
-      const publicKeyOptions = JSON.parse(String(triggerNode.attributes.value));
-      console.log(
-        "🔑 Extracted publicKey options from trigger:",
-        publicKeyOptions
-      );
-
-      // Convert base64url strings to ArrayBuffers for WebAuthn API
-      interface PublicKeyCredentialCreationOptionsExt extends Omit<
-        PublicKeyCredentialCreationOptions,
-        "challenge" | "user" | "excludeCredentials"
-      > {
-        challenge: ArrayBuffer;
-        user: Omit<PublicKeyCredentialCreationOptions["user"], "id"> & {
-          id: ArrayBuffer;
-        };
-        excludeCredentials?: Array<
-          Omit<PublicKeyCredentialDescriptor, "id"> & { id: ArrayBuffer }
-        >;
-      }
-
-      const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptionsExt =
-        {
-          ...publicKeyOptions.publicKey,
-          challenge: base64urlToArrayBuffer(
-            publicKeyOptions.publicKey.challenge
-          ),
-          user: {
-            ...publicKeyOptions.publicKey.user,
-            id: base64urlToArrayBuffer(publicKeyOptions.publicKey.user.id),
-          },
-          excludeCredentials:
-            publicKeyOptions.publicKey.excludeCredentials?.map(
-              (cred: Record<string, unknown>) => ({
-                ...cred,
-                id: base64urlToArrayBuffer(cred.id as string),
-              })
-            ) || [],
-        };
-
-      console.log("🔐 Calling browser WebAuthn API...");
-
-      // Step 2: Call the browser's WebAuthn API
-      const credential = await navigator.credentials.create({
-        publicKey:
-          publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
-      });
-
-      if (!credential) {
-        throw new Error("WebAuthn credential creation was cancelled");
-      }
-
-      console.log("✅ WebAuthn credential created:", credential);
-
-      // Step 3: Format the credential response for Kratos
-      const credentialResponse = credential as PublicKeyCredential;
-      const response =
-        credentialResponse.response as AuthenticatorAttestationResponse;
-
-      const credentialData = {
-        id: credentialResponse.id,
-        rawId: arrayBufferToBase64url(credentialResponse.rawId),
-        type: credentialResponse.type,
-        response: {
-          attestationObject: arrayBufferToBase64url(response.attestationObject),
-          clientDataJSON: arrayBufferToBase64url(response.clientDataJSON),
+    const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptionsExt =
+      {
+        ...publicKeyOptions.publicKey,
+        challenge: base64urlToArrayBuffer(publicKeyOptions.publicKey.challenge),
+        user: {
+          ...publicKeyOptions.publicKey.user,
+          id: base64urlToArrayBuffer(publicKeyOptions.publicKey.user.id),
         },
+        excludeCredentials:
+          publicKeyOptions.publicKey.excludeCredentials?.map(
+            (cred: Record<string, unknown>) => ({
+              ...cred,
+              id: base64urlToArrayBuffer(cred.id as string),
+            })
+          ) || [],
       };
 
-      console.log("📤 Submitting credential data to Kratos");
+    // Step 2: Call the browser's WebAuthn API
+    const credential = await navigator.credentials.create({
+      publicKey:
+        publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
+    });
 
-      // Step 4: Submit the credential back to Kratos
-      await kratosService.submitSettingsMethod(flow.id || "", "webauthn", {
-        webauthn_register: JSON.stringify(credentialData),
-        webauthn_register_displayname: displayName,
-        csrf_token: csrf,
-      });
-
-      await loadMFAStatus();
-      notifications.success(
-        t("core.mfa.notifications.webauthnEnabled"),
-        t("core.mfa.notifications.webauthnEnabled")
-      );
-    } catch (error: unknown) {
-      const webauthnError = error as {
-        name?: string;
-        message?: string;
-        response?: { data?: unknown; status?: number };
-      } | null;
-
-      console.error("❌ WebAuthn setup failed:", error);
-      console.error("Error details:", {
-        message: webauthnError?.message,
-        response: webauthnError?.response?.data,
-        status: webauthnError?.response?.status,
-      });
-
-      // Handle specific WebAuthn errors
-      if (webauthnError?.name === "NotAllowedError") {
-        notifications.error(
-          t("core.mfa.notifications.webauthnError"),
-          "Security key registration was cancelled or timed out"
-        );
-      } else if (webauthnError?.name === "NotSupportedError") {
-        notifications.error(
-          t("core.mfa.notifications.webauthnError"),
-          "WebAuthn is not supported by your browser"
-        );
-      } else {
-        notifications.error(
-          t("core.mfa.notifications.webauthnError"),
-          getUserFriendlyMessage(error) ??
-            t("core.mfa.notifications.webauthnError")
-        );
-      }
+    if (!credential) {
+      throw new Error("WebAuthn credential creation was cancelled");
     }
+
+    // Step 3: Format the credential response for Kratos
+    const credentialResponse = credential as PublicKeyCredential;
+    const response =
+      credentialResponse.response as AuthenticatorAttestationResponse;
+
+    const credentialData = {
+      id: credentialResponse.id,
+      rawId: arrayBufferToBase64url(credentialResponse.rawId),
+      type: credentialResponse.type,
+      response: {
+        attestationObject: arrayBufferToBase64url(response.attestationObject),
+        clientDataJSON: arrayBufferToBase64url(response.clientDataJSON),
+      },
+    };
+
+    // Step 4: Submit the credential back to Kratos
+    await kratosService.submitSettingsMethod(flow.id || "", "webauthn", {
+      webauthn_register: JSON.stringify(credentialData),
+      webauthn_register_displayname: displayName,
+      csrf_token: csrf,
+    });
   }
 
   async function disableWebAuthn() {
@@ -946,6 +856,7 @@ export function useMfa() {
     handleDownloadRecoveryCodes,
     disableTOTP,
     setupWebAuthn,
+    performWebAuthnRegistration,
     disableWebAuthn,
     generateRecoveryCodes,
     downloadRecoveryCodes,

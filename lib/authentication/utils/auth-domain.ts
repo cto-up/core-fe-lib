@@ -36,3 +36,13 @@ export function buildWebAuthnVerifyUrl(returnTo?: string): string {
   const returnUrl = returnTo || globalThis.location.href;
   return `${authOrigin}/verify/webauthn?return_to=${encodeURIComponent(returnUrl)}`;
 }
+
+/**
+ * Build a WebAuthn registration URL with return_to parameter
+ * Redirects to auth subdomain so the credential is bound to the correct origin
+ */
+export function buildWebAuthnRegisterUrl(returnTo?: string): string {
+  const authOrigin = getAuthOrigin();
+  const returnUrl = returnTo || globalThis.location.href;
+  return `${authOrigin}/register/webauthn?return_to=${encodeURIComponent(returnUrl)}`;
+}

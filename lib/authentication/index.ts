@@ -24,7 +24,11 @@ export type {
 } from "./services/kratos.service";
 
 // Utils
-export { getAuthOrigin, buildWebAuthnVerifyUrl } from "./utils/auth-domain";
+export {
+  getAuthOrigin,
+  buildWebAuthnVerifyUrl,
+  buildWebAuthnRegisterUrl,
+} from "./utils/auth-domain";
 export { updateUserFromSession } from "./utils/kratos-update-user";
 export {
   KratosErrorIds,
