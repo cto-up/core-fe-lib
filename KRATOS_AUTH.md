@@ -47,10 +47,24 @@ server: {
       rewrite: (path) => path.replace(/^\/kratos/, ""),
       configure: (proxy) => {
         proxy.on("proxyReq", (proxyReq) => {
-          // Normalize headers for Kratos
-          proxyReq.setHeader("Host", "auth.ctoup.localhost");
-          proxyReq.setHeader("Origin", "http://auth.ctoup.localhost");
-          proxyReq.setHeader("X-Forwarded-Host", "auth.ctoup.localhost");
+          // 1. Validate the incoming Origin before "lying" to Kratos
+            if (
+              origin.endsWith(".ctoup.localhost") ||
+              origin === "http://ctoup.localhost"
+            ) {
+              // Normalization: Tell Kratos it's being accessed via the auth domain
+              proxyReq.setHeader("Host", "auth.ctoup.localhost");
+              proxyReq.setHeader("Origin", "http://auth.ctoup.localhost");
+              // Add this to help Kratos understand the proxy setup
+              proxyReq.setHeader("X-Forwarded-Host", "auth.ctoup.localhost");
+            } else {
+              // 2. If it's from example.com or anywhere else, reject or don't spoof
+              console.warn(
+                `Blocked proxy attempt from unauthorized origin: ${origin}`
+              );
+              res.writeHead(403, { "Content-Type": "text/plain" });
+              res.end("Forbidden: Origin not allowed by proxy.");
+            }
         });
         proxy.on("proxyRes", (proxyRes) => {
           // Normalize cookies for cross-subdomain access
@@ -161,7 +175,7 @@ axios.interceptors.response.use(
     }
 
     throw error;
-  },
+  }
 );
 ```
 
