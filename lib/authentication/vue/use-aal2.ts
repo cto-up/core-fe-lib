@@ -36,44 +36,42 @@ export function useAal2() {
 
   async function submitTotpVerification() {
     if (!aal2Store.state.flowId || !aal2Store.state.totpCode) {
-      aal2Store.updateState({ error: t("core.mfa.setup.totp.enterCode") });
+      aal2Store.updateState({ error: t("mfa.setup.totp.enterCode") });
       return;
     }
 
     try {
       await aal2Store.manager.submitTotp();
       notifications.success(
-        t("core.mfa.notifications.verificationSuccess"),
-        t("core.mfa.notifications.verificationSuccessDesc")
+        t("mfa.notifications.verificationSuccess"),
+        t("mfa.notifications.verificationSuccessDesc")
       );
     } catch (error: unknown) {
       console.error("TOTP verification failed:", error);
       aal2Store.updateState({
         error:
-          t("core.mfa.setup.totp.invalidCode") ||
-          "Invalid code. Please try again.",
+          t("mfa.setup.totp.invalidCode") || "Invalid code. Please try again.",
       });
     }
   }
 
   async function submitLookupVerification() {
     if (!aal2Store.state.flowId || !aal2Store.state.lookupCode) {
-      aal2Store.updateState({ error: t("core.mfa.recovery.enterCode") });
+      aal2Store.updateState({ error: t("mfa.recovery.enterCode") });
       return;
     }
 
     try {
       await aal2Store.manager.submitLookup();
       notifications.success(
-        t("core.mfa.notifications.verificationSuccess"),
-        t("core.mfa.notifications.verificationSuccessDesc")
+        t("mfa.notifications.verificationSuccess"),
+        t("mfa.notifications.verificationSuccessDesc")
       );
     } catch (error: unknown) {
       console.error("Lookup verification failed:", error);
       aal2Store.updateState({
         error:
-          t("core.mfa.recovery.invalidCode") ||
-          "Invalid code. Please try again.",
+          t("mfa.recovery.invalidCode") || "Invalid code. Please try again.",
       });
     }
   }
