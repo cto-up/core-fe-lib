@@ -86,10 +86,7 @@ export const useKratosAuth = () => {
       const redirectTo = returnTo || "/";
       router.push(redirectTo);
 
-      notifications.success(
-        t("core.auth.success"),
-        t("core.auth.loginSuccess")
-      );
+      notifications.success(t("auth.success"), t("auth.loginSuccess"));
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{
         ui?: { messages?: Array<{ text: string }> };
@@ -100,9 +97,9 @@ export const useKratosAuth = () => {
         axiosError.response?.data?.ui?.messages?.[0]?.text ||
         axiosError.response?.data?.error?.message ||
         axiosError.message ||
-        t("core.auth.loginError");
+        t("auth.loginError");
 
-      notifications.error(t("core.auth.error"), errorMessage);
+      notifications.error(t("auth.error"), errorMessage);
       throw error;
     } finally {
       userStore.setIsLoading(false);
@@ -153,10 +150,7 @@ export const useKratosAuth = () => {
       sessionStorage.removeItem("pending_tenant");
       router.push("/user/me/profile");
 
-      notifications.success(
-        t("core.auth.success"),
-        t("core.auth.registrationSuccess")
-      );
+      notifications.success(t("auth.success"), t("auth.registrationSuccess"));
     } catch (error: unknown) {
       const axiosError = error as AxiosError<{
         ui?: { messages?: Array<{ text: string }> };
@@ -167,9 +161,9 @@ export const useKratosAuth = () => {
         axiosError.response?.data?.ui?.messages?.[0]?.text ||
         axiosError.response?.data?.error?.message ||
         axiosError.message ||
-        t("core.auth.registrationError");
+        t("auth.registrationError");
 
-      notifications.error(t("core.auth.error"), errorMessage);
+      notifications.error(t("auth.error"), errorMessage);
       throw error;
     } finally {
       userStore.setIsLoading(false);
@@ -182,15 +176,12 @@ export const useKratosAuth = () => {
       await kratosService.logout();
       await updateUserFromSession(null);
       router.push({ name: "home" });
-      notifications.success(
-        t("core.auth.success"),
-        t("core.auth.logoutSuccess")
-      );
+      notifications.success(t("auth.success"), t("auth.logoutSuccess"));
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       notifications.error(
-        t("core.auth.error"),
-        axiosError.message || t("core.auth.logoutError")
+        t("auth.error"),
+        axiosError.message || t("auth.logoutError")
       );
     } finally {
       userStore.setIsLoading(false);
@@ -219,14 +210,14 @@ export const useKratosAuth = () => {
       });
 
       notifications.success(
-        t("core.auth.success"),
-        t("core.auth.passwordResetEmailSent")
+        t("auth.success"),
+        t("auth.passwordResetEmailSent")
       );
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
       notifications.error(
-        t("core.auth.error"),
-        axiosError.message || t("core.auth.passwordResetError")
+        t("auth.error"),
+        axiosError.message || t("auth.passwordResetError")
       );
       throw error;
     } finally {
