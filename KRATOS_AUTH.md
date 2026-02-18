@@ -579,3 +579,287 @@ COOKIES_DOMAIN=.yourdomain.com
 - **AAL1**: Standard authentication (username/password)
 - **AAL2**: Enhanced authentication (AAL1 + MFA)
 - **Same-Origin Policy**: WebAuthn credentials bound to auth subdomain for cross-tenant compatibility
+
+---
+
+## Next.js (Frontoffice) Implementation Guide
+
+The frontoffice is a Next.js App Router application. The authentication library's framework-agnostic core is ready to use; only the Next.js integration layer needs to be built.
+
+### What's Already Available
+
+Import from `core-fe-lib/authentication` (pure TS, no framework dependency):
+
+- `configureKratos`, `kratosService` — Kratos API calls (session, flows, settings)
+- `Aal2Manager` — pure state machine for AAL2 verification flow
+- `isAal2Required`, `handleAal2Error`, `getUserFriendlyMessage` — error processing
+- `buildWebAuthnRegisterUrl`, `buildWebAuthnVerifyUrl`, `getAuthOrigin` — URL builders
+- `extractRecoveryCodes`, `getSecretFromFlow` — flow data extraction
+- All Kratos types (`KratosSession`, `Aal2VerificationState`, `IStateStore`, etc.)
+
+### Server vs Client Boundary
+
+The core library uses `globalThis.location`, `sessionStorage`, `document.cookie`, and `navigator.credentials` — all browser APIs. This means:
+
+- **Core functions are client-only** — always use them inside `"use client"` components or in `useEffect`
+- **Server-side session checks** should call Kratos directly via `fetch` in middleware or Server Components, forwarding the `Cookie` header from the incoming request
+- **`kratosService`** must NOT be called from Server Components or middleware (it relies on browser globals)
+
+### File Structure
+
+```
+authentication/
+├── index.ts          # core exports (already done)
+├── vue.ts            # Vue re-exports (already done)
+├── next.ts           # NEW — re-exports core + Next.js-specific
+├── core/             # already done, shared
+└── next/             # NEW
+    ├── auth-provider.tsx       # React Context for session + AAL2 state
+    ├── use-kratos-auth.ts      # "use client" hook
+    ├── use-aal2.ts             # "use client" hook
+    ├── use-mfa.ts              # "use client" hook
+    ├── use-tenant.ts           # "use client" hook
+    ├── kratos-update-user.ts   # client-side session sync
+    └── middleware-helpers.ts   # server-side session validation
+```
+
+Entry point:
+
+```typescript
+// authentication/next.ts
+"use client";
+export * from "./index";
+export { AuthProvider, useAuth } from "./next/auth-provider";
+export { useAal2 } from "./next/use-aal2";
+export { useMfa } from "./next/use-mfa";
+export { useTenant } from "./next/use-tenant";
+export { updateUserFromSession } from "./next/kratos-update-user";
+
+// Server-safe (no "use client" needed by consumers)
+export { validateSession } from "./next/middleware-helpers";
+```
+
+### Key Patterns
+
+#### 1. Middleware — Server-Side Session Check
+
+Next.js middleware runs on the edge. Call Kratos directly with `fetch`, forwarding cookies:
+
+```typescript
+// frontoffice/middleware.ts
+import { NextRequest, NextResponse } from "next/server";
+
+const KRATOS_PUBLIC_URL = process.env.KRATOS_PUBLIC_URL!; // e.g. http://kratos:4433
+
+export async function middleware(req: NextRequest) {
+  const cookie = req.headers.get("cookie") || "";
+
+  const res = await fetch(`${KRATOS_PUBLIC_URL}/sessions/whoami`, {
+    headers: { cookie },
+  });
+
+  if (!res.ok && req.nextUrl.pathname !== "/signin") {
+    return NextResponse.redirect(new URL("/signin", req.url));
+  }
+
+  return NextResponse.next();
+}
+
+export const config = {
+  matcher: ["/dashboard/:path*", "/settings/:path*"],
+};
+```
+
+#### 2. AuthProvider — Client-Side Session Context
+
+Wrap the app in a provider that initializes `kratosService` and exposes session state:
+
+```typescript
+// next/auth-provider.tsx
+"use client";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { configureKratos, kratosService, type KratosSession } from "../index";
+
+interface AuthContextValue {
+  session: KratosSession | null;
+  loading: boolean;
+  refresh: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+export function AuthProvider({ children, kratosUrl }: { children: ReactNode; kratosUrl: string }) {
+  const [session, setSession] = useState<KratosSession | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    configureKratos({ publicUrl: kratosUrl });
+    refresh();
+  }, []);
+
+  async function refresh() {
+    try {
+      setLoading(true);
+      const s = await kratosService.getSession();
+      setSession(s);
+    } catch {
+      setSession(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <AuthContext.Provider value={{ session, loading, refresh }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
+}
+```
+
+Mount in root layout:
+
+```typescript
+// frontoffice/app/layout.tsx
+import { AuthProvider } from "core-fe-lib/authentication/next";
+
+export default function RootLayout({ children }) {
+  return (
+    <AuthProvider kratosUrl={process.env.NEXT_PUBLIC_KRATOS_URL || "/kratos"}>
+      {children}
+    </AuthProvider>
+  );
+}
+```
+
+#### 3. AAL2 Store → Zustand
+
+Zustand is the recommended state management for the Next.js layer. It mirrors Pinia's simplicity, supports selectors for granular re-renders, and works outside React components (critical for axios interceptors and `Aal2Manager`):
+
+```typescript
+// next/aal2-store.ts
+import { create } from "zustand";
+import type { Aal2VerificationState, IStateStore } from "../core/aal2-manager";
+
+interface Aal2Store extends Aal2VerificationState {
+  update: (partial: Partial<Aal2VerificationState>) => void;
+  reset: () => void;
+}
+
+export const useAal2Store = create<Aal2Store>((set) => ({
+  show: false,
+  flowId: null,
+  availableMethods: [],
+  selectedMethod: null,
+  totpCode: "",
+  error: "",
+  update: (partial) => set(partial),
+  reset: () => set({ show: false, flowId: null, error: "" }),
+}));
+
+// IStateStore adapter — works outside components (interceptors, Aal2Manager)
+export const aal2StoreAdapter: IStateStore = {
+  getState: () => useAal2Store.getState(),
+  setState: (partial) => useAal2Store.getState().update(partial),
+};
+```
+
+This can be called from axios interceptors without any provider or hook context:
+
+```typescript
+// In interceptor setup
+import { aal2StoreAdapter } from "core-fe-lib/authentication/next";
+handleAal2Error(error, originalRequest, aal2StoreAdapter);
+```
+
+#### 4. Hooks — Vue Composable Mapping
+
+| Vue (`vue/`)                 | Next.js (`next/`)                         |
+| ---------------------------- | ----------------------------------------- |
+| `ref(value)`                 | `useState(value)`                         |
+| `onMounted(fn)`              | `useEffect(fn, [])`                       |
+| `inject(key)`                | `useContext(SomeContext)`                 |
+| `useMfa()` composable        | `useMfa()` hook (`"use client"`)          |
+| Pinia store                  | Zustand store                             |
+| Vue Router `useRoute()`      | `usePathname()` / `useSearchParams()`     |
+| `globalThis.location.href =` | `router.push()` or `window.location.href` |
+
+#### 5. Pending MFA Actions (sessionStorage)
+
+The `sessionStorage` pattern works as-is in Next.js client components. Call `replayPendingMfaAction()` in a `useEffect` on the MFA settings page:
+
+```typescript
+// frontoffice/app/settings/security/page.tsx
+"use client";
+import { useEffect } from "react";
+import { useMfa } from "core-fe-lib/authentication/next";
+
+export default function SecuritySettingsPage() {
+  const { loadMFAStatus, replayPendingMfaAction, ...mfa } = useMfa();
+
+  useEffect(() => {
+    loadMFAStatus().then(() => replayPendingMfaAction());
+  }, []);
+
+  // render MFA settings UI...
+}
+```
+
+#### 6. Axios Interceptors
+
+Configure once in `AuthProvider`'s `useEffect`, or in a dedicated `useAxiosInterceptors()` hook called from the root layout client component. The interceptor logic is identical to the Vue version — the only difference is using `useAuth()` context instead of Pinia for session state, and `useRouter()` for redirects.
+
+### Environment Variables
+
+```bash
+# Server-side (middleware, API routes)
+KRATOS_PUBLIC_URL=http://kratos:4433
+
+# Client-side (browser)
+NEXT_PUBLIC_KRATOS_URL=/kratos   # proxied via next.config.js rewrites
+```
+
+### Next.js Rewrites (Dev Proxy)
+
+Replace Vite proxy with Next.js rewrites:
+
+```typescript
+// frontoffice/next.config.js
+module.exports = {
+  async rewrites() {
+    return [
+      {
+        source: "/kratos/:path*",
+        destination: "http://localhost:4433/:path*",
+      },
+      {
+        source: "/public-api/:path*",
+        destination: "http://localhost:7001/public-api/:path*",
+      },
+    ];
+  },
+};
+```
+
+### Consumers Import From
+
+```typescript
+// Next.js frontoffice
+import {
+  configureKratos,
+  useMfa,
+  useAuth,
+} from "core-fe-lib/authentication/next";
+
+// Vue backoffice (unchanged)
+import { configureKratos, useMfa } from "core-fe-lib/authentication/vue";
+
+// Framework-agnostic (core only)
+import { configureKratos, kratosService } from "core-fe-lib/authentication";
+```
