@@ -1,10 +1,11 @@
+import { useUserStore } from "../stores/user-store";
+
 export default function useLoggedUser() {
   const getUserPictureURL = () => {
-    if (!localStorage.user) return '';
-    const user = JSON.parse(localStorage.user);
-    if (!user) return '';
-    const userPictureURL = `${process.env.HTTP_API}/public-api/v1/users/${user.uid}/profile/picture`;
-    return userPictureURL;
+    const userStore = useUserStore();
+    const user = userStore.getUser;
+    if (!user) return "";
+    return `${process.env.HTTP_API}/public-api/v1/users/${user.id}/profile/picture`;
   };
 
   return { getUserPictureURL };
