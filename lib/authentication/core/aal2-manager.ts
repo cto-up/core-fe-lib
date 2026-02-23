@@ -38,6 +38,7 @@ export class Aal2Manager {
       totpCode: "",
       lookupCode: "",
       error: "",
+      noMfaRegistered: false,
     });
 
     if (this.verificationResolve) {
@@ -205,6 +206,7 @@ export class Aal2Manager {
       lookupCode: "",
       error: "",
       loading: false,
+      noMfaRegistered: false,
     });
   }
 }

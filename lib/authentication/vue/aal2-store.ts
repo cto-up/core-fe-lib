@@ -46,8 +46,14 @@ export const useAal2Store = defineStore("aal2", () => {
       const { MfaService } = await import("core-fe-lib/openapi/core");
       await manager.initializeFlow(() => MfaService.getMfaStatus());
     } catch (error) {
-      console.error("Failed to initialize AAL2 flow:", error);
-      manager.resolveVerification(false);
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes("No MFA methods available")) {
+        // User has no MFA registered — show the dialog with a prompt to register
+        Object.assign(state.value, { noMfaRegistered: true, loading: false });
+      } else {
+        console.error("Failed to initialize AAL2 flow:", error);
+        manager.resolveVerification(false);
+      }
     }
 
     return promise;
