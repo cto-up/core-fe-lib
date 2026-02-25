@@ -295,6 +295,47 @@ class KratosService {
   }
 
   /**
+   * Activate a recovery link (token-based).
+   * Uses fetch with redirect:"manual" — axios maxRedirects:0 only works in Node.js,
+   * browsers always follow redirects regardless. The 303 from Kratos is the success signal.
+   */
+  async activateRecoveryLink(flowId: string, token: string): Promise<void> {
+    const url = `${this.client.defaults.baseURL}/self-service/recovery?flow=${flowId}&token=${token}`;
+    const resp = await fetch(url, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      redirect: "manual",
+      credentials: "include",
+    });
+
+    // status 0 = opaque redirect, 303 = redirect — both mean Kratos accepted the token
+    if (resp.status !== 0 && resp.status !== 303 && !resp.ok) {
+      const errorData = await resp.json().catch(() => ({}));
+      throw new Error(
+        (errorData as { error?: { message?: string } }).error?.message ||
+          "Invalid or expired recovery token"
+      );
+    }
+
+    console.log("✅ Recovery link activated. Session cookie is now set.");
+  }
+
+  /**
+   * Set a new password using an active settings flow (post-recovery).
+   */
+  async setPasswordAfterRecovery(
+    flowId: string,
+    password: string,
+    csrfToken: string
+  ): Promise<KratosFlowResponse> {
+    const response = await this.client.post(
+      `/self-service/settings?flow=${flowId}`,
+      { method: "password", password, csrf_token: csrfToken }
+    );
+    return response.data;
+  }
+
+  /**
    * Initialize a recovery (password reset) flow
    */
   async initRecoveryFlow(): Promise<KratosFlow> {
@@ -304,15 +345,51 @@ class KratosService {
 
   /**
    * Submit recovery flow
+   * TODO : to refactor to split
    */
   async submitRecoveryFlow(
     flowId: string,
     data: {
-      email: string;
+      email?: string;
+      code?: string;
+      token?: string;
       method: string;
       csrf_token?: string;
     }
   ): Promise<KratosFlowResponse> {
+    // Token/code submissions trigger a 303 redirect that axios follows in the browser,
+    // landing on a URL without the /kratos prefix and causing a 404.
+    // Use fetch with redirect:"manual" to stop at the redirect — the session cookie
+    // is set by the response headers before the redirect is followed.
+    if (data.token || data.code) {
+      const url = `${this.client.defaults.baseURL}/self-service/recovery?flow=${flowId}`;
+      const resp = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+        redirect: "manual",
+        credentials: "include",
+      });
+      // 0 = opaque redirect, 303 = redirect — both mean success
+      if (resp.status !== 0 && resp.status !== 303 && !resp.ok) {
+        const errorData = await resp.json().catch(() => ({}));
+        // Shape as axios-like error so extractKratosError can parse it
+        const e = Object.assign(new Error("Recovery failed"), {
+          isAxiosError: true,
+          response: {
+            status: resp.status,
+            statusText: resp.statusText,
+            data: errorData,
+          },
+        });
+        throw e;
+      }
+      return {};
+    }
+
     const response = await this.client.post(
       `/self-service/recovery?flow=${flowId}`,
       data
