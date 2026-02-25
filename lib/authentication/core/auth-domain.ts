@@ -17,6 +17,12 @@ export function getAuthOrigin(): string {
 
   const authOrigin = `${url.protocol}//auth.${baseDomain}${url.port ? `:${url.port}` : ""}`;
 
+  const pathPrefix = url.pathname.startsWith("/admin") ? "/admin" : "";
+  if (pathPrefix) {
+    console.warn("Beware using pathPrefix", pathPrefix);
+    return `${authOrigin}${pathPrefix}`;
+  }
+
   return authOrigin;
 }
 
