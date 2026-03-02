@@ -17,5 +17,7 @@ export type NewTenant = {
      * Allow users to sign up for this tenant
      */
     allow_sign_up: boolean;
+    is_reseller?: boolean;
+    reseller_id?: string | null;
 };
 

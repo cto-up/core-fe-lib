@@ -1294,6 +1294,7 @@ export class DefaultService {
      * @param sortBy field to sort by
      * @param order sort order
      * @param q starts with
+     * @param resellerId filter by reseller id
      * @returns Tenant tenant response
      * @throws ApiError
      */
@@ -1303,6 +1304,7 @@ export class DefaultService {
         sortBy?: string,
         order?: 'asc' | 'desc',
         q?: string,
+        resellerId?: string,
     ): CancelablePromise<Array<Tenant>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -1313,6 +1315,7 @@ export class DefaultService {
                 'sortBy': sortBy,
                 'order': order,
                 'q': q,
+                'reseller_id': resellerId,
             },
         });
     }

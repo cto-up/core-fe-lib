@@ -61,6 +61,7 @@ export const useInternalUserStore = defineStore("user", {
     isAdmin: (state) => state.user?.roles?.includes(Role.ADMIN),
     isSuperAdmin: (state) => state.user?.roles?.includes(Role.SUPER_ADMIN),
     hasRole: (state) => !!state.user?.roles?.length,
+    isReseller: (state) => state.user?.isReseller ?? false,
     hasPrivilege: (state) => (requiredRole: Role) =>
       hasPrivilege(state.user?.roles ?? [], requiredRole),
   },

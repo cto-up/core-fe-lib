@@ -54,5 +54,14 @@ export async function updateUserFromSession(
     console.warn("⚠️  No roles found. User may not have proper permissions.");
   }
 
+  // Fetch is_reseller from profile endpoint (derived from auth claims server-side)
+  try {
+    const { DefaultService } = await import("core-fe-lib/openapi/core");
+    const profile = await DefaultService.getMeProfile();
+    user.isReseller = profile.is_reseller ?? false;
+  } catch {
+    user.isReseller = false;
+  }
+
   userStore.setUser(user);
 }
