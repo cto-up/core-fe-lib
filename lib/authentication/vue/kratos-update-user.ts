@@ -59,8 +59,10 @@ export async function updateUserFromSession(
     const { DefaultService } = await import("core-fe-lib/openapi/core");
     const profile = await DefaultService.getMeProfile();
     user.isReseller = profile.is_reseller ?? false;
+    user.isActingReseller = profile.is_acting_reseller ?? false;
   } catch {
     user.isReseller = false;
+    user.isActingReseller = false;
   }
 
   userStore.setUser(user);

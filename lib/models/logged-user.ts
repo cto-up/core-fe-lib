@@ -4,4 +4,5 @@ export interface LoggedUser {
   id: string;
   name: string;
   isReseller?: boolean;
+  isActingReseller?: boolean;
 }
