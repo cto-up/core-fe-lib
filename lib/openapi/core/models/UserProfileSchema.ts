@@ -15,4 +15,8 @@ export type UserProfileSchema = {
    * Whether the current tenant is a reseller (read-only, derived from auth claims)
    */
   is_reseller?: boolean;
+  /**
+   * Whether the current tenant is a reseller of a the tenant (read-only, derived from auth claims)
+   */
+  is_acting_reseller?: boolean;
 };
