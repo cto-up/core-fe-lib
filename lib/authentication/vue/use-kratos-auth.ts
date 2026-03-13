@@ -170,12 +170,18 @@ export const useKratosAuth = () => {
     }
   }
 
-  async function signMeOut(): Promise<void> {
+  async function signMeOut(
+    redirectQuery?: Record<string, string>
+  ): Promise<void> {
     try {
       userStore.setIsLoading(true);
       await kratosService.logout();
       await updateUserFromSession(null);
-      router.push({ name: "home" });
+      void router.push(
+        redirectQuery
+          ? { name: "signin", query: redirectQuery }
+          : { name: "home" }
+      );
       notifications.success(t("auth.success"), t("auth.logoutSuccess"));
     } catch (error: unknown) {
       const axiosError = error as AxiosError;
