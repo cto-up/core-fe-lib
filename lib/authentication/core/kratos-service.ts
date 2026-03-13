@@ -16,7 +16,11 @@ export enum KratosFlowType {
   Verification = "verification",
 }
 
-import axios, { type AxiosInstance, type AxiosError } from "axios";
+import axios, {
+  type AxiosInstance,
+  type AxiosError,
+  type AxiosResponse,
+} from "axios";
 import { getKratosConfig } from "./kratos-config";
 
 /** Extensible traits object for identity */
@@ -172,6 +176,20 @@ class KratosService {
     });
 
     console.log("🔧 Kratos service initialized with baseURL:", baseURL);
+  }
+
+  /**
+   * Attach a response interceptor to the internal Kratos axios client.
+   * Use this to handle Kratos-specific errors (e.g. session_refresh_required)
+   * that originate from self-service flows and bypass the global axios instance.
+   */
+  addResponseInterceptor(
+    onFulfilled?: (
+      response: AxiosResponse
+    ) => AxiosResponse | Promise<AxiosResponse>,
+    onRejected?: (error: unknown) => unknown
+  ): number {
+    return this.client.interceptors.response.use(onFulfilled, onRejected);
   }
 
   /**
