@@ -15,6 +15,7 @@ export interface Aal2VerificationState {
   identityId?: string;
   webauthnChallenge?: string;
   noMfaRegistered?: boolean;
+  sessionRefreshRequired?: boolean;
 }
 
 /**

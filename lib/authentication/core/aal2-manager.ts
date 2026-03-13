@@ -39,6 +39,7 @@ export class Aal2Manager {
       lookupCode: "",
       error: "",
       noMfaRegistered: false,
+      sessionRefreshRequired: false,
     });
 
     if (this.verificationResolve) {
@@ -207,6 +208,7 @@ export class Aal2Manager {
       error: "",
       loading: false,
       noMfaRegistered: false,
+      sessionRefreshRequired: false,
     });
   }
 }

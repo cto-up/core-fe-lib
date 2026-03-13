@@ -30,6 +30,14 @@ export const KratosErrorIds = {
 } as const;
 
 /**
+ * Check if an error requires a session refresh (re-authentication)
+ */
+export function isSessionRefreshRequired(error: unknown): boolean {
+  const kratosError = extractKratosError(error);
+  return kratosError?.id === KratosErrorIds.SESSION_REFRESH_REQUIRED;
+}
+
+/**
  * Check if an error is an AAL2 requirement
  */
 export function isAal2Required(error: unknown): boolean {

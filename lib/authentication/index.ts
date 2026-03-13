@@ -29,6 +29,7 @@ export type { Aal2VerificationState, IStateStore } from "./core/aal2-manager";
 export {
   KratosErrorIds,
   isAal2Required,
+  isSessionRefreshRequired,
   handleAal2Error,
   extractKratosError,
   extractValidationErrors,
