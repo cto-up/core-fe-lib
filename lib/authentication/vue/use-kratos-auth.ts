@@ -54,7 +54,7 @@ export const useKratosAuth = () => {
       userStore.setIsLoading(true);
 
       const returnTo = route.query["from"] as string;
-      const flow = await kratosService.initLoginFlow(false, returnTo);
+      const flow = await kratosService.initLoginFlow(false);
 
       const csrfNode = flow.ui.nodes.find(
         (node: KratosFlowNode) => node.attributes?.name === "csrf_token"
@@ -84,7 +84,11 @@ export const useKratosAuth = () => {
       }
 
       const redirectTo = returnTo || "/";
-      router.push(redirectTo);
+      if (redirectTo.startsWith("http")) {
+        globalThis.location.href = redirectTo;
+      } else {
+        void router.push(redirectTo);
+      }
 
       notifications.success(t("auth.success"), t("auth.loginSuccess"));
     } catch (error: unknown) {
