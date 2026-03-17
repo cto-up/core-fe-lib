@@ -114,7 +114,7 @@ export async function handleAal2Error(
  */
 export function extractKratosError(error: unknown): ParsedKratosError | null {
   if (!isAxiosError(error)) {
-    console.log(JSON.stringify(error));
+    console.error(JSON.stringify(error));
 
     const anyError = error as Record<string, Record<string, unknown>> | null;
     const newError = {
