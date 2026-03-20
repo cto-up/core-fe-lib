@@ -6,11 +6,11 @@ export type NewTenant = {
     name: string;
     subdomain: string;
     /**
-     * Firebase setting to Enable email link sign in (can skip)
+     * Auth Provider setting to Enable email link sign in (TODO is really used?)
      */
     enable_email_link_sign_in: boolean;
     /**
-     * Firebase setting to Allow password sign up (can skip)
+     * Auth Provider setting to Allow password sign up (can skip)
      */
     allow_password_sign_up: boolean;
     /**
