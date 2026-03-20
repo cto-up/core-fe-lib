@@ -1287,6 +1287,19 @@ export class DefaultService {
         });
     }
     /**
+     * Returns all tenants belonging to the current user's reseller tenant, including the reseller itself.
+     * The caller must be a CUSTOMER_ADMIN of a tenant that has the reseller flag set.
+     *
+     * @returns Tenant tenant response
+     * @throws ApiError
+     */
+    public static listResellerTenants(): CancelablePromise<Array<Tenant>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/reseller/tenants',
+        });
+    }
+    /**
      * Returns all tenants from the system that the user has access to
      *
      * @param page page number
