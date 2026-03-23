@@ -13,5 +13,9 @@ export type User = {
     profile?: UserProfileSchema;
     roles: Array<Role>;
     created_at?: string;
+    /**
+     * Membership status (active, inactive, etc.)
+     */
+    membership_status?: string | null;
 };
 
