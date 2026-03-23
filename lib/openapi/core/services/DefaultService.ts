@@ -417,6 +417,29 @@ export class DefaultService {
         });
     }
     /**
+     * Reactivates a user membership (sets status to active)
+     * @param userid
+     * @returns void
+     * @throws ApiError
+     */
+    public static reactivateUser(
+        userid: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/users/{userid}/reactivate',
+            path: {
+                'userid': userid,
+            },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `User not found`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
      * Assign a role to a user based
      * @param userid ID of user
      * @param role role to assign
@@ -768,6 +791,32 @@ export class DefaultService {
             },
             body: requestBody,
             mediaType: 'application/json',
+        });
+    }
+    /**
+     * Reactivates a user membership for a specific tenant (sets status to active) - Super Admin
+     * @param tenantid
+     * @param userid
+     * @returns void
+     * @throws ApiError
+     */
+    public static reactivateUserFromSuperAdmin(
+        tenantid: string,
+        userid: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/reactivate',
+            path: {
+                'tenantid': tenantid,
+                'userid': userid,
+            },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden`,
+                404: `User not found`,
+                500: `Internal server error`,
+            },
         });
     }
     /**
