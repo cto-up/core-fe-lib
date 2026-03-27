@@ -7,7 +7,6 @@ export interface QueryParams {
 }
 
 export function useUrl() {
-  const router = useRouter();
   const params = ref<QueryParams>({});
 
   // Common multi-part TLDs that need special handling
@@ -307,6 +306,7 @@ export function useUrl() {
   };
 
   function updateParams(newParams: QueryParams) {
+    const router = useRouter();
     void router.push({ query: { ...params.value, ...newParams } });
   }
 
