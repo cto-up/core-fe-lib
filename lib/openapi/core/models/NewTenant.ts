@@ -19,5 +19,13 @@ export type NewTenant = {
     allow_sign_up: boolean;
     is_reseller?: boolean;
     reseller_id?: string | null;
+    /**
+     * Optional contract expiry date. When reached, the tenant is automatically disabled.
+     */
+    contract_end_date?: string | null;
+    /**
+     * When true, all API requests for this tenant are rejected with 403.
+     */
+    is_disabled?: boolean;
 };
 
