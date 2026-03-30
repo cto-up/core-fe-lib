@@ -10,8 +10,4 @@ export type TenantFeatureLicenses = Record<string, {
      * License code for the feature
      */
     code: string;
-    /**
-     * License name for the feature
-     */
-    name: string;
 }>;
