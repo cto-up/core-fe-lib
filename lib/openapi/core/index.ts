@@ -34,6 +34,7 @@ export type { PublicTenantSchema } from './models/PublicTenantSchema';
 export { Role } from './models/Role';
 export type { SettingsFlow } from './models/SettingsFlow';
 export type { Tenant } from './models/Tenant';
+export type { TenantFeatureLicenses } from './models/TenantFeatureLicenses';
 export type { TenantFeatures } from './models/TenantFeatures';
 export type { TenantProfile } from './models/TenantProfile';
 export type { Translation } from './models/Translation';

@@ -21,6 +21,7 @@ import type { PromptResponse } from '../models/PromptResponse';
 import type { PublicTenantSchema } from '../models/PublicTenantSchema';
 import type { Role } from '../models/Role';
 import type { Tenant } from '../models/Tenant';
+import type { TenantFeatureLicenses } from '../models/TenantFeatureLicenses';
 import type { TenantFeatures } from '../models/TenantFeatures';
 import type { TenantProfile } from '../models/TenantProfile';
 import type { Translation } from '../models/Translation';
@@ -1483,6 +1484,44 @@ export class DefaultService {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/superadmin-api/v1/tenant/{tenantid}/features',
+            path: {
+                'tenantid': tenantid,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
+     * Returns feature licenses for a tenant.
+     * @param tenantid ID of tenant to fetch
+     * @returns TenantFeatureLicenses tenant feature licenses response
+     * @throws ApiError
+     */
+    public static getTenantFeatureLicenses(
+        tenantid: string,
+    ): CancelablePromise<TenantFeatureLicenses> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/superadmin-api/v1/tenant/{tenantid}/feature-licenses',
+            path: {
+                'tenantid': tenantid,
+            },
+        });
+    }
+    /**
+     * Updates feature licenses for a tenant. Only enabled features may have a license.
+     * @param tenantid ID of tenant to update
+     * @param requestBody Feature licenses to set
+     * @returns void
+     * @throws ApiError
+     */
+    public static updateTenantFeatureLicenses(
+        tenantid: string,
+        requestBody: TenantFeatureLicenses,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/superadmin-api/v1/tenant/{tenantid}/feature-licenses',
             path: {
                 'tenantid': tenantid,
             },
