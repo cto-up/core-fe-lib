@@ -821,6 +821,33 @@ export class DefaultService {
         });
     }
     /**
+     * Permanently deletes a user from all tenants, the database, and the identity provider. SUPER_ADMIN only. This action is irreversible.
+     * @param userid ID of user to permanently delete
+     * @param tenantid ID of tenant context
+     * @returns void
+     * @throws ApiError
+     */
+    public static hardDeleteUserFromSuperAdmin(
+        userid: string,
+        tenantid: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/hard-delete',
+            path: {
+                'userid': userid,
+                'tenantid': tenantid,
+            },
+            errors: {
+                401: `Unauthorized`,
+                403: `Forbidden — requires SUPER_ADMIN role or caller attempted to delete themselves`,
+                404: `User not found`,
+                409: `Conflict — user has active memberships in other tenants, deactivate those first`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
      * Assign a role to a user based
      * @param userid ID of user to fetch
      * @param tenantid ID of tenant
