@@ -21,20 +21,6 @@ export const useTenantStore = defineStore("tenant", {
       }
       return title;
     },
-    // Feature getters
-    isMeetingsEnabled: (state) => state.tenant?.features?.recruitment ?? false,
-    isProjectsEnabled: (state) => state.tenant?.features?.projects ?? false,
-    isSeriousGamesEnabled: (state) =>
-      state.tenant?.features?.seriousGames ?? false,
-    isRAGDocumentsEnabled: (state) =>
-      state.tenant?.features?.RAGDocuments ?? false,
-    isDemoComponentsEnabled: (state) =>
-      state.tenant?.features?.demoComponents ?? false,
-    isDemoLearningEnabled: (state) =>
-      state.tenant?.features?.demoLearning ?? false,
-    isAutomationEnabled: (state) => state.tenant?.features?.automation ?? false,
-    isSkeellscoachEnabled: (state) =>
-      state.tenant?.features?.skeellscoach ?? false,
     isReseller: (state) => state.tenant?.is_reseller ?? false,
   },
   actions: {
