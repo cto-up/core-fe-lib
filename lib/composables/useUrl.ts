@@ -300,10 +300,21 @@ export function useUrl() {
     return domainInfo.domain;
   };
 
-  const isTenantSubdomain = () => {
-    const subdomain = getSubdomain();
-    return subdomain && subdomain !== "www";
+  /**
+   * Returns true when the given subdomain (or the current window's subdomain
+   * if none is provided) should be treated as the admin/root site rather than
+   * a specific tenant. Matches empty / null / "www" / "admin".
+   *
+   * This is the single source of truth for this check across the frontend —
+   * do not reinvent it locally.
+   */
+  const isAdminSubdomain = (subdomain?: string | null) => {
+    const s = subdomain === undefined ? getSubdomain() : subdomain;
+    return !s || s === "www" || s === "admin";
   };
+
+  const isTenantSubdomain = (subdomain?: string | null) =>
+    !isAdminSubdomain(subdomain);
 
   function updateParams(newParams: QueryParams) {
     const router = useRouter();
@@ -322,6 +333,7 @@ export function useUrl() {
     updateParams,
     getDomain,
     getSubdomain,
+    isAdminSubdomain,
     isTenantSubdomain,
   };
 }
