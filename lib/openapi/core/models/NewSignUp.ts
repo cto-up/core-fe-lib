@@ -5,6 +5,5 @@
 export type NewSignUp = {
     name: string;
     email: string;
-    password: string;
 };
 
