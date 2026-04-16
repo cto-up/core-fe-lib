@@ -5,5 +5,8 @@
 export type NewSignUp = {
     name: string;
     email: string;
+    phoneNumber?: string;
+    function?: string;
+    company?: string;
 };
 

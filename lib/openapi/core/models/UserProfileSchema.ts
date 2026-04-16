@@ -11,6 +11,9 @@ export type UserProfileSchema = {
     socialMedias?: Array<string>;
     interests?: Array<string>;
     skills?: Array<string>;
+    phoneNumber?: string;
+    function?: string;
+    company?: string;
     /**
      * Whether the current tenant is a reseller (read-only, derived from auth claims)
      */
