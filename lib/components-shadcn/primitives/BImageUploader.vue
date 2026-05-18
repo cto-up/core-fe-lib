@@ -139,10 +139,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "./dialog";
-import { Button } from "./button";
-import { Progress } from "./progress";
-import { useToast } from "./toast/use-toast";
+} from "../ui/dialog";
+import { Button } from "../ui/button";
+import { Progress } from "../ui/progress";
+import { useToast } from "../ui/toast/use-toast";
 import { X, Maximize2, Minimize2, Loader2 } from "lucide-vue-next";
 
 interface ChangeEvent {

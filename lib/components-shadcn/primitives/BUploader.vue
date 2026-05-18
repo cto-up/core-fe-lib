@@ -285,10 +285,10 @@ import axios from "axios";
 import { ref, computed, onMounted, onUnmounted, useId, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { handleSSEProgress } from "../../utils/sseHandler";
-import { Button } from "./button";
-import { Progress } from "./progress";
-import { Switch } from "./switch";
-import { useToast } from "./toast/use-toast";
+import { Button } from "../ui/button";
+import { Progress } from "../ui/progress";
+import { Switch } from "../ui/switch";
+import { useToast } from "../ui/toast/use-toast";
 import {
   AlertCircle,
   FileUp,
