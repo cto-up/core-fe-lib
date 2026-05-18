@@ -1,0 +1,56 @@
+// This is just an example,
+// so you can safely delete all default props below
+
+export default {
+  title: "Actions",
+  language: "Langue",
+  learnMore: "En savoir plus",
+  showLess: "Montrer moins",
+  save: "Enregistrez",
+  send: "Envoyez",
+  saved: "Enregistré(e)",
+  add: "Ajoutez",
+  create: "Créez",
+  createNew: "Créer nouveau",
+  cancel: "Annulez",
+  back: "Retournez",
+  forward: "Avancez",
+  delete: "Supprimez",
+  remove: "Retirez",
+  deleted: "Supprimé(e)",
+  edit: "Modifiez",
+  update: "Mettez à jour",
+  editInformation: "Modifier les informations",
+  view: "Ouvrez",
+  open: "Ouvrir",
+  manage: "Gérer",
+  manageEvents: "Gérer les événements",
+  more: "Autres actions",
+  search: "Recherchez",
+  close: "Fermez",
+  continue: "Continuez",
+  retry: "Réessayer",
+  refresh: "Rafraîchir",
+  reset: "Réinitialiser",
+  expand: "Développer",
+  collapse: "Réduire",
+  confirm: "Confirmer",
+  invite: "Inviter",
+  backToList: "Retour vers la liste",
+  requestPasswordReset: "Demandez réinitialisation de mot de passe",
+  requestPasswordResetSent:
+    "Demande de réinitialisation de mot de passe envoyée",
+
+  resource: {
+    add: "Ajoutez Ressource",
+  },
+  project: {
+    navigate: "Naviguez vers le Projet",
+  },
+  gantt: {
+    show: "Montrez Gantt",
+  },
+  translation: {
+    save: "Enregistrer la traduction",
+  },
+};
