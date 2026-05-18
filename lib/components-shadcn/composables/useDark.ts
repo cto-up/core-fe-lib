@@ -52,9 +52,8 @@ export function useDark() {
   const applyTenantThemeColors = async () => {
     try {
       console.log("🎯 applyTenantThemeColors called");
-      const { useTenantStore } =
-        await import("../../stores/tenant-store");
-      const { applyTheme } = await import("@/lib/themes");
+      const { useTenantStore } = await import("../../stores/tenant-store");
+      const { applyTheme } = await import("../themes");
 
       const tenantStore = useTenantStore();
       console.log("🏢 Tenant store loaded:", {
