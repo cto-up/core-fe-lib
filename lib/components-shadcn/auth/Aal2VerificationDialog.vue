@@ -273,7 +273,17 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { useRoute, useRouter } from "vue-router";
+import { useRoute, useRouter, type RouteLocationRaw } from "vue-router";
+
+const props = withDefaults(
+  defineProps<{
+    /** Route to push when the user clicks "enroll a method" / "go to security settings". */
+    securityRoute?: RouteLocationRaw;
+  }>(),
+  {
+    securityRoute: () => ({ name: "security-settings" }),
+  }
+);
 
 const { t } = useI18n();
 
@@ -331,7 +341,7 @@ function preventClose(event: Event) {
 }
 async function goToSecuritySettings() {
   cancelAal2Verification();
-  await router.push({ name: "security-settings" });
+  await router.push(props.securityRoute);
 }
 async function handleSessionRefreshLogout() {
   cancelAal2Verification();
