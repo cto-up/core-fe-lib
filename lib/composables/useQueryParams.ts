@@ -1,7 +1,7 @@
 // src/composables/useQueryParams.ts
 
-import { useRouter, useRoute, type LocationQuery } from 'vue-router';
-import { computed, nextTick, ref } from 'vue';
+import { useRouter, useRoute, type LocationQuery } from "vue-router";
+import { computed, nextTick, ref } from "vue";
 
 export function useQueryParams() {
   const router = useRouter();
@@ -49,10 +49,9 @@ export function useQueryParams() {
     }
   };
 
-
   const pagination = ref({
-    sortBy: (route.query.sortBy as string) || '',
-    descending: route.query.descending === 'true',
+    sortBy: (route.query.sortBy as string) || "",
+    descending: route.query.descending === "true",
     page: Number.parseInt(route.query.page as string) || 1,
     rowsPerPage: Number.parseInt(route.query.rowsPerPage as string) || 10,
     rowsNumber: 1000000,
@@ -62,7 +61,7 @@ export function useQueryParams() {
     if (pagination.value.page > 1) {
       pagination.value.page -= 1;
       await nextTick();
-      setQueryParam('page', pagination.value.page + '');
+      setQueryParam("page", pagination.value.page + "");
     }
   };
 

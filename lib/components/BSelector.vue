@@ -1,7 +1,7 @@
 <template>
   <q-select
-    clearable
     v-model="theModel"
+    clearable
     filled
     :multiple="multiple"
     :label="label"

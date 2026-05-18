@@ -2,15 +2,15 @@
   <QCard class="q-pa-md" style="max-width: min-content" role="datepicker">
     <QDate
       mask="YYYY-MM-DD"
-      :modelValue="modelValue"
+      :model-value="modelValue"
       dense
       minimal
-      @update:modelValue="onSelectDate"
+      @update:model-value="onSelectDate"
     ></QDate>
     <QBtn
       color="primary"
-      @click="onSelectDate(dashedDate(new Date()))"
       label="Today"
+      @click="onSelectDate(dashedDate(new Date()))"
     />
   </QCard>
 </template>
@@ -23,7 +23,6 @@ export function dashedDate(date: Date) {
 }
 
 export default {
-  emits: ["update:modelValue"],
   components: {
     QBtn,
     QCard,
@@ -34,6 +33,7 @@ export default {
       type: String,
     },
   },
+  emits: ["update:modelValue"],
   methods: {
     dashedDate,
     onSelectDate(date: string) {

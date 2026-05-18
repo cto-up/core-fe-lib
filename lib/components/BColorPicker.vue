@@ -1,10 +1,10 @@
 <template>
   <div class="color-picker-input">
-    <q-input :label="label" filled v-model="selectedColor" class="my-input">
-      <template v-slot:prepend>
+    <q-input v-model="selectedColor" :label="label" filled class="my-input">
+      <template #prepend>
         <q-icon name="fiber_manual_record" :style="{ color: selectedColor }" />
       </template>
-      <template v-slot:append>
+      <template #append>
         <q-icon name="colorize" class="cursor-pointer">
           <q-popup-proxy cover transition-show="scale" transition-hide="scale">
             <q-color v-model="selectedColor"></q-color>
@@ -16,10 +16,10 @@
 </template>
 
 <script>
-import { ref, watch } from 'vue';
+import { ref, watch } from "vue";
 
 export default {
-  name: 'ColorPickerInput',
+  name: "ColorPickerInput",
   props: {
     label: {
       type: String,
@@ -27,15 +27,15 @@ export default {
     },
     modelValue: {
       type: String,
-      default: '#000000',
+      default: "#000000",
     },
   },
-  emits: ['update:modelValue'],
+  emits: ["update:modelValue"],
   setup(props, { emit }) {
     const selectedColor = ref(props.modelValue);
 
     watch(selectedColor, (newValue) => {
-      emit('update:modelValue', newValue);
+      emit("update:modelValue", newValue);
     });
 
     return {

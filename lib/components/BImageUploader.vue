@@ -7,10 +7,10 @@
       :uploading="uploading"
       :progress="progress"
       :loading-text="message"
+      class="image-uploader-base"
       @file-selected="onFileSelected"
       @file-dropped="onFileDropped"
       @zone-click="onZoneClick"
-      class="image-uploader-base"
     >
       <template #content="{ isHovering }">
         <img
@@ -18,9 +18,9 @@
           :class="{ hovering: isHovering }"
           crossorigin="anonymous"
           :src="imgTarget"
-          @error="onImageError"
           loading="lazy"
           alt="Uploaded image"
+          @error="onImageError"
         />
       </template>
       <template #prompt="{ isDragging, isHovering }">
@@ -43,9 +43,9 @@
         </div>
         <div class="upload-text">
           <div class="primary-text">
-            {{ isDragging ? 'Drop image here' : 'Click to upload image' }}
+            {{ isDragging ? "Drop image here" : "Click to upload image" }}
           </div>
-          <div class="secondary-text" v-if="!isDragging && showText">
+          <div v-if="!isDragging && showText" class="secondary-text">
             or drag and drop
           </div>
         </div>
@@ -69,8 +69,8 @@
               round
               dense
               icon="fullscreen_exit"
-              @click="toggleFullscreen"
               title="Toggle Fullscreen"
+              @click="toggleFullscreen"
             />
             <q-btn flat round dense icon="close" @click="closeCropDialog" />
           </div>
@@ -81,7 +81,6 @@
             <cropper
               ref="cropper"
               :src="imgSource"
-              @change="change"
               :stencil-props="{
                 aspectRatio: aspectRatio,
                 handlers: {},
@@ -95,6 +94,7 @@
                 maxArea: 2096 * 2096,
               }"
               class="image-cropper"
+              @change="change"
             />
           </div>
         </q-card-section>
@@ -113,16 +113,16 @@
           <b-btn
             flat
             label="Cancel"
-            @click="closeCropDialog"
             :disable="uploading"
             class="cancel-btn"
+            @click="closeCropDialog"
           />
           <b-btn
             color="primary"
             label="Upload"
-            @click="handleUpload"
             :loading="uploading"
             class="upload-btn"
+            @click="handleUpload"
           />
         </q-card-actions>
       </q-card>
@@ -131,13 +131,13 @@
 </template>
 
 <script lang="ts">
-import { Cropper } from 'vue-advanced-cropper';
-import 'vue-advanced-cropper/dist/style.css';
-import axios from 'axios';
-import { defineComponent, onMounted, onUnmounted, ref, computed } from 'vue';
-import { useQuasar } from 'quasar';
-import { handleSSEProgress } from '../utils/sseHandler';
-import BUploaderBase from './BUploaderBase.vue';
+import { Cropper } from "vue-advanced-cropper";
+import "vue-advanced-cropper/dist/style.css";
+import axios from "axios";
+import { defineComponent, onMounted, onUnmounted, ref, computed } from "vue";
+import { useQuasar } from "quasar";
+import { handleSSEProgress } from "../utils/sseHandler";
+import BUploaderBase from "./BUploaderBase.vue";
 
 interface ChangeEvent {
   coordinates: { x: number; y: number };
@@ -145,7 +145,7 @@ interface ChangeEvent {
 }
 
 export default defineComponent({
-  name: 'ImageUploadComponent',
+  name: "ImageUploadComponent",
   components: {
     Cropper,
     BUploaderBase,
@@ -182,23 +182,23 @@ export default defineComponent({
     const uploadDialog = ref(false);
     const $q = useQuasar();
     const imgSource = ref<string | ArrayBuffer | null>(null);
-    const imgTarget = ref<string>('');
+    const imgTarget = ref<string>("");
     const imageHasError = ref(false);
     const uploaderBase = ref<InstanceType<typeof BUploaderBase>>();
     const cropper = ref();
     const uploading = ref(false);
     const progress = ref(0.0);
-    const message = ref('');
+    const message = ref("");
     const isFullscreen = ref(false);
-    const selectedFileName = ref('');
+    const selectedFileName = ref("");
 
     const hasImage = computed(() => {
       if (!props.previewImage) return false;
       if (imageHasError.value) return false;
       return (
         imgTarget.value &&
-        imgTarget.value !== '' &&
-        !imgTarget.value.includes('picsum.photos')
+        imgTarget.value !== "" &&
+        !imgTarget.value.includes("picsum.photos")
       );
     });
 
@@ -238,24 +238,24 @@ export default defineComponent({
     const validateFile = (file: File): boolean => {
       const maxSize = 10 * 1024 * 1024; // 10MB
       const allowedTypes = [
-        'image/jpeg',
-        'image/jpg',
-        'image/png',
-        'image/webp',
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/webp",
       ];
 
       if (!allowedTypes.includes(file.type)) {
         $q.notify({
-          type: 'negative',
-          message: 'Please select a valid image file (JPEG, PNG, WebP)',
+          type: "negative",
+          message: "Please select a valid image file (JPEG, PNG, WebP)",
         });
         return false;
       }
 
       if (file.size > maxSize) {
         $q.notify({
-          type: 'negative',
-          message: 'File size must be less than 10MB',
+          type: "negative",
+          message: "File size must be less than 10MB",
         });
         return false;
       }
@@ -276,11 +276,11 @@ export default defineComponent({
     };
 
     const emitUploadedWithURI = (uri: string) => {
-      emit('uploaded-with-uri', uri);
+      emit("uploaded-with-uri", uri);
     };
 
     const emitUploaded = () => {
-      emit('uploaded');
+      emit("uploaded");
     };
 
     const handleUpload = async function () {
@@ -293,21 +293,21 @@ export default defineComponent({
         const { canvas } = cropper.value.getResult();
         const myCanvas: HTMLCanvasElement = canvas;
         blob = await new Promise<Blob | null>((resolve) =>
-          myCanvas.toBlob(resolve, 'image/jpeg', 0.9),
+          myCanvas.toBlob(resolve, "image/jpeg", 0.9)
         );
         imgTarget.value = myCanvas.toDataURL();
 
         if (!blob) {
-          throw new Error('Could not get image blob');
+          throw new Error("Could not get image blob");
         }
 
-        message.value = 'Preparing upload...';
+        message.value = "Preparing upload...";
 
         const lastProcessedPosition = ref({ current: 0 });
-        const fullResponseText = ref({ current: '' });
+        const fullResponseText = ref({ current: "" });
 
         const formData: FormData = new FormData();
-        formData.append('file', blob, selectedFileName.value);
+        formData.append("file", blob, selectedFileName.value);
 
         const endPoint = props.postEndPoint;
 
@@ -315,9 +315,9 @@ export default defineComponent({
           url: endPoint,
           data: formData,
           headers: {
-            'Content-Type': 'multipart/form-data',
+            "Content-Type": "multipart/form-data",
           },
-          method: 'POST',
+          method: "POST",
           onDownloadProgress: (progressEvent) => {
             handleSSEProgress(
               progressEvent,
@@ -326,23 +326,23 @@ export default defineComponent({
               {
                 onMessage: (inmessage) => {
                   message.value = inmessage;
-                  console.log('onMessage received:', inmessage);
+                  console.log("onMessage received:", inmessage);
                 },
                 onInfo: (inmessage) => {
                   // if starts with uri: then emit the uri
                   //uri:/public-api/v1/care/circles/48901819-c9b7-49e6-b965-4e6f7714d26d/files/a6c0242e-721d-4791-83a8-758fd8c565c6
-                  if (inmessage.startsWith('uri:')) {
+                  if (inmessage.startsWith("uri:")) {
                     emitUploadedWithURI(inmessage.substring(4));
                   }
                   message.value = inmessage;
                 },
                 onError: (inmessage) => {
                   $q.notify({
-                    type: 'negative',
+                    type: "negative",
                     message: inmessage,
                   });
                   progress.value = 0;
-                  message.value = 'Error: ' + inmessage;
+                  message.value = "Error: " + inmessage;
                 },
                 onProgress: (inProgress) => {
                   progress.value = inProgress / 100;
@@ -350,7 +350,7 @@ export default defineComponent({
                     emitUploaded();
                   }
                 },
-              },
+              }
             );
           },
         });
@@ -359,15 +359,15 @@ export default defineComponent({
         uploadDialog.value = false;
 
         $q.notify({
-          type: 'positive',
-          message: 'Image uploaded successfully!',
+          type: "positive",
+          message: "Image uploaded successfully!",
         });
       } catch (error) {
-        console.error('Error uploading image:', error);
+        console.error("Error uploading image:", error);
         uploading.value = false;
         $q.notify({
-          type: 'negative',
-          message: error.message || 'Failed to upload image',
+          type: "negative",
+          message: error.message || "Failed to upload image",
         });
       }
     };
@@ -389,8 +389,8 @@ export default defineComponent({
     const revoke = function () {
       if (
         imgSource.value &&
-        typeof imgSource.value === 'string' &&
-        imgSource.value.startsWith('blob:')
+        typeof imgSource.value === "string" &&
+        imgSource.value.startsWith("blob:")
       ) {
         URL.revokeObjectURL(imgSource.value);
       }
@@ -400,7 +400,7 @@ export default defineComponent({
     onMounted(() => {
       if (
         props.getEndPoint &&
-        props.getEndPoint !== 'https://picsum.photos/200'
+        props.getEndPoint !== "https://picsum.photos/200"
       ) {
         imageHasError.value = false;
         imgTarget.value = props.getEndPoint;

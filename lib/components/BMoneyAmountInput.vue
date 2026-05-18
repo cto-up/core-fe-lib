@@ -24,10 +24,10 @@
 </template>
 
 <script lang="ts">
-import type { ValidationRule } from 'quasar';
-import type { PropType } from 'vue';
-import { defineComponent, computed, ref } from 'vue';
-import type { ErrorMessage } from './types';
+import type { ValidationRule } from "quasar";
+import type { PropType } from "vue";
+import { defineComponent, computed, ref } from "vue";
+import type { ErrorMessage } from "./types";
 
 export interface MoneyAmount {
   amount: number | null;
@@ -35,7 +35,7 @@ export interface MoneyAmount {
 }
 
 export default defineComponent({
-  name: 'BMoneyAmountInput',
+  name: "BMoneyAmountInput",
   props: {
     label: {
       type: String,
@@ -68,18 +68,18 @@ export default defineComponent({
   setup(props, { emit }) {
     const theAmount = ref(props.modelValue?.amount);
     const theCurrency = ref(
-      props.modelValue?.currency ? props.modelValue?.currency : 'EUR',
+      props.modelValue?.currency ? props.modelValue?.currency : "EUR"
     );
 
     const errorMessage = computed(() => {
       if (props.errorMessages) {
-        return props.errorMessages.map((e) => e.$message).join(' ');
+        return props.errorMessages.map((e) => e.$message).join(" ");
       }
-      return '';
+      return "";
     });
 
     const emitModel = () => {
-      emit('update:modelValue', {
+      emit("update:modelValue", {
         amount: theAmount.value,
         currency: theCurrency.value,
       });
@@ -98,7 +98,7 @@ export default defineComponent({
       emitModel();
     };
 
-    const options = ['EUR', 'USD', 'VND', 'RON'];
+    const options = ["EUR", "USD", "VND", "RON"];
 
     return {
       theAmount,

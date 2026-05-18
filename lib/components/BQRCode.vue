@@ -13,16 +13,16 @@
     </div>
     <div class="controls">
       <b-btn
-        @click="exportAsImage"
         label="Export as Image"
         icon="download"
+        @click="exportAsImage"
       ></b-btn>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, type Ref } from 'vue';
+import { ref, onMounted, watch, type Ref } from "vue";
 
 // Define props with TypeScript
 interface Props {
@@ -33,13 +33,13 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  title: '',
-  subtitle: '',
-  url: '',
+  title: "",
+  subtitle: "",
+  url: "",
   size: 200,
 });
 
-defineEmits(['click']);
+defineEmits(["click"]);
 
 // Define template refs with proper typing
 const qrCanvas: Ref<HTMLCanvasElement | null> = ref(null);
@@ -47,7 +47,7 @@ const displayContent: Ref<HTMLDivElement | null> = ref(null);
 
 // Simple QR code generation function
 const generateQR = (text: string, canvas: HTMLCanvasElement): void => {
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext("2d");
   if (!ctx) return;
 
   const size = props.size;
@@ -56,10 +56,10 @@ const generateQR = (text: string, canvas: HTMLCanvasElement): void => {
 
   // This is a simplified QR code representation
   // For production, use a proper QR code library like 'qrcode'
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, size, size);
 
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = "#000000";
   const cellSize = size / 25;
 
   // Create a simple pattern that represents a QR code
@@ -78,57 +78,57 @@ const generateQR = (text: string, canvas: HTMLCanvasElement): void => {
   const markerSize = cellSize * 7;
 
   // Top-left marker
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = "#000000";
   ctx.fillRect(0, 0, markerSize, markerSize);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(
     cellSize,
     cellSize,
     markerSize - 2 * cellSize,
-    markerSize - 2 * cellSize,
+    markerSize - 2 * cellSize
   );
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = "#000000";
   ctx.fillRect(
     2 * cellSize,
     2 * cellSize,
     markerSize - 4 * cellSize,
-    markerSize - 4 * cellSize,
+    markerSize - 4 * cellSize
   );
 
   // Top-right marker
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = "#000000";
   ctx.fillRect(size - markerSize, 0, markerSize, markerSize);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(
     size - markerSize + cellSize,
     cellSize,
     markerSize - 2 * cellSize,
-    markerSize - 2 * cellSize,
+    markerSize - 2 * cellSize
   );
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = "#000000";
   ctx.fillRect(
     size - markerSize + 2 * cellSize,
     2 * cellSize,
     markerSize - 4 * cellSize,
-    markerSize - 4 * cellSize,
+    markerSize - 4 * cellSize
   );
 
   // Bottom-left marker
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = "#000000";
   ctx.fillRect(0, size - markerSize, markerSize, markerSize);
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = "#ffffff";
   ctx.fillRect(
     cellSize,
     size - markerSize + cellSize,
     markerSize - 2 * cellSize,
-    markerSize - 2 * cellSize,
+    markerSize - 2 * cellSize
   );
-  ctx.fillStyle = '#000000';
+  ctx.fillStyle = "#000000";
   ctx.fillRect(
     2 * cellSize,
     size - markerSize + 2 * cellSize,
     markerSize - 4 * cellSize,
-    markerSize - 4 * cellSize,
+    markerSize - 4 * cellSize
   );
 };
 
@@ -137,8 +137,8 @@ const exportAsImage = async (): Promise<void> => {
 
   try {
     // Create a new canvas for the export
-    const exportCanvas = document.createElement('canvas');
-    const ctx = exportCanvas.getContext('2d');
+    const exportCanvas = document.createElement("canvas");
+    const ctx = exportCanvas.getContext("2d");
     if (!ctx) return;
 
     // Set canvas size (you can adjust these dimensions)
@@ -148,18 +148,18 @@ const exportAsImage = async (): Promise<void> => {
     exportCanvas.height = height;
 
     // Fill white background
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, width, height);
 
     // Draw title
-    ctx.fillStyle = '#333333';
-    ctx.font = 'bold 24px Arial, sans-serif';
-    ctx.textAlign = 'center';
+    ctx.fillStyle = "#333333";
+    ctx.font = "bold 24px Arial, sans-serif";
+    ctx.textAlign = "center";
     ctx.fillText(props.title, width / 2, 60);
 
     // Draw subtitle
-    ctx.fillStyle = '#666666';
-    ctx.font = '16px Arial, sans-serif';
+    ctx.fillStyle = "#666666";
+    ctx.font = "16px Arial, sans-serif";
     ctx.fillText(props.subtitle, width / 2, 90);
 
     // Draw QR code
@@ -169,9 +169,9 @@ const exportAsImage = async (): Promise<void> => {
       const qrY = 120;
 
       // Draw QR code background/border
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = "#ffffff";
       ctx.fillRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
-      ctx.strokeStyle = '#dddddd';
+      ctx.strokeStyle = "#dddddd";
       ctx.lineWidth = 1;
       ctx.strokeRect(qrX - 10, qrY - 10, qrSize + 20, qrSize + 20);
 
@@ -184,16 +184,16 @@ const exportAsImage = async (): Promise<void> => {
       if (!blob) return;
 
       const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `qr-display-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
-    }, 'image/png');
+    }, "image/png");
   } catch (error) {
-    console.error('Error exporting image:', error);
+    console.error("Error exporting image:", error);
   }
 };
 
@@ -209,7 +209,7 @@ watch(
     if (qrCanvas.value) {
       generateQR(newUrl, qrCanvas.value);
     }
-  },
+  }
 );
 </script>
 

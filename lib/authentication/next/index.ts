@@ -17,25 +17,25 @@ export { useDialog } from "./use-dialog";
 export { configureKratos } from "../core/kratos-config";
 export type { KratosConfig } from "../core/kratos-config";
 export {
-    isAal2Required,
-    handleAal2Error,
-    extractKratosError,
-    extractValidationErrors,
-    getUserFriendlyMessage,
+  isAal2Required,
+  handleAal2Error,
+  extractKratosError,
+  extractValidationErrors,
+  getUserFriendlyMessage,
 } from "../core/kratos-error-processor";
 
 // Re-export core types and services
 export type {
-    KratosSession,
-    KratosFlow,
-    KratosFlowNode,
-    KratosIdentity,
-    KratosFlowResponse,
-    PasswordLoginFlowData,
-    TotpLoginFlowData,
-    LookupSecretLoginFlowData,
-    WebAuthnLoginFlowData,
-    LoginFlowData,
+  KratosSession,
+  KratosFlow,
+  KratosFlowNode,
+  KratosIdentity,
+  KratosFlowResponse,
+  PasswordLoginFlowData,
+  TotpLoginFlowData,
+  LookupSecretLoginFlowData,
+  WebAuthnLoginFlowData,
+  LoginFlowData,
 } from "../core/kratos-service";
 
 export type { Aal2VerificationState, IStateStore } from "../core/aal2-manager";

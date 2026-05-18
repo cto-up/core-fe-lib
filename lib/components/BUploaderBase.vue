@@ -3,10 +3,10 @@
     <input
       ref="fileInput"
       type="file"
-      @change="onFileSelected"
       style="display: none"
       :accept="accept"
       :multiple="multiple"
+      @change="onFileSelected"
     />
 
     <div
@@ -27,7 +27,7 @@
       <div v-if="uploading" class="loading-overlay">
         <slot name="loading">
           <div class="loading-spinner"></div>
-          <div class="loading-text">{{ loadingText || 'Uploading...' }}</div>
+          <div class="loading-text">{{ loadingText || "Uploading..." }}</div>
         </slot>
       </div>
 
@@ -61,20 +61,20 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref } from "vue";
 
 export default defineComponent({
-  name: 'BUploaderBase',
+  name: "BUploaderBase",
   props: {
     accept: { type: String },
     hasContent: { type: Boolean, default: false },
     uploading: { type: Boolean, default: false },
-    loadingText: { type: String, default: 'Uploading...' },
+    loadingText: { type: String, default: "Uploading..." },
     progress: { type: Number, default: 0 },
     hasError: { type: Boolean, default: false },
     multiple: { type: Boolean, default: false },
   },
-  emits: ['file-selected', 'file-dropped', 'zone-click'],
+  emits: ["file-selected", "file-dropped", "zone-click"],
   setup(_, { emit, expose }) {
     const fileInput = ref<HTMLInputElement>();
     const isDragging = ref(false);
@@ -101,14 +101,14 @@ export default defineComponent({
       isDragging.value = false;
       dragCounter.value = 0;
       if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
-        emit('file-dropped', event.dataTransfer.files);
+        emit("file-dropped", event.dataTransfer.files);
       }
     };
 
     const onFileSelected = (event: Event) => {
-      emit('file-selected', event);
+      emit("file-selected", event);
       if (fileInput.value) {
-        fileInput.value.value = '';
+        fileInput.value.value = "";
       }
     };
 
@@ -134,17 +134,17 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 // Import SCSS modules
-@use 'sass:color';
+@use "sass:color";
 
 // Import library styles
-@import '../styles/variables';
-@import '../styles/mixins';
+@import "../styles/variables";
+@import "../styles/mixins";
 
 .uploader-base-container {
   width: 100%;
   margin: 0 auto;
   font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .upload-zone {

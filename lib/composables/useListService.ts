@@ -1,8 +1,8 @@
-import { type QTableProps } from 'quasar';
-import { type CancelablePromise } from '../openapi/core';
-import { type Ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { useErrors } from './useErrors';
+import { type QTableProps } from "quasar";
+import { type CancelablePromise } from "../openapi/core";
+import { type Ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { useErrors } from "./useErrors";
 
 // Define a proper type for columns and rows, adjust as needed
 interface TableColumn {
@@ -14,8 +14,11 @@ interface TableRow {
   [key: string]: string | number | null | undefined;
 }
 
-export const getCellValue = (col: TableColumn, row: TableRow): string | number => {
-  return row[col.field] ?? '';
+export const getCellValue = (
+  col: TableColumn,
+  row: TableRow
+): string | number => {
+  return row[col.field] ?? "";
 };
 
 export interface ListService<T> {
@@ -23,16 +26,16 @@ export interface ListService<T> {
     page: number,
     rowsPerPage: number,
     sortBy: string,
-    order: 'asc' | 'desc',
+    order: "asc" | "desc",
     q?: string
   ) => CancelablePromise<Array<T>>;
 }
 interface UseListServiceParams<T> {
   listService: ListService<T>;
   rows: Ref<T[]>;
-  pagination: Ref<QTableProps['pagination']>;
+  pagination: Ref<QTableProps["pagination"]>;
   loading: Ref<boolean>;
-  filter?: Ref<string>
+  filter?: Ref<string>;
 }
 
 export default function useListService<T>({
@@ -46,7 +49,7 @@ export default function useListService<T>({
   const router = useRouter();
   const { handleError } = useErrors();
 
-  const onRequest: QTableProps['onRequest'] = async (props) => {
+  const onRequest: QTableProps["onRequest"] = async (props) => {
     const { page, rowsPerPage, sortBy, descending } = props.pagination;
     loading.value = true;
 
@@ -55,7 +58,7 @@ export default function useListService<T>({
         page,
         rowsPerPage,
         sortBy,
-        descending ? 'desc' : 'asc',
+        descending ? "desc" : "asc",
         filter?.value
       );
 
@@ -70,15 +73,15 @@ export default function useListService<T>({
 
       // Batch update query parameters
       const query = { ...route.query };
-      query.page = page + '';
+      query.page = page + "";
       query.sortBy = sortBy;
-      query.descending = descending + '';
-      query.rowsPerPage = rowsPerPage + '';
+      query.descending = descending + "";
+      query.rowsPerPage = rowsPerPage + "";
       query.filter = filter?.value || null;
 
       await router.push({
         path: route.path,
-        query
+        query,
       });
     } catch (error) {
       handleError(error);

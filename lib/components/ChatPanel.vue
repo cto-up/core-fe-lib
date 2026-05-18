@@ -8,9 +8,9 @@
           text-color="white"
           bg-color="primary"
         >
-          <template v-slot:name>me</template>
-          <template v-slot:stamp>7 minutes ago</template>
-          <template v-slot:avatar>
+          <template #name>me</template>
+          <template #stamp>7 minutes ago</template>
+          <template #avatar>
             <img
               class="q-message-avatar q-message-avatar--sent"
               src="https://cdn.quasar.dev/img/avatar4.jpg"
@@ -19,8 +19,8 @@
         </q-chat-message>
 
         <q-chat-message bg-color="amber">
-          <template v-slot:name>Mary</template>
-          <template v-slot:avatar>
+          <template #name>Mary</template>
+          <template #avatar>
             <img
               class="q-message-avatar q-message-avatar--received"
               src="https://cdn.quasar.dev/img/avatar2.jpg"
@@ -56,11 +56,11 @@ defineProps({
 </script>
 
 <style scoped>
-[dark='true']:not([color='primary']) {
+[dark="true"]:not([color="primary"]) {
   background: rgb(60, 60, 60);
 }
 
-[dark='false']:not([color='primary']) {
+[dark="false"]:not([color="primary"]) {
   background: rgb(241, 241, 241);
 }
 </style>

@@ -14,7 +14,7 @@
     >
       <template #loading>
         <div class="loading-spinner"></div>
-        <div class="loading-text">{{ message || 'Uploading...' }}</div>
+        <div class="loading-text">{{ message || "Uploading..." }}</div>
       </template>
       <template #content>
         <div class="file-display">
@@ -79,8 +79,8 @@
           <div class="file-actions">
             <button
               class="action-btn replace-btn"
-              @click.stop="replaceFile"
               title="Replace File"
+              @click.stop="replaceFile"
             >
               <svg
                 width="18"
@@ -100,8 +100,8 @@
             </button>
             <button
               class="action-btn remove-btn"
-              @click.stop="removeFile"
               title="Remove File"
+              @click.stop="removeFile"
             >
               <svg
                 width="18"
@@ -166,15 +166,15 @@
             <span v-else>Select or Drop file here</span>
           </div>
           <div
-            class="secondary-text"
             v-if="!isDragging && !hasError && showText"
+            class="secondary-text"
           >
             <span
               >Max {{ formatFileSize(maxFileSize) }} •
               {{ getAcceptDescription() }}</span
             >
           </div>
-          <div class="error-text" v-if="hasError">
+          <div v-if="hasError" class="error-text">
             {{ errorMessage }}
           </div>
         </div>
@@ -184,14 +184,14 @@
 </template>
 
 <script lang="ts">
-import axios from 'axios';
-import { computed, defineComponent, ref } from 'vue';
-import { useQuasar } from 'quasar';
-import { handleSSEProgress } from '../utils/sseHandler';
-import BUploaderBase from './BUploaderBase.vue';
+import axios from "axios";
+import { computed, defineComponent, ref } from "vue";
+import { useQuasar } from "quasar";
+import { handleSSEProgress } from "../utils/sseHandler";
+import BUploaderBase from "./BUploaderBase.vue";
 
 export default defineComponent({
-  name: 'FileUploadComponent',
+  name: "FileUploadComponent",
   components: {
     BUploaderBase,
   },
@@ -225,24 +225,24 @@ export default defineComponent({
     const uploaderBase = ref<InstanceType<typeof BUploaderBase>>();
     const uploading = ref(false);
     const progress = ref(0.0);
-    const message = ref('');
+    const message = ref("");
     const hasError = ref(false);
-    const errorMessage = ref('');
+    const errorMessage = ref("");
 
     // File state
     const selectedFile = ref<File | null>(null);
-    const selectedFileName = ref('');
+    const selectedFileName = ref("");
     const selectedFileSize = ref(0);
-    const selectedFileType = ref('');
+    const selectedFileType = ref("");
 
     const hasFile = computed(() => selectedFile.value !== null);
 
     const isImageFile = computed(() => {
-      return selectedFileType.value.startsWith('image/');
+      return selectedFileType.value.startsWith("image/");
     });
 
     const isPdfFile = computed(() => {
-      return selectedFileType.value === 'application/pdf';
+      return selectedFileType.value === "application/pdf";
     });
 
     const onZoneClick = () => {
@@ -264,18 +264,18 @@ export default defineComponent({
       }
 
       // Check file type against accept prop
-      if (props.accept && props.accept !== '*/*') {
+      if (props.accept && props.accept !== "*/*") {
         const acceptedTypes = props.accept
-          .split(',')
+          .split(",")
           .map((type) => type.trim());
         const fileType = file.type;
-        const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+        const fileExtension = "." + file.name.split(".").pop()?.toLowerCase();
 
         const isAccepted = acceptedTypes.some((acceptType) => {
-          if (acceptType.startsWith('.')) {
+          if (acceptType.startsWith(".")) {
             return acceptType === fileExtension;
-          } else if (acceptType.includes('*')) {
-            const baseType = acceptType.split('/')[0];
+          } else if (acceptType.includes("*")) {
+            const baseType = acceptType.split("/")[0];
             return fileType.startsWith(baseType);
           } else {
             return acceptType === fileType;
@@ -299,18 +299,18 @@ export default defineComponent({
       selectedFileSize.value = file.size;
       selectedFileType.value = file.type;
       hasError.value = false;
-      errorMessage.value = '';
+      errorMessage.value = "";
     };
 
     const clearFile = () => {
       selectedFile.value = null;
-      selectedFileName.value = '';
+      selectedFileName.value = "";
       selectedFileSize.value = 0;
-      selectedFileType.value = '';
+      selectedFileType.value = "";
       progress.value = 0;
-      message.value = '';
+      message.value = "";
       hasError.value = false;
-      errorMessage.value = '';
+      errorMessage.value = "";
     };
 
     const processFile = (file: File) => {
@@ -318,9 +318,9 @@ export default defineComponent({
 
       if (!validation.valid) {
         hasError.value = true;
-        errorMessage.value = validation.error || 'Invalid file';
+        errorMessage.value = validation.error || "Invalid file";
         $q.notify({
-          type: 'negative',
+          type: "negative",
           message: validation.error,
         });
         return;
@@ -349,11 +349,11 @@ export default defineComponent({
 
     const removeFile = () => {
       clearFile();
-      emit('removed');
+      emit("removed");
     };
 
     const emitUploaded = () => {
-      emit('uploaded');
+      emit("uploaded");
     };
 
     const handleUpload = function () {
@@ -361,14 +361,14 @@ export default defineComponent({
 
       uploading.value = true;
       progress.value = 0;
-      message.value = 'Preparing upload...';
+      message.value = "Preparing upload...";
       hasError.value = false;
 
       const formData: FormData = new FormData();
-      formData.append('file', selectedFile.value);
+      formData.append("file", selectedFile.value);
 
       const lastProcessedPosition = ref({ current: 0 });
-      const fullResponseText = ref({ current: '' });
+      const fullResponseText = ref({ current: "" });
 
       const endPoint = props.postEndPoint;
 
@@ -388,9 +388,9 @@ export default defineComponent({
         url: url,
         data: formData,
         headers: {
-          'Content-Type': 'multipart/form-data',
+          "Content-Type": "multipart/form-data",
         },
-        method: 'POST',
+        method: "POST",
         onDownloadProgress: (progressEvent) => {
           handleSSEProgress(
             progressEvent,
@@ -405,11 +405,11 @@ export default defineComponent({
               },
               onError: (inmessage) => {
                 $q.notify({
-                  type: 'negative',
+                  type: "negative",
                   message: inmessage,
                 });
                 progress.value = 0;
-                message.value = 'Error: ' + inmessage;
+                message.value = "Error: " + inmessage;
                 hasError.value = true;
                 errorMessage.value = inmessage;
                 uploading.value = false;
@@ -418,7 +418,7 @@ export default defineComponent({
                 progress.value = inProgress / 100;
                 if (inProgress === 100) {
                   emitUploaded();
-                  message.value = 'Upload complete!';
+                  message.value = "Upload complete!";
                   setTimeout(() => {
                     uploading.value = false;
                     clearFile();
@@ -433,41 +433,41 @@ export default defineComponent({
           // Handle success if needed
         })
         .catch((error: Error) => {
-          console.error('Error uploading file:', error);
+          console.error("Error uploading file:", error);
           uploading.value = false;
           hasError.value = true;
           errorMessage.value = error.message;
           $q.notify({
-            type: 'negative',
+            type: "negative",
             message: error.message,
           });
         });
     };
 
     const formatFileSize = (bytes: number): string => {
-      if (bytes === 0) return '0 Bytes';
+      if (bytes === 0) return "0 Bytes";
       const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const sizes = ["Bytes", "KB", "MB", "GB"];
       const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
     };
 
     const getAcceptDescription = (): string => {
-      if (!props.accept || props.accept === '*/*') {
-        return 'All files';
+      if (!props.accept || props.accept === "*/*") {
+        return "All files";
       }
 
-      const types = props.accept.split(',').map((type) => type.trim());
+      const types = props.accept.split(",").map((type) => type.trim());
       const descriptions = types.map((type) => {
-        if (type.includes('image/')) return 'Images';
-        if (type.includes('video/')) return 'Videos';
-        if (type.includes('audio/')) return 'Audio';
-        if (type.includes('application/pdf')) return 'PDF';
-        if (type.includes('text/')) return 'Text files';
+        if (type.includes("image/")) return "Images";
+        if (type.includes("video/")) return "Videos";
+        if (type.includes("audio/")) return "Audio";
+        if (type.includes("application/pdf")) return "PDF";
+        if (type.includes("text/")) return "Text files";
         return type;
       });
 
-      return [...new Set(descriptions)].join(', ');
+      return [...new Set(descriptions)].join(", ");
     };
 
     return {

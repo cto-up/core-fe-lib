@@ -28,15 +28,15 @@
                     color="primary"
                     :loading="loadingReference"
                     :disable="loadingReference || loadingSample"
-                    @click="seedReferenceData"
                     icon="data_array"
                     :label="t(`layout.navigation.seed.reference.action`)"
+                    @click="seedReferenceData"
                   />
                 </q-card-section>
               </q-card>
             </div>
 
-            <div class="col-12 col-md-6" v-if="!hideSampleData">
+            <div v-if="!hideSampleData" class="col-12 col-md-6">
               <q-card>
                 <q-card-section>
                   <div class="text-h6">
@@ -51,9 +51,9 @@
                     color="secondary"
                     :loading="loadingSample"
                     :disable="loadingReference || loadingSample"
-                    @click="seedSampleData"
                     icon="dataset"
                     :label="t(`layout.navigation.seed.sample.action`)"
+                    @click="seedSampleData"
                   />
                 </q-card-section>
               </q-card>

@@ -1,8 +1,7 @@
 <template>
   <q-select
-    clearable
     v-model="theModel"
-    @update:model-value="onSelect"
+    clearable
     filled
     :multiple="multiple"
     :label="label"
@@ -13,12 +12,13 @@
     :hide-selected="!multiple"
     input-debounce="500"
     use-input
+    @update:model-value="onSelect"
     option-label="name"
     option-value="id"
     :loading="loading"
     @filter="filterFn"
   >
-    <template v-slot:option="scope">
+    <template #option="scope">
       <q-item v-bind="scope.itemProps">
         <q-item-section avatar>
           <q-avatar>
@@ -32,13 +32,13 @@
       </q-item>
     </template>
 
-    <template v-slot:selected-item="scope">
+    <template #selected-item="scope">
       <q-chip
         removable
         dense
-        @remove="scope.removeAtIndex(scope.index)"
         :tabindex="scope.tabindex"
         class="q-ma-none"
+        @remove="scope.removeAtIndex(scope.index)"
       >
         <q-avatar>
           <q-icon name="person" />

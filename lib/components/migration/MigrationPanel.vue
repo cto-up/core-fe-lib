@@ -28,9 +28,9 @@
                     color="primary"
                     :loading="loadingUp"
                     :disable="loadingUp || loadingDown"
-                    @click="migrateUp"
                     icon="arrow_upward"
                     :label="t(`layout.navigation.migration.up.action`)"
+                    @click="migrateUp"
                   />
                 </q-card-section>
               </q-card>
@@ -51,9 +51,9 @@
                     color="secondary"
                     :loading="loadingDown"
                     :disable="loadingUp || loadingDown"
-                    @click="confirmMigrateDown"
                     icon="arrow_downward"
                     :label="t(`layout.navigation.migration.down.action`)"
+                    @click="confirmMigrateDown"
                   />
                 </q-card-section>
               </q-card>

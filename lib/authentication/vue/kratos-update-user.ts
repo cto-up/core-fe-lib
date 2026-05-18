@@ -67,8 +67,11 @@ export async function updateUserFromSession(
       isReseller: profile.is_reseller ?? false,
       isActingReseller: profile.is_acting_reseller ?? false,
     });
-    
   } catch {
-    userStore.setUser({ ...userStore.user!, isReseller: false, isActingReseller: false });
+    userStore.setUser({
+      ...userStore.user!,
+      isReseller: false,
+      isActingReseller: false,
+    });
   }
 }

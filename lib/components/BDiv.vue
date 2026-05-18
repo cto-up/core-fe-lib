@@ -5,9 +5,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { useQuasar } from 'quasar';
-import { computed } from 'vue';
+import { ref } from "vue";
+import { useQuasar } from "quasar";
+import { computed } from "vue";
 
 // Props
 const props = defineProps({
@@ -17,7 +17,7 @@ const props = defineProps({
   },
   class: {
     type: String,
-    default: '',
+    default: "",
   },
 });
 
@@ -26,7 +26,7 @@ const $q = useQuasar();
 
 // Watch for dark mode changes and update the text color accordingly
 const divStyle = computed(() => ({
-  color: $q.dark.isActive ? '#fff' : '#000', // Set white text in dark mode, black in light mode
+  color: $q.dark.isActive ? "#fff" : "#000", // Set white text in dark mode, black in light mode
 }));
 
 // Pass class prop to use in the template

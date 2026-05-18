@@ -12,14 +12,37 @@ import "@quasar/extras/mdi-v4/mdi-v4.css";
 import "@quasar/extras/eva-icons/eva-icons.css";
 
 // Import all Quasar components
-import { QCard, QCardSection,QCardActions, QLinearProgress, QImg, QSelect, QSpinnerFacebook, Dialog, Notify, QBtn, QInput, QIcon, QPopupProxy, QDate, QTime, ClosePopup, QTab, QTabPanel, QTabs, QTabPanels, QDialog, QPage } from 'quasar'
+import {
+  QCard,
+  QCardSection,
+  QCardActions,
+  QLinearProgress,
+  QImg,
+  QSelect,
+  QSpinnerFacebook,
+  Dialog,
+  Notify,
+  QBtn,
+  QInput,
+  QIcon,
+  QPopupProxy,
+  QDate,
+  QTime,
+  ClosePopup,
+  QTab,
+  QTabPanel,
+  QTabs,
+  QTabPanels,
+  QDialog,
+  QPage,
+} from "quasar";
 
 // To be used on app.use(Quasar, { ... })
 export default {
   config: {},
   plugins: {
     Dialog,
-    Notify
+    Notify,
   },
   components: {
     QCard,
@@ -40,9 +63,9 @@ export default {
     QTabs,
     QTabPanels,
     QDialog,
-    QPage
+    QPage,
   },
   directives: {
-    ClosePopup
-  }
+    ClosePopup,
+  },
 };

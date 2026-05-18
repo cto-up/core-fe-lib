@@ -1,12 +1,12 @@
 <template>
   <q-input
+    v-model="internalDate"
     :label="label"
     :error="error"
     :error-message="errorMessage"
     filled
-    v-model="internalDate"
   >
-    <template v-slot:prepend>
+    <template #prepend>
       <q-icon name="event" class="cursor-pointer">
         <q-popup-proxy
           v-model="showDatePopup"
@@ -27,7 +27,7 @@
       </q-icon>
     </template>
 
-    <template v-slot:append>
+    <template #append>
       <q-icon name="access_time" class="cursor-pointer">
         <q-popup-proxy
           v-model="showTimePopup"
@@ -37,10 +37,10 @@
         >
           <q-time
             v-model="internalDate"
-            @update:model-value="onTimeSelect($event)"
             mask="YYYY-MM-DD HH:mm"
             format24h
             :minute-options="[0, 15, 30, 45]"
+            @update:model-value="onTimeSelect($event)"
           >
             <div class="row items-center justify-end">
               <q-btn v-close-popup label="Close" color="primary" flat></q-btn>
@@ -53,14 +53,14 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
-import useDate from '../composables/useDate';
+import { ref, watch } from "vue";
+import useDate from "../composables/useDate";
 const { ISOStringToDateTimeString, datetimeStringToISO } = useDate();
 
 const props = defineProps({
   modelValue: {
     type: String,
-    default: '',
+    default: "",
   },
   error: {
     type: Boolean,
@@ -73,14 +73,14 @@ const props = defineProps({
   },
   maxWidth: {
     type: String,
-    default: '300px',
+    default: "300px",
   },
 });
 
 const showDatePopup = ref<boolean>(false);
 const showTimePopup = ref<boolean>(false);
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 
 const internalDate = ref(ISOStringToDateTimeString(props.modelValue));
 
@@ -93,7 +93,7 @@ const onTimeSelect = (value: string) => {
 };
 
 watch(internalDate, (newValue) => {
-  emit('update:modelValue', datetimeStringToISO(newValue));
+  emit("update:modelValue", datetimeStringToISO(newValue));
 });
 // Watch for changes in modelValue (prop) and update internalDate
 watch(
@@ -103,7 +103,7 @@ watch(
     if (newInternalDate !== internalDate.value) {
       internalDate.value = newInternalDate;
     }
-  },
+  }
 );
 </script>
 

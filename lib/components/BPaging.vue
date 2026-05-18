@@ -18,11 +18,11 @@ defineProps({
 </script>
 
 <style scoped>
-[dark='true']:not([color='primary']) {
+[dark="true"]:not([color="primary"]) {
   background: rgb(60, 60, 60);
 }
 
-[dark='false']:not([color='primary']) {
+[dark="false"]:not([color="primary"]) {
   background: rgb(241, 241, 241);
 }
 </style>

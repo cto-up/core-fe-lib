@@ -14,8 +14,8 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, watch } from 'vue';
-import { useQuasar } from 'quasar';
+import { onMounted, ref, watch } from "vue";
+import { useQuasar } from "quasar";
 
 const $q = useQuasar();
 const props = defineProps({

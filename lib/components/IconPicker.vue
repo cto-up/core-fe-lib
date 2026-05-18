@@ -22,7 +22,7 @@
             dense
             class="q-mb-md"
           >
-            <template v-slot:append>
+            <template #append>
               <q-icon name="search" />
             </template>
           </q-input>
@@ -45,7 +45,7 @@
         </q-card-section>
 
         <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn v-close-popup flat label="Cancel" color="primary" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -53,26 +53,26 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-import { useQuasar } from 'quasar';
+import { ref, computed } from "vue";
+import { useQuasar } from "quasar";
 // list is taken from https://fonts.google.com/metadata/icons
-import rowIcons from '../assets/raw-icons.json';
+import rowIcons from "../assets/raw-icons.json";
 
 defineProps({
   modelValue: {
     type: String,
-    default: '',
+    default: "",
   },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 
 const $q = useQuasar();
-const searchQuery = ref('');
+const searchQuery = ref("");
 const isDialogOpen = ref(false);
 
 // This is a sample list of icons. You can expand this list or fetch it from an API.
-const icons = rowIcons['icons'].map((icon) => icon.name);
+const icons = rowIcons["icons"].map((icon) => icon.name);
 
 const filteredIcons = computed(() => {
   if (!searchQuery.value) return icons;
@@ -82,17 +82,17 @@ const filteredIcons = computed(() => {
 });
 
 const selectIcon = (icon) => {
-  emit('update:modelValue', icon);
+  emit("update:modelValue", icon);
   $q.notify({
     message: `Selected icon: ${icon}`,
-    color: 'positive',
+    color: "positive",
   });
   isDialogOpen.value = false;
 };
 
 const openDialog = () => {
   isDialogOpen.value = true;
-  searchQuery.value = '';
+  searchQuery.value = "";
 };
 </script>
 

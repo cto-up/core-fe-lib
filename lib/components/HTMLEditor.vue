@@ -2,16 +2,16 @@
   <div class="editor">
     <div class="menubar q-pa-sm">
       <q-btn
-        size="10px"
         v-for="action in toolbarActions"
         :key="action.name"
+        size="10px"
         :icon="action.icon"
         :label="action.label"
         :color="action.isActive() ? 'primary' : 'grey-1'"
         :class="{ 'is-active': action.isActive() }"
-        @click="action.handler"
         flat
         dense
+        @click="action.handler"
       />
     </div>
     <editor-content class="editor__content" :editor="editor" />

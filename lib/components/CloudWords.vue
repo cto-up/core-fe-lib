@@ -8,7 +8,7 @@
 </template>
 
 <script>
-import { defineComponent, computed } from 'vue';
+import { defineComponent, computed } from "vue";
 
 export default defineComponent({
   props: {
@@ -20,7 +20,7 @@ export default defineComponent({
   setup(props) {
     const processedWords = computed(() => {
       return props.words.map((word) => {
-        if (typeof word === 'string') {
+        if (typeof word === "string") {
           return {
             text: word,
             weight: Math.floor(Math.random() * 9) + 1,
@@ -70,31 +70,31 @@ ul.cloud a {
   white-space: nowrap; /* Prevent text from wrapping */
 }
 
-ul.cloud a[data-weight='1'] {
+ul.cloud a[data-weight="1"] {
   --size: 1;
 }
-ul.cloud a[data-weight='2'] {
+ul.cloud a[data-weight="2"] {
   --size: 1.5;
 }
-ul.cloud a[data-weight='3'] {
+ul.cloud a[data-weight="3"] {
   --size: 2;
 }
-ul.cloud a[data-weight='4'] {
+ul.cloud a[data-weight="4"] {
   --size: 2.5;
 }
-ul.cloud a[data-weight='5'] {
+ul.cloud a[data-weight="5"] {
   --size: 3;
 }
-ul.cloud a[data-weight='6'] {
+ul.cloud a[data-weight="6"] {
   --size: 3.5;
 }
-ul.cloud a[data-weight='7'] {
+ul.cloud a[data-weight="7"] {
   --size: 4;
 }
-ul.cloud a[data-weight='8'] {
+ul.cloud a[data-weight="8"] {
   --size: 5;
 }
-ul.cloud a[data-weight='9'] {
+ul.cloud a[data-weight="9"] {
   --size: 6;
 }
 
@@ -113,7 +113,7 @@ ul.cloud a:focus {
 }
 
 ul.cloud a::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 50%;

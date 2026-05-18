@@ -1,7 +1,7 @@
 export enum EventType {
-  INFO = 'INFO',
-  MSG = 'MSG',
-  ERROR = 'ERROR',
+  INFO = "INFO",
+  MSG = "MSG",
+  ERROR = "ERROR",
 }
 
 export interface ReceivedEvent {
@@ -20,10 +20,10 @@ export function ExtractJSONObject(rawData: string): ReceivedProgressEvent[] {
 
   // Step 2: Identify the JSON data line
   const eventArray = lines
-    .filter((line) => line.startsWith('data:'))
-    .map((line) => JSON.parse(line.replace('data:', '')));
+    .filter((line) => line.startsWith("data:"))
+    .map((line) => JSON.parse(line.replace("data:", "")));
   if (eventArray.length <= 0) {
-    throw new Error('Unable to locate JSON data.');
+    throw new Error("Unable to locate JSON data.");
   }
 
   return eventArray;

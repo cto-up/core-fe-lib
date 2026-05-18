@@ -7,7 +7,7 @@
     class="glass-button"
     :flat="color === 'primary' || color === 'secondary' ? false : true"
     :color="computedColor"
-    :textColor="computedColor"
+    :text-color="computedColor"
     :type="type"
   >
     <template #loading>

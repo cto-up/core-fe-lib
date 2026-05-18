@@ -16,7 +16,7 @@
       hide-expand-icon
       :default-opened="defaultOpened"
     >
-      <template v-slot:header>
+      <template #header>
         <q-item-section
           class="draggable"
           avatar
@@ -43,8 +43,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue';
-import { QExpansionItem } from 'quasar';
+import { ref, reactive, onMounted, onUnmounted } from "vue";
+import { QExpansionItem } from "quasar";
 
 // Props
 interface Props {
@@ -57,8 +57,8 @@ interface Props {
 
 const props = defineProps<Props>();
 const {
-  label = 'Counter',
-  icon = 'explore',
+  label = "Counter",
+  icon = "explore",
   initialTop = 100,
   initialRight = 0,
 } = props;
@@ -83,8 +83,8 @@ const startDrag = (event: MouseEvent) => {
   dragStart.x = containerWidth - event.clientX - position.right; // Calculate initial drag distance
   dragStart.y = event.clientY - position.top;
 
-  document.addEventListener('mousemove', drag);
-  document.addEventListener('mouseup', stopDrag);
+  document.addEventListener("mousemove", drag);
+  document.addEventListener("mouseup", stopDrag);
 };
 
 const drag = (event: MouseEvent) => {
@@ -106,8 +106,8 @@ const drag = (event: MouseEvent) => {
 
 const stopDrag = () => {
   isDragging.value = false;
-  document.removeEventListener('mousemove', drag);
-  document.removeEventListener('mouseup', stopDrag);
+  document.removeEventListener("mousemove", drag);
+  document.removeEventListener("mouseup", stopDrag);
 };
 
 const handleMouseUp = () => {
@@ -119,11 +119,11 @@ const handleMouseUp = () => {
 
 // Lifecycle
 onMounted(() => {
-  document.addEventListener('mouseup', stopDrag);
+  document.addEventListener("mouseup", stopDrag);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('mouseup', stopDrag);
+  document.removeEventListener("mouseup", stopDrag);
 });
 </script>
 

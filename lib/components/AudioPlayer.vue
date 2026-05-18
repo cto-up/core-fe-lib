@@ -6,6 +6,7 @@
         ref="audioElement"
         :src="audioUrl"
         preload="metadata"
+        :crossorigin="crossorigin"
         @loadedmetadata="onLoadedMetadata"
         @timeupdate="onTimeUpdate"
         @ended="onEnded"
@@ -13,7 +14,6 @@
         @pause="isPlaying = false"
         @loadstart="isLoading = true"
         @canplay="isLoading = false"
-        :crossorigin="crossorigin"
       ></audio>
 
       <!-- Album Art / Waveform Visualization -->
@@ -75,8 +75,8 @@
 
           <button
             class="control-btn primary play-btn"
-            @click="togglePlay"
             :disabled="isLoading"
+            @click="togglePlay"
           >
             <div v-if="isLoading" class="spinner"></div>
             <svg
@@ -156,13 +156,13 @@
           </button>
           <div class="volume-slider">
             <input
+              v-model="volume"
               type="range"
               min="0"
               max="1"
               step="0.01"
-              v-model="volume"
-              @input="setVolume"
               class="volume-input"
+              @input="setVolume"
             />
           </div>
         </div>
@@ -331,7 +331,8 @@ export default {
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .player-container {

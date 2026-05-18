@@ -2,7 +2,6 @@
   <q-select
     clearable
     :model-value="internalModel"
-    @update:model-value="onSelect"
     filled
     :multiple="multiple"
     :label="label"
@@ -13,6 +12,7 @@
     input-debounce="500"
     use-input
     :option-label="optionLabel"
+    @update:model-value="onSelect"
     :option-value="optionValue"
     :loading="loading"
     @filter="filterFn"

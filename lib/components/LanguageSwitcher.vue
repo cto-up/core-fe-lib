@@ -16,30 +16,30 @@
 </template>
 
 <script>
-import { useI18n } from 'vue-i18n';
+import { useI18n } from "vue-i18n";
 
 export default {
   setup() {
-    const { locale } = useI18n({ useScope: 'global' });
+    const { locale } = useI18n({ useScope: "global" });
     // Retrieve language preference from localStorage or use browser language
-    const savedLocale = localStorage.getItem('user-locale');
+    const savedLocale = localStorage.getItem("user-locale");
     if (savedLocale) {
       locale.value = savedLocale;
-    } else if (navigator.language.startsWith('fr')) {
-      locale.value = 'fr';
+    } else if (navigator.language.startsWith("fr")) {
+      locale.value = "fr";
     } else {
-      locale.value = 'en';
+      locale.value = "en";
     }
     const updateLocale = (newLocale) => {
-      localStorage.setItem('user-locale', newLocale);
+      localStorage.setItem("user-locale", newLocale);
       locale.value = newLocale;
     };
     return {
       updateLocale,
       locale,
       localeOptions: [
-        { value: 'en', label: 'English' },
-        { value: 'fr', label: 'Français' },
+        { value: "en", label: "English" },
+        { value: "fr", label: "Français" },
       ],
     };
   },

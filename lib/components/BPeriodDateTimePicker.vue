@@ -6,10 +6,10 @@
       :error="error"
       :error-message="errorMessage"
       filled
-      v-bind:model-value="internalFromDateTime"
+      :model-value="internalFromDateTime"
       @update:model-value="onFromDateTimeChange($event)"
     >
-      <template v-slot:prepend>
+      <template #prepend>
         <q-icon name="event" class="cursor-pointer">
           <q-popup-proxy cover transition-show="scale" transition-hide="scale">
             <q-date
@@ -25,7 +25,7 @@
         </q-icon>
       </template>
 
-      <template v-slot:append>
+      <template #append>
         <q-icon name="access_time" class="cursor-pointer">
           <q-popup-proxy cover transition-show="scale" transition-hide="scale">
             <q-time
@@ -43,8 +43,8 @@
         </q-icon>
         <!-- Duration Dropdown -->
         <q-select
-          :label="computedDurationLabel"
           v-model="selectedDuration"
+          :label="computedDurationLabel"
           :options="durationOptions"
           dense
           filled
