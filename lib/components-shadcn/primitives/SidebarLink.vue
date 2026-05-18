@@ -1,0 +1,111 @@
+<template>
+  <TooltipProvider :disable-hoverable-content="true">
+    <Tooltip :delay-duration="0">
+      <TooltipTrigger as-child class="w-full">
+        <button
+          :class="
+            cn(
+              'w-full overflow-x-hidden justify-start duration-150 inline-flex items-center rounded-md text-sm font-medium transition-colors',
+              'hover:bg-accent hover:text-accent-foreground',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'disabled:pointer-events-none disabled:opacity-50',
+              'h-10 px-3',
+              isActive && 'bg-accent text-accent-foreground'
+            )
+          "
+          @click="navigate"
+        >
+          <span class="flex items-center" :class="expanded ? 'mr-4' : 'm-0'">
+            <component
+              :is="iconComponent"
+              v-if="iconComponent"
+              class="h-4 w-4 flex-shrink-0"
+            />
+          </span>
+          <transition name="fade" :duration="300">
+            <span v-show="expanded" class="truncate">{{ title }}</span>
+          </transition>
+          <span
+            v-if="badge && badge > 0 && expanded"
+            class="ml-auto flex-shrink-0 h-4 min-w-4 rounded-full bg-primary text-primary-foreground text-[9px] font-bold flex items-center justify-center px-1 leading-none"
+          >
+            {{ badge > 99 ? "99+" : badge }}
+          </span>
+        </button>
+      </TooltipTrigger>
+      <TooltipContent v-if="!expanded" side="right">
+        <p class="text-sm">{{ title }}</p>
+        <p v-if="caption" class="text-xs text-muted-foreground">
+          {{ caption }}
+        </p>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
+</template>
+
+<script lang="ts" setup>
+import { computed, type Component } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
+import { cn } from "../utils";
+
+/**
+ * Generic active-state sidebar nav button.
+ *
+ * Icons are passed as a resolved component so this stays independent of any
+ * icon-name → Lucide mapping. Callers iterating a menu-link array typically
+ * run their hub-side resolver inline:
+ *
+ *   <SidebarLink :icon-component="resolveIcon(link.icon)" ... />
+ *
+ * When `expanded` is false the title and caption render in a right-side
+ * tooltip (icon-only state).
+ */
+const props = defineProps<{
+  title: string;
+  link?: string;
+  iconComponent?: Component;
+  caption?: string;
+  badge?: number;
+  expanded: boolean;
+}>();
+
+const emit = defineEmits<{
+  click: [];
+}>();
+
+const route = useRoute();
+const router = useRouter();
+
+const isActive = computed(() => {
+  if (!props.link) return false;
+  return route.path === props.link || route.path.startsWith(props.link + "/");
+});
+
+const navigate = async () => {
+  if (!props.link) return;
+  try {
+    await router.push(props.link);
+    emit("click");
+  } catch (error) {
+    console.warn("Navigation failed:", error);
+  }
+};
+</script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
