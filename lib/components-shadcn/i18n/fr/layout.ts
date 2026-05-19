@@ -44,10 +44,6 @@ export default {
         title: "Applications Client",
         caption: "Gérer les tokens d'application",
       },
-      secrets: {
-        title: "Secrets & Intégrations",
-        caption: "Clés d'API partagées entre modules",
-      },
     },
     superAdmin: {
       title: "Administration Globale",

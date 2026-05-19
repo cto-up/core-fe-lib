@@ -252,12 +252,6 @@ const defaultTrailingSections = (): SidebarMenuSection[] => {
           icon: "key",
           link: "/token/client-applications",
         },
-        {
-          title: t("layout.navigation.admin.secrets.title"),
-          caption: t("layout.navigation.admin.secrets.caption"),
-          icon: "lock",
-          link: "/admin/secrets",
-        },
       ]
     : [];
   return [
