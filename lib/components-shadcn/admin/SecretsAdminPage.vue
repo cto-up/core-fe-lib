@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
-import { DefaultService as SecretService, type Secret } from "secret-fe-lib";
+import { DefaultService as SecretService, type Secret } from "secret-fe-lib/lib";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
