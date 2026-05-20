@@ -1385,6 +1385,10 @@ export class DefaultService {
      * @param order sort order
      * @param q starts with
      * @param resellerId filter by reseller id
+     * @param global When true, bypass the automatic reseller scoping that filters results
+     * to the current reseller subdomain. Honored only for SUPER_ADMIN / ADMIN;
+     * ignored otherwise.
+     *
      * @returns Tenant tenant response
      * @throws ApiError
      */
@@ -1395,6 +1399,7 @@ export class DefaultService {
         order?: 'asc' | 'desc',
         q?: string,
         resellerId?: string,
+        global?: boolean,
     ): CancelablePromise<Array<Tenant>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -1406,6 +1411,7 @@ export class DefaultService {
                 'order': order,
                 'q': q,
                 'reseller_id': resellerId,
+                'global': global,
             },
         });
     }
