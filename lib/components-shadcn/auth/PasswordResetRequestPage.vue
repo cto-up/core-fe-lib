@@ -41,10 +41,9 @@ import {
 import { getUserFriendlyMessage } from "../../authentication";
 import { useRouter } from "vue-router";
 
-const props = withDefaults(
-  defineProps<{ homePath?: string }>(),
-  { homePath: "/" }
-);
+const props = withDefaults(defineProps<{ homePath?: string }>(), {
+  homePath: "/",
+});
 
 const { toast } = useToast();
 const { t } = useI18n();

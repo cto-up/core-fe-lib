@@ -13,10 +13,7 @@
       <slot name="branding" :expanded="expanded">
         <div class="flex items-center gap-4">
           <transition name="ams-fade">
-            <h2
-              v-show="expanded"
-              class="text-xl font-semibold text-foreground"
-            >
+            <h2 v-show="expanded" class="text-xl font-semibold text-foreground">
               {{ brandingText }}
             </h2>
           </transition>

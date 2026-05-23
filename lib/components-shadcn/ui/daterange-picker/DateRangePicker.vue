@@ -6,11 +6,7 @@ import { ref } from "vue";
 import { cn } from "../../utils";
 import { Button } from "../button";
 import { Calendar } from "../calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 
 const date = ref({
   start: new Date(2023, 0, 20),

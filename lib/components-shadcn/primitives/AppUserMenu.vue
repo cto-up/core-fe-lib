@@ -29,11 +29,7 @@
         :key="i"
         @click="item.action"
       >
-        <component
-          :is="item.icon"
-          v-if="item.icon"
-          class="mr-2 h-4 w-4"
-        />
+        <component :is="item.icon" v-if="item.icon" class="mr-2 h-4 w-4" />
         {{ item.label }}
       </DropdownMenuItem>
       <DropdownMenuSeparator v-if="items.length && signOutLabel" />

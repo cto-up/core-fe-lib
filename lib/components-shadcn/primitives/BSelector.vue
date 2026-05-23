@@ -60,11 +60,7 @@ import {
   CommandItem,
   CommandList,
 } from "../ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Label } from "../ui/label";
 import { cn } from "../utils";
 

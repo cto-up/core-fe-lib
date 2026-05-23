@@ -37,20 +37,16 @@ import { ref, onMounted } from "vue";
 import { useToast } from "../ui/toast/use-toast";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import {
-  getUserFriendlyMessage,
-  kratosService,
-} from "../../authentication";
+import { getUserFriendlyMessage, kratosService } from "../../authentication";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Key } from "lucide-vue-next";
 
-const props = withDefaults(
-  defineProps<{ signinPath?: string }>(),
-  { signinPath: "/signin" }
-);
+const props = withDefaults(defineProps<{ signinPath?: string }>(), {
+  signinPath: "/signin",
+});
 
 const newPassword = ref("");
 const { toast } = useToast();

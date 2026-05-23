@@ -244,10 +244,9 @@
 import { onMounted, ref } from "vue";
 import { useUser } from "../composables/useUserFromAdminUser";
 
-withDefaults(
-  defineProps<{ editUserPathPrefix?: string }>(),
-  { editUserPathPrefix: "/super-admin/tenants" }
-);
+withDefaults(defineProps<{ editUserPathPrefix?: string }>(), {
+  editUserPathPrefix: "/super-admin/tenants",
+});
 import { useRoute } from "vue-router";
 import { useToast } from "../ui/toast/use-toast";
 import { DefaultService, UserActionSchema } from "../../openapi/core";

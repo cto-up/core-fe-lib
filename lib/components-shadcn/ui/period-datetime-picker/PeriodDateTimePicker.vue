@@ -114,11 +114,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { Calendar as CalendarIcon, Clock } from "lucide-vue-next";
 import { cn } from "../../utils";
 import { useI18n } from "vue-i18n";

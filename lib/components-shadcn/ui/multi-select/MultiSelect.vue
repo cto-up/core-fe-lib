@@ -114,11 +114,7 @@ import {
   CommandItem,
   CommandList,
 } from "../command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { X, Check, Plus, ChevronDown } from "lucide-vue-next";
 import { cn } from "../../utils";
 

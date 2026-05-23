@@ -195,8 +195,8 @@ const defaultUserMenuItems = (): UserMenuItem[] => [
   },
 ];
 
-const userMenu = useAppUserMenu(
-  () => (props.userMenuItemsFactory ?? defaultUserMenuItems)()
+const userMenu = useAppUserMenu(() =>
+  (props.userMenuItemsFactory ?? defaultUserMenuItems)()
 );
 
 // ── Default sidebar nav config ──────────────────────────────────────────────

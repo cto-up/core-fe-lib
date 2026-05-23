@@ -42,7 +42,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { Button } from "../ui/button";
 import { Separator } from "../ui/separator";
 import { ChevronDown, ChevronUp, Circle } from "lucide-vue-next";

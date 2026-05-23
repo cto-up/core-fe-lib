@@ -77,8 +77,7 @@ export const useAppStore = defineStore("app", {
     },
     async applyTenantTheme() {
       try {
-        const { useTenantStore } =
-          await import("../../stores/tenant-store");
+        const { useTenantStore } = await import("../../stores/tenant-store");
         const tenantStore = useTenantStore();
 
         // Always call applyTheme to ensure any previous mode's overrides are cleared.

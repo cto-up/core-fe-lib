@@ -6,9 +6,7 @@ import { ref, watch } from "vue";
  *
  *   const { isSectionOpen, setSectionOpen } = useSidebarSectionState();
  */
-export function useSidebarSectionState(
-  storageKey = "sidebar-sections-open"
-) {
+export function useSidebarSectionState(storageKey = "sidebar-sections-open") {
   const sectionOpen = ref<Record<string, boolean>>(load());
 
   function load(): Record<string, boolean> {

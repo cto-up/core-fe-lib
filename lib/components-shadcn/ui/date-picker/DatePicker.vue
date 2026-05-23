@@ -47,11 +47,7 @@ import { Calendar as CalendarIcon } from "lucide-vue-next";
 import { Button } from "../button";
 import { Calendar } from "../calendar";
 import { Label } from "../label";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { cn } from "../../utils";
 import MaskedDateInput from "../../primitives/MaskedDateInput.vue";
 

@@ -19,7 +19,10 @@
           <Label class="text-base">{{ label }}</Label>
         </div>
 
-        <div v-if="!friendlyCompatible" class="rounded-md border border-dashed p-4 bg-muted/30 text-sm space-y-2">
+        <div
+          v-if="!friendlyCompatible"
+          class="rounded-md border border-dashed p-4 bg-muted/30 text-sm space-y-2"
+        >
           <p class="text-muted-foreground">
             {{ t("common.cron.customPatternHint") }}
           </p>
@@ -81,7 +84,11 @@
 
           <!-- Daily / Weekly / Monthly all need a time -->
           <div
-            v-if="frequency === 'daily' || frequency === 'weekly' || frequency === 'monthly'"
+            v-if="
+              frequency === 'daily' ||
+              frequency === 'weekly' ||
+              frequency === 'monthly'
+            "
             class="space-y-1"
           >
             <Label>{{ t("common.cron.atTime") }}</Label>
@@ -126,7 +133,9 @@
             <CalendarClock class="h-5 w-5 text-primary flex-shrink-0" />
             <div class="min-w-0">
               <p class="font-medium text-sm">{{ friendlyPreview }}</p>
-              <code class="text-xs text-muted-foreground">{{ cronExpression }}</code>
+              <code class="text-xs text-muted-foreground">{{
+                cronExpression
+              }}</code>
             </div>
           </div>
         </template>
@@ -165,14 +174,17 @@
                 <div>
                   <h5 class="font-medium text-sm mb-2">Special Characters:</h5>
                   <ul class="text-sm space-y-1 list-disc list-inside">
-                    <li><code class="bg-muted px-1 rounded">*</code> - any value</li>
                     <li>
-                      <code class="bg-muted px-1 rounded">,</code> - list separator (e.g.,
+                      <code class="bg-muted px-1 rounded">*</code> - any value
+                    </li>
+                    <li>
+                      <code class="bg-muted px-1 rounded">,</code> - list
+                      separator (e.g.,
                       <code class="bg-muted px-1 rounded">1,3,5</code>)
                     </li>
                     <li>
-                      <code class="bg-muted px-1 rounded">-</code> - range (e.g.,
-                      <code class="bg-muted px-1 rounded">1-5</code>)
+                      <code class="bg-muted px-1 rounded">-</code> - range
+                      (e.g., <code class="bg-muted px-1 rounded">1-5</code>)
                     </li>
                     <li>
                       <code class="bg-muted px-1 rounded">/</code> - step (e.g.,
@@ -183,17 +195,33 @@
                 <div>
                   <h5 class="font-medium text-sm mb-2">Examples:</h5>
                   <ul class="text-sm space-y-1 list-disc list-inside">
-                    <li><code class="bg-muted px-1 rounded">0 */15 * * * *</code> - Every 15 minutes</li>
-                    <li><code class="bg-muted px-1 rounded">0 0 * * * *</code> - Every hour</li>
-                    <li><code class="bg-muted px-1 rounded">0 0 8-17 * * 1-5</code> - Weekdays 8 AM–5 PM</li>
-                    <li><code class="bg-muted px-1 rounded">0 0 12 1 * *</code> - 1st of month at noon</li>
+                    <li>
+                      <code class="bg-muted px-1 rounded">0 */15 * * * *</code>
+                      - Every 15 minutes
+                    </li>
+                    <li>
+                      <code class="bg-muted px-1 rounded">0 0 * * * *</code> -
+                      Every hour
+                    </li>
+                    <li>
+                      <code class="bg-muted px-1 rounded"
+                        >0 0 8-17 * * 1-5</code
+                      >
+                      - Weekdays 8 AM–5 PM
+                    </li>
+                    <li>
+                      <code class="bg-muted px-1 rounded">0 0 12 1 * *</code> -
+                      1st of month at noon
+                    </li>
                   </ul>
                 </div>
               </div>
             </PopoverContent>
           </Popover>
         </div>
-        <p v-if="errorMessage" class="text-sm text-destructive">{{ errorMessage }}</p>
+        <p v-if="errorMessage" class="text-sm text-destructive">
+          {{ errorMessage }}
+        </p>
       </TabsContent>
 
       <!-- Advanced mode (per-field) -->
@@ -211,7 +239,9 @@
               @update:model-value="updateFromFields"
             />
             <p class="text-xs text-muted-foreground mt-1">0-59, *, /, -</p>
-            <p v-if="secondsError" class="text-xs text-destructive mt-1">{{ secondsError }}</p>
+            <p v-if="secondsError" class="text-xs text-destructive mt-1">
+              {{ secondsError }}
+            </p>
           </div>
 
           <div class="md:col-span-2 sm:col-span-4 col-span-6">
@@ -222,7 +252,9 @@
               @update:model-value="updateFromFields"
             />
             <p class="text-xs text-muted-foreground mt-1">0-59, *, /, -</p>
-            <p v-if="minutesError" class="text-xs text-destructive mt-1">{{ minutesError }}</p>
+            <p v-if="minutesError" class="text-xs text-destructive mt-1">
+              {{ minutesError }}
+            </p>
           </div>
 
           <div class="md:col-span-2 sm:col-span-4 col-span-6">
@@ -233,7 +265,9 @@
               @update:model-value="updateFromFields"
             />
             <p class="text-xs text-muted-foreground mt-1">0-23, *, /, -</p>
-            <p v-if="hoursError" class="text-xs text-destructive mt-1">{{ hoursError }}</p>
+            <p v-if="hoursError" class="text-xs text-destructive mt-1">
+              {{ hoursError }}
+            </p>
           </div>
 
           <div class="md:col-span-2 sm:col-span-4 col-span-6">
@@ -244,7 +278,9 @@
               @update:model-value="updateFromFields"
             />
             <p class="text-xs text-muted-foreground mt-1">1-31, *, /, -</p>
-            <p v-if="dayError" class="text-xs text-destructive mt-1">{{ dayError }}</p>
+            <p v-if="dayError" class="text-xs text-destructive mt-1">
+              {{ dayError }}
+            </p>
           </div>
 
           <div class="md:col-span-2 sm:col-span-4 col-span-6">
@@ -285,7 +321,9 @@
               </Popover>
             </div>
             <p class="text-xs text-muted-foreground mt-1">1-12, *, /, -</p>
-            <p v-if="monthError" class="text-xs text-destructive mt-1">{{ monthError }}</p>
+            <p v-if="monthError" class="text-xs text-destructive mt-1">
+              {{ monthError }}
+            </p>
           </div>
 
           <div class="md:col-span-2 sm:col-span-4 col-span-6">
@@ -326,14 +364,18 @@
               </Popover>
             </div>
             <p class="text-xs text-muted-foreground mt-1">0-6, *, /, -</p>
-            <p v-if="weekdayError" class="text-xs text-destructive mt-1">{{ weekdayError }}</p>
+            <p v-if="weekdayError" class="text-xs text-destructive mt-1">
+              {{ weekdayError }}
+            </p>
           </div>
 
           <div v-if="previewExpression" class="col-span-full">
             <div class="flex items-center gap-2 bg-muted p-3 rounded-md">
               <Code class="h-5 w-5 text-primary" />
               <span class="font-medium">Preview:</span>
-              <code class="bg-background px-2 py-1 rounded">{{ previewExpression }}</code>
+              <code class="bg-background px-2 py-1 rounded">{{
+                previewExpression
+              }}</code>
             </div>
           </div>
 
@@ -366,12 +408,7 @@ import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import {
   Select,
   SelectContent,
@@ -379,11 +416,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { HelpCircle, Code, CalendarClock } from "lucide-vue-next";
 
 const { t } = useI18n();
@@ -504,7 +537,7 @@ function validateCronPart(
   value: string,
   min: number,
   max: number,
-  fieldName: string,
+  fieldName: string
 ): string {
   if (value === "*") return "";
   if (value.includes(",") || value.includes("-") || value.includes("/")) {
@@ -554,20 +587,20 @@ function validateCronPart(
 }
 
 const secondsError = computed(() =>
-  validateCronPart(seconds.value, 0, 59, "seconds"),
+  validateCronPart(seconds.value, 0, 59, "seconds")
 );
 const minutesError = computed(() =>
-  validateCronPart(minutes.value, 0, 59, "minutes"),
+  validateCronPart(minutes.value, 0, 59, "minutes")
 );
 const hoursError = computed(() =>
-  validateCronPart(hours.value, 0, 23, "hours"),
+  validateCronPart(hours.value, 0, 23, "hours")
 );
 const dayError = computed(() => validateCronPart(day.value, 1, 31, "day"));
 const monthError = computed(() =>
-  validateCronPart(month.value, 1, 12, "month"),
+  validateCronPart(month.value, 1, 12, "month")
 );
 const weekdayError = computed(() =>
-  validateCronPart(weekday.value, 0, 6, "weekday"),
+  validateCronPart(weekday.value, 0, 6, "weekday")
 );
 
 const errorMessage = computed(() => {
@@ -831,7 +864,7 @@ watch(
       emitCron(expr);
     }
   },
-  { deep: true },
+  { deep: true }
 );
 
 // React to external model updates by re-syncing all three modes.
@@ -841,7 +874,7 @@ watch(
     if (newValue === cronExpression.value) return;
     cronExpression.value = newValue;
     syncFromExpression(newValue);
-  },
+  }
 );
 
 onMounted(() => {

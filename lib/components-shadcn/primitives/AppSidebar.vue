@@ -28,7 +28,7 @@
           </div>
 
           <!-- Body -->
-          <ScrollArea style="height: calc(100vh - 128px); margin-top: 64px;">
+          <ScrollArea style="height: calc(100vh - 128px); margin-top: 64px">
             <div class="py-4">
               <slot :expanded="sidebarExpanded" />
             </div>
@@ -65,7 +65,7 @@
                 <slot name="header" :expanded="true" />
               </slot>
             </div>
-            <ScrollArea style="height: calc(100vh - 128px);">
+            <ScrollArea style="height: calc(100vh - 128px)">
               <div class="py-4">
                 <slot :expanded="true" :is-mobile="true" />
               </div>

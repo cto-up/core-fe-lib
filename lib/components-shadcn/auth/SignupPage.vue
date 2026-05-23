@@ -144,10 +144,7 @@ import {
   maxLength,
 } from "@vuelidate/validators";
 import useVuelidate from "@vuelidate/core";
-import {
-  getUserFriendlyMessage,
-  useTenant,
-} from "../../authentication/vue";
+import { getUserFriendlyMessage, useTenant } from "../../authentication/vue";
 import { useI18n } from "vue-i18n";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";

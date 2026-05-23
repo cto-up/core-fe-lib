@@ -6,8 +6,8 @@ import type { UserMenuItem } from "../primitives/AppUserMenu.vue";
  * (so labels/actions can pick up reactive i18n + router refs) and returns
  * the shape `AppUserMenu` consumes.
  */
-export function useAppUserMenu(
-  items: () => UserMenuItem[]
-): { items: ComputedRef<UserMenuItem[]> } {
+export function useAppUserMenu(items: () => UserMenuItem[]): {
+  items: ComputedRef<UserMenuItem[]>;
+} {
   return { items: computed(() => items()) };
 }
