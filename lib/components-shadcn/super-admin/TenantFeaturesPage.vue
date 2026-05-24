@@ -8,7 +8,7 @@
         <form class="space-y-4" @submit.prevent="onSubmit">
           <div class="space-y-3">
             <div
-              v-for="key in featureKeys"
+              v-for="key in displayKeys"
               :key="key"
               class="flex items-center space-x-2"
             >
@@ -69,11 +69,17 @@ const props = withDefaults(
     titleKey?: string;
     /** Builds the i18n key for each feature label given the feature's key. */
     labelKey?: (featureKey: string) => string;
+    /**
+     * Known feature inventory. Rendered as checkboxes even when the tenant
+     * has no stored value yet, so newly added features are always enablable.
+     */
+    featureKeys?: string[];
   }>(),
   {
     editTenantRouteName: "super-admin-edit-tenant",
     titleKey: "core.features.title",
     labelKey: (key: string) => `core.features.${key}`,
+    featureKeys: () => [],
   }
 );
 
@@ -86,9 +92,13 @@ const { t } = useI18n();
 const features = reactive({} as TenantFeatures);
 const loading = ref(false);
 
-const featureKeys = computed(() =>
-  Object.keys(features).filter((k) => typeof (features as any)[k] === "boolean")
-);
+const displayKeys = computed(() => {
+  const stored = Object.keys(features).filter(
+    (k) => typeof (features as any)[k] === "boolean"
+  );
+  const extras = stored.filter((k) => !props.featureKeys.includes(k));
+  return [...props.featureKeys, ...extras];
+});
 
 const backToTenant = () => {
   void router.push({
@@ -101,6 +111,11 @@ onMounted(() => {
   DefaultService.getTenantFeatures(route.params.tenantid as string)
     .then((data) => {
       Object.assign(features, data);
+      for (const key of props.featureKeys) {
+        if (typeof (features as any)[key] !== "boolean") {
+          (features as any)[key] = false;
+        }
+      }
     })
     .catch((err) => {
       handleError(err);
