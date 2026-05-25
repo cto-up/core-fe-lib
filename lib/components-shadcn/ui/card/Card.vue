@@ -8,12 +8,11 @@ const props = defineProps<{
 </script>
 
 <template>
+  <!-- Soft ambient depth instead of a hard border by default. Structural
+       surfaces that need a crisp edge opt back in with class="border". -->
   <div
     :class="
-      cn(
-        'rounded-lg border bg-card text-card-foreground shadow-sm',
-        props.class
-      )
+      cn('rounded-lg bg-card text-card-foreground shadow-ambient', props.class)
     "
   >
     <slot />
