@@ -44,12 +44,11 @@
           class="w-full border rounded-md px-3 py-2 bg-background text-sm"
           :value="configValue(field.name) ?? ''"
           @change="
-            (e) => setConfig(field.name, (e.target as HTMLSelectElement).value)
+            (e) =>
+              setConfig(field.name, (e.target as HTMLSelectElement).value)
           "
         >
-          <option value="" disabled>
-            {{ field.placeholder ?? "Select…" }}
-          </option>
+          <option value="" disabled>{{ field.placeholder ?? 'Select…' }}</option>
           <option v-for="opt in field.enum" :key="String(opt)" :value="opt">
             {{ opt }}
           </option>
@@ -70,7 +69,7 @@
             "
           />
           <span class="text-sm text-muted-foreground">
-            {{ field.description ?? "" }}
+            {{ field.description ?? '' }}
           </span>
         </label>
 
@@ -82,8 +81,7 @@
           :model-value="configValue(field.name) ?? ''"
           :placeholder="placeholderFor(field)"
           @update:model-value="
-            (v: string | number) =>
-              setConfig(field.name, toNumber(v, field.type))
+            (v: string | number) => setConfig(field.name, toNumber(v, field.type))
           "
         />
 
@@ -93,9 +91,7 @@
           :id="`jsf-${field.name}`"
           :model-value="configValue(field.name) ?? ''"
           :placeholder="placeholderFor(field)"
-          @update:model-value="
-            (v: string | number) => setConfig(field.name, String(v))
-          "
+          @update:model-value="(v: string | number) => setConfig(field.name, String(v))"
         />
 
         <p v-if="field.description" class="text-xs text-muted-foreground">
@@ -163,19 +159,19 @@ const emit = defineEmits<{
   (e: "update:modelValue", v: JsonSchemaFormValue): void;
 }>();
 
-const secretSet = computed(() => new Set(props.secretFields ?? []));
+const secretSet = computed(
+  () => new Set(props.secretFields ?? []),
+);
 
 const fields = computed<FieldDef[]>(() => {
   const schema = props.schema;
   if (!schema || typeof schema !== "object") return [];
-  const props_ = (
-    schema as { properties?: Record<string, Record<string, unknown>> }
-  ).properties;
+  const props_ = (schema as { properties?: Record<string, Record<string, unknown>> }).properties;
   if (!props_) return [];
   const required = new Set(
     Array.isArray((schema as { required?: unknown[] }).required)
       ? ((schema as { required: unknown[] }).required as string[])
-      : []
+      : [],
   );
   return Object.entries(props_).map(([name, fieldSchema]) => {
     const type = String(fieldSchema?.type ?? "string");
@@ -246,7 +242,9 @@ function placeholderFor(field: FieldDef): string | undefined {
 }
 
 function humanise(name: string): string {
-  return name.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return name
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function toNumber(v: string | number, type: string): number | null {
