@@ -486,6 +486,10 @@ export class DefaultService {
      * @param order sort order
      * @param q starts with
      * @param detail basic or full (default to full)
+     * @param scope On the admin (tenantless) domain, controls which users are returned.
+     * "global" (default) lists only holders of a global role (SUPER_ADMIN/ADMIN);
+     * "all" lists every user system-wide and requires SUPER_ADMIN.
+     *
      * @returns User user response
      * @throws ApiError
      */
@@ -496,6 +500,7 @@ export class DefaultService {
         order?: 'asc' | 'desc',
         q?: string,
         detail?: string,
+        scope?: 'global' | 'all',
     ): CancelablePromise<Array<User>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -507,6 +512,7 @@ export class DefaultService {
                 'order': order,
                 'q': q,
                 'detail': detail,
+                'scope': scope,
             },
         });
     }
