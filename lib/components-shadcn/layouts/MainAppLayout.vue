@@ -113,6 +113,7 @@ import type {
   SidebarMenuSection,
   SidebarSubGroup,
 } from "../primitives/AppMainSidebar.vue";
+import type { MenuLink } from "../types/menu-link";
 import type { UserMenuItem } from "../primitives/AppUserMenu.vue";
 
 /**
@@ -153,6 +154,9 @@ const props = withDefaults(
     subGroupsFactory?: () => SidebarSubGroup[];
     /** Optional override: factory for the user-menu dropdown items. */
     userMenuItemsFactory?: () => UserMenuItem[];
+    /** Optional transform applied to the assembled module nav links. Host
+     *  apps use this to wrap several modules into a single grouped section. */
+    menuLinksTransform?: (links: MenuLink[]) => MenuLink[];
   }>(),
   {
     brandingText: "App",
@@ -165,6 +169,7 @@ const props = withDefaults(
     trailingSectionsFactory: undefined,
     subGroupsFactory: undefined,
     userMenuItemsFactory: undefined,
+    menuLinksTransform: undefined,
   }
 );
 
@@ -290,6 +295,7 @@ const nav = useAppNav({
     (props.trailingSectionsFactory ?? defaultTrailingSections)(),
   subGroups: () => (props.subGroupsFactory ?? defaultSubGroups)(),
   canAccess: (privilege) => userStore.hasPrivilege(privilege as Role),
+  menuLinksTransform: props.menuLinksTransform,
 });
 
 // ── Mobile/viewport ─────────────────────────────────────────────────────────

@@ -88,22 +88,13 @@
           />
         </template>
 
-        <!-- Plain (non-sub-grouped) items -->
-        <li
-          v-for="item in section.items?.filter((i) => !i.linkType) || []"
-          :key="item.title"
-          class="flex items-center rounded-md"
-        >
-          <SidebarLink
-            :title="item.title"
-            :link="item.link"
-            :caption="item.caption"
-            :badge="item.badge"
-            :icon-component="resolveIcon(item.icon)"
-            :expanded="expanded"
-            @click="$emit('navigate')"
-          />
-        </li>
+        <!-- Plain (non-sub-grouped) items — recursive to support nested groups -->
+        <SidebarItemTree
+          :items="section.items?.filter((i) => !i.linkType)"
+          :expanded="expanded"
+          :resolve-icon="resolveIcon"
+          @navigate="$emit('navigate')"
+        />
 
         <!-- Privilege-gated sub-groups -->
         <li
@@ -200,6 +191,7 @@ import { ref, type Component } from "vue";
 import AppSidebar from "./AppSidebar.vue";
 import AppSidebarSection from "./AppSidebarSection.vue";
 import SidebarLink from "./SidebarLink.vue";
+import SidebarItemTree from "./SidebarItemTree.vue";
 import { Button } from "../ui/button";
 import {
   Collapsible,
@@ -213,10 +205,12 @@ export interface SidebarMenuItem {
   title: string;
   caption?: string;
   icon?: string;
-  link: string;
+  link?: string;
   /** Marker tying this item to a sub-group renderer (see SidebarSubGroup). */
   linkType?: string;
   badge?: number;
+  /** Nested children — renders as a Collapsible sub-tree (see SidebarItemTree). */
+  items?: SidebarMenuItem[];
 }
 
 export interface SidebarMenuSection {

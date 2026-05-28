@@ -1,5 +1,6 @@
 import { computed, type ComputedRef } from "vue";
 import { useShellNav } from "../shell/nav-factory";
+import type { MenuLink } from "../types/menu-link";
 import type {
   SidebarMenuSection,
   SidebarTopSection,
@@ -15,6 +16,9 @@ export interface UseAppNavOptions {
   subGroups?: () => SidebarSubGroup[];
   /** Privilege predicate used by AppMainSidebar's sub-group filter. */
   canAccess?: (privilege: unknown) => boolean;
+  /** Optional post-assembly transform — host apps use this to reshape the
+   *  flat module-link list (e.g. wrap several modules into one group). */
+  menuLinksTransform?: (links: MenuLink[]) => MenuLink[];
 }
 
 /**
@@ -24,9 +28,11 @@ export interface UseAppNavOptions {
  * Returns the exact shape `AppMainSidebar` consumes via its props.
  */
 export function useAppNav(opts: UseAppNavOptions = {}) {
-  const menuLinks = useShellNav() as unknown as ComputedRef<
-    SidebarMenuSection[]
-  >;
+  const rawLinks = useShellNav();
+  const menuLinks = computed(() => {
+    const links = rawLinks.value;
+    return opts.menuLinksTransform ? opts.menuLinksTransform(links) : links;
+  }) as unknown as ComputedRef<SidebarMenuSection[]>;
   return {
     menuLinks,
     topSection: computed(() => opts.topSection?.()),

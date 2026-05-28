@@ -12,10 +12,10 @@
     :hide-selected="!multiple"
     input-debounce="500"
     use-input
-    @update:model-value="onSelect"
     option-label="name"
     option-value="id"
     :loading="loading"
+    @update:model-value="onSelect"
     @filter="filterFn"
   >
     <template #option="scope">

@@ -267,10 +267,9 @@ import { onMounted, ref, provide } from "vue";
 import { useUrl } from "../../composables/useUrl";
 import { useUser } from "../composables/useUser";
 
-withDefaults(
-  defineProps<{ editUserPathPrefix?: string }>(),
-  { editUserPathPrefix: "/admin/users" }
-);
+withDefaults(defineProps<{ editUserPathPrefix?: string }>(), {
+  editUserPathPrefix: "/admin/users",
+});
 import { DefaultService } from "../../openapi/core";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";

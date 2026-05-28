@@ -12,9 +12,9 @@
     input-debounce="500"
     use-input
     :option-label="optionLabel"
-    @update:model-value="onSelect"
     :option-value="optionValue"
     :loading="loading"
+    @update:model-value="onSelect"
     @filter="filterFn"
   />
 </template>

@@ -28,6 +28,8 @@ export function useShellNav(): ComputedRef<MenuLink[]> {
 
     return getModules()
       .filter((m) => isModuleEnabled(m, ctx))
-      .flatMap((m) => m.navLinks(ctx));
+      .flatMap((m) =>
+        m.navLinks(ctx).map((link) => ({ ...link, moduleId: m.id }))
+      );
   });
 }
