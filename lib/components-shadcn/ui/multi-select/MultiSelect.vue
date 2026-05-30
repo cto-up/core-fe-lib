@@ -91,7 +91,7 @@
                   >
                     <Check class="h-3 w-3" />
                   </div>
-                  <span class="text-sm">{{ getLabel(option) }}</span>
+                  <span class="text-sm">{{ option.label }}</span>
                 </div>
               </CommandItem>
             </CommandGroup>
