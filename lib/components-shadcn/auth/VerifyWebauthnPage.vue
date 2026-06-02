@@ -127,6 +127,24 @@ const state = reactive({
   error: "",
 });
 
+// Popup mode: opened by the AAL2 dialog via useAal2().submitWebAuthnVerification.
+// Report the result to the opener via postMessage and close, instead of
+// navigating return_to (which would full-page-reload the opener and lose state).
+const isPopup =
+  route.query.mode === "popup" &&
+  !!globalThis.opener &&
+  !globalThis.opener.closed;
+
+function reportToOpener(success: boolean) {
+  const returnTo = route.query.return_to as string | undefined;
+  const targetOrigin = returnTo ? new URL(returnTo).origin : "*";
+  globalThis.opener?.postMessage(
+    { type: "aal2-webauthn", success },
+    targetOrigin
+  );
+  globalThis.close();
+}
+
 onMounted(async () => {
   await performWebAuthnVerification();
 });
@@ -218,7 +236,11 @@ async function performWebAuthnVerification() {
 
     await kratosService.submitLoginFlow(flow.id, webauthnData);
 
-    // Success - redirect back to return_to URL
+    // Success - report to opener (popup) or redirect back to return_to URL
+    if (isPopup) {
+      reportToOpener(true);
+      return;
+    }
     const returnTo = route.query.return_to as string;
     if (returnTo) {
       globalThis.location.href = returnTo;
@@ -248,6 +270,10 @@ async function performWebAuthnVerification() {
 }
 
 function cancel() {
+  if (isPopup) {
+    reportToOpener(false);
+    return;
+  }
   const returnTo = route.query.return_to as string;
   if (returnTo) {
     globalThis.location.href = returnTo;

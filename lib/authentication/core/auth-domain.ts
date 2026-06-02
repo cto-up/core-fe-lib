@@ -33,12 +33,18 @@ export function hasPathPrefix(): boolean {
 }
 
 /**
- * Build a WebAuthn verification URL with return_to parameter
+ * Build a WebAuthn verification URL with return_to parameter.
+ * Pass mode="popup" when the ceremony runs in a popup window that reports
+ * its result back to the opener via postMessage instead of navigating return_to.
  */
-export function buildWebAuthnVerifyUrl(returnTo?: string): string {
+export function buildWebAuthnVerifyUrl(
+  returnTo?: string,
+  mode?: "redirect" | "popup"
+): string {
   const authOrigin = getAuthOrigin();
   const returnUrl = returnTo || globalThis.location.href;
-  return `${authOrigin}/verify/webauthn?return_to=${encodeURIComponent(returnUrl)}`;
+  const url = `${authOrigin}/verify/webauthn?return_to=${encodeURIComponent(returnUrl)}`;
+  return mode === "popup" ? `${url}&mode=popup` : url;
 }
 
 /**

@@ -279,9 +279,17 @@ const props = withDefaults(
   defineProps<{
     /** Route to push when the user clicks "enroll a method" / "go to security settings". */
     securityRoute?: RouteLocationRaw;
+    /**
+     * How the WebAuthn ceremony is performed.
+     * - "redirect" (default): full-page navigate to the auth subdomain and back.
+     * - "popup": run the ceremony in a popup that reports back via postMessage,
+     *   keeping the current page (and any in-progress form state) mounted.
+     */
+    webauthnMode?: "redirect" | "popup";
   }>(),
   {
     securityRoute: () => ({ name: "security-settings" }),
+    webauthnMode: "redirect",
   }
 );
 
@@ -296,7 +304,7 @@ const { signMeOut } = useKratosAuth();
 const {
   aal2State,
   submitTotpVerification,
-
+  submitWebAuthnPopupVerification,
   submitLookupVerification,
   validateTotpInput,
   validateLookupInput,
@@ -323,7 +331,11 @@ function handleVerify() {
   } else if (aal2State.selectedMethod === "lookup_secret") {
     submitLookupVerification();
   } else if (aal2State.selectedMethod === "webauthn") {
-    submitWebAuthnVerification();
+    if (props.webauthnMode === "popup") {
+      submitWebAuthnPopupVerification();
+    } else {
+      submitWebAuthnVerification();
+    }
   }
 }
 
