@@ -294,8 +294,10 @@ import {
   UserMinus,
 } from "lucide-vue-next";
 import { useToast } from "../ui/toast";
+import { useI18n } from "vue-i18n";
 
 const { toast } = useToast();
+const { t } = useI18n();
 const {
   user,
   isNew,
@@ -374,7 +376,7 @@ const onEnabledChange = async (enabled: boolean) => {
   })
     .then(() => {
       toast({
-        title: $t("core.user.status.updated"),
+        title: t("core.user.status.updated"),
         variant: "default",
       });
       user.disabled = !enabled;
