@@ -13,7 +13,7 @@ export default {
   create: "Créez",
   createNew: "Créer nouveau",
   cancel: "Annulez",
-  back: "Retournez",
+  back: "Retour",
   forward: "Avancez",
   delete: "Supprimez",
   remove: "Retirez",
