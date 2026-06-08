@@ -28,12 +28,12 @@ function go() {
     emit("click");
     return;
   }
-  if (props.to !== undefined) {
-    if (props.replace) router.replace(props.to);
-    else router.push(props.to);
-  } else {
+  if (props.to === undefined) {
     router.back();
+    return;
   }
+  if (props.replace) router.replace(props.to);
+  else router.push(props.to);
 }
 </script>
 
