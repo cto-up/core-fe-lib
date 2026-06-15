@@ -33,6 +33,22 @@ export function useErrors() {
       return;
     }
 
+    if (
+      error &&
+      error.status === 402 &&
+      error.body &&
+      error.body.code === "PLAN_LIMIT_REACHED"
+    ) {
+      toast({
+        title: t ? t("credit.errors.planLimit.title") : "Plan limit reached",
+        description: t
+          ? t("credit.errors.planLimit.description")
+          : "You've reached your plan's limit. Upgrade your plan to add more.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const bodyMsg = (error?.body?.error ?? error?.body?.message) as
       | string
       | undefined;
