@@ -1,6 +1,7 @@
 import { useToast } from "../ui/toast/use-toast";
 import { extractKratosError } from "../../authentication/core/kratos-error-processor";
 import { useI18n } from "vue-i18n";
+import { notifyPlanLimit } from "./planLimit";
 
 export function useErrors() {
   const { toast } = useToast();
@@ -39,6 +40,9 @@ export function useErrors() {
       error.body &&
       error.body.code === "PLAN_LIMIT_REACHED"
     ) {
+      // Prefer the app-registered handler (contextual upgrade dialog); fall
+      // back to a toast when none is wired.
+      if (notifyPlanLimit(error.body)) return;
       toast({
         title: t ? t("credit.errors.planLimit.title") : "Plan limit reached",
         description: t
