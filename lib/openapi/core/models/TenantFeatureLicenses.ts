@@ -10,4 +10,8 @@ export type TenantFeatureLicenses = Record<string, {
      * License code for the feature
      */
     code: string;
+    /**
+     * Optional license expiry date. When reached, the feature is automatically disabled. Omit or null for no expiry.
+     */
+    end_date?: string | null;
 }>;
