@@ -341,6 +341,44 @@ export class DefaultService {
         });
     }
     /**
+     * Returns the per-user feature licenses (seats) for a user within the caller's tenant.
+     * @param userid ID of user to fetch
+     * @returns TenantFeatureLicenses user feature licenses response
+     * @throws ApiError
+     */
+    public static getUserFeatureLicenses(
+        userid: string,
+    ): CancelablePromise<TenantFeatureLicenses> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/users/{userid}/feature-licenses',
+            path: {
+                'userid': userid,
+            },
+        });
+    }
+    /**
+     * Updates the per-user feature licenses (seats) for a user. Only features enabled for the tenant may be assigned.
+     * @param userid ID of user to update
+     * @param requestBody Feature licenses to set on the user
+     * @returns void
+     * @throws ApiError
+     */
+    public static updateUserFeatureLicenses(
+        userid: string,
+        requestBody: TenantFeatureLicenses,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/v1/users/{userid}/feature-licenses',
+            path: {
+                'userid': userid,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+        });
+    }
+    /**
      * Add an existing user to the current tenant (create membership)
      *
      * @param userid User ID
@@ -1007,6 +1045,20 @@ export class DefaultService {
             url: '/api/v1/me/profile/picture',
             formData: formData,
             mediaType: 'multipart/form-data',
+        });
+    }
+    /**
+     * Returns the current user's per-user feature licenses (seats) within their
+     * tenant. An empty object means the user has no per-user restriction and
+     * inherits the tenant entitlement.
+     *
+     * @returns TenantFeatureLicenses current user feature licenses response
+     * @throws ApiError
+     */
+    public static getMyFeatureLicenses(): CancelablePromise<TenantFeatureLicenses> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/me/feature-licenses',
         });
     }
     /**
