@@ -7,10 +7,12 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary buttons use a neutral solid (slate in light, white in dark)
-        // so accent colours stay reserved for links, rings, badges, etc.
+        // Primary buttons carry the brand gradient (violet→fuchsia, derived
+        // from --primary so tenant branding re-tints it). Opt-in: consumers
+        // that don't define --brand-grad-* fall back to a solid --primary,
+        // so other core-fe-lib apps are unaffected.
         default:
-          "bg-slate-900 text-white hover:bg-slate-800 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200",
+          "text-primary-foreground shadow-sm transition-all bg-[linear-gradient(100deg,hsl(var(--brand-grad-from,var(--primary))),hsl(var(--brand-grad-to,var(--primary))))] hover:opacity-90",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         success: "bg-success text-success-foreground hover:bg-success/90",

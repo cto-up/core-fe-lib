@@ -193,6 +193,19 @@ export function applyTheme(colors: Record<string, string>) {
       : colors.primary;
     const autoFg = hexToHsl(getContrastForeground(hex));
     cssRules.push(`--primary-foreground: ${autoFg} !important;`);
+
+    // Derive the brand-gradient's second stop from the tenant primary (hue
+    // +28°) so gradient CTAs/headings follow tenant branding. The first stop
+    // tracks --primary automatically via the CSS default (--brand-grad-from:
+    // var(--primary)).
+    const triplet = hex.includes("%") ? hex : hexToHsl(hex);
+    const [h, s, l] = triplet.split(/\s+/);
+    const hue = Number.parseFloat(h);
+    if (!Number.isNaN(hue)) {
+      cssRules.push(
+        `--brand-grad-to: ${(hue + 28) % 360} ${s} ${l} !important;`
+      );
+    }
   }
 
   // Inject a style tag with the correct selector

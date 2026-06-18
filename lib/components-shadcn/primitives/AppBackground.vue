@@ -2,7 +2,6 @@
   <div class="app-bg" aria-hidden="true">
     <div class="orb orb-1" />
     <div class="orb orb-2" />
-    <div class="orb orb-3" />
   </div>
 </template>
 
@@ -15,35 +14,38 @@
   overflow: hidden;
 }
 
+/* Soft radial blobs (mirrors the marketing landing's ambient background): a
+   colour core that fades to transparent, lightly blurred. Tints from the brand
+   gradient stops so it follows tenant branding; falls back to --primary / --info
+   for consumers that don't define the brand tokens. Tune via --gradient-orb-*. */
 .orb {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(var(--gradient-orb-blur, 120px));
-  opacity: var(--gradient-orb-opacity, 0.15);
+  border-radius: 9999px;
+  filter: blur(var(--gradient-orb-blur, 90px));
+  opacity: var(--gradient-orb-opacity, 0.45);
 }
 
 .orb-1 {
-  width: 600px;
-  height: 600px;
-  top: -150px;
-  left: -100px;
-  background: hsl(var(--primary));
+  width: 540px;
+  height: 540px;
+  top: -180px;
+  right: -120px;
+  background: radial-gradient(
+    circle,
+    hsl(var(--brand-grad-from, var(--primary))) 0%,
+    transparent 70%
+  );
 }
 
 .orb-2 {
-  width: 500px;
-  height: 500px;
-  bottom: -100px;
-  right: -80px;
-  background: hsl(var(--info, 199 89% 48%));
-}
-
-.orb-3 {
-  width: 400px;
-  height: 400px;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: hsl(var(--primary) / 0.6);
+  width: 480px;
+  height: 480px;
+  top: 280px;
+  left: -160px;
+  background: radial-gradient(
+    circle,
+    hsl(var(--brand-grad-to, var(--info, 199 89% 48%))) 0%,
+    transparent 70%
+  );
 }
 </style>
