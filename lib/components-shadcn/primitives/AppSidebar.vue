@@ -7,33 +7,12 @@
       :style="{ width: `${sidebarWidth}px` }"
     >
       <div class="relative h-full flex flex-col justify-between">
-        <div>
-          <!-- Header -->
-          <div
-            class="px-4 h-16 flex items-center justify-between border-b bg-header-background/80 fixed z-10"
-            :style="{ width: `${sidebarWidth}px` }"
-          >
-            <slot name="header" :expanded="sidebarExpanded" />
-            <Button
-              variant="ghost"
-              class="p-[6px] w-8 h-8 transition-all duration-200 bg-transparent"
-              :title="toggleLabel"
-              @click="$emit('toggle-sidebar')"
-            >
-              <ChevronLeft
-                class="h-4 w-4 transition-all duration-500"
-                :class="!sidebarExpanded && 'rotate-180'"
-              />
-            </Button>
+        <!-- Body -->
+        <ScrollArea style="height: calc(100vh - 64px)">
+          <div class="py-4">
+            <slot :expanded="sidebarExpanded" />
           </div>
-
-          <!-- Body -->
-          <ScrollArea style="height: calc(100vh - 128px); margin-top: 64px">
-            <div class="py-4">
-              <slot :expanded="sidebarExpanded" />
-            </div>
-          </ScrollArea>
-        </div>
+        </ScrollArea>
 
         <!-- Footer -->
         <div
@@ -54,23 +33,12 @@
     >
       <SheetContent side="left" class="w-80 p-0" :show-close="false">
         <div class="relative h-full flex flex-col justify-between">
-          <div>
-            <div
-              class="px-4 h-16 flex items-center justify-between border-b bg-header-background/80"
-            >
-              <slot
-                name="mobileHeader"
-                :on-close="() => $emit('update:mobileOpen', false)"
-              >
-                <slot name="header" :expanded="true" />
-              </slot>
+          <!-- Body -->
+          <ScrollArea style="height: calc(100vh - 64px)">
+            <div class="py-4">
+              <slot :expanded="true" :is-mobile="true" />
             </div>
-            <ScrollArea style="height: calc(100vh - 128px)">
-              <div class="py-4">
-                <slot :expanded="true" :is-mobile="true" />
-              </div>
-            </ScrollArea>
-          </div>
+          </ScrollArea>
           <div
             v-if="$slots.footer"
             class="border-t transition-all duration-300 py-4"
@@ -86,14 +54,15 @@
 <script lang="ts" setup>
 import { Sheet, SheetContent } from "../ui/sheet";
 import { ScrollArea } from "../ui/scroll-area";
-import { Button } from "../ui/button";
-import { ChevronLeft } from "lucide-vue-next";
 
 /**
  * Generic sidebar shell — desktop fixed + mobile Sheet variants.
  *
- * The consumer controls visibility (e.g. only logged-in users), supplies the
- * header content and section list via slots, and wires the toggle handlers.
+ * The consumer controls visibility (e.g. only logged-in users) and supplies the
+ * section list via the default slot. The desktop variant has no header bar —
+ * nav sections start at the top and the expand/collapse control lives in the
+ * app navbar. The mobile Sheet keeps a header (branding + close) via the
+ * `mobileHeader` slot.
  *
  *   <AppSidebar
  *     :visible="userStore.isLogged"
@@ -101,9 +70,7 @@ import { ChevronLeft } from "lucide-vue-next";
  *     :sidebar-expanded="appStore.sidebarExpand"
  *     :is-mobile="isMobile"
  *     v-model:mobile-open="mobileSidebarOpen"
- *     @toggle-sidebar="appStore.toggleSidebar"
  *   >
- *     <template #header><h2>My App</h2></template>
  *     <template #default="{ expanded }">
  *       <AppSidebarSection ... />
  *     </template>
@@ -116,11 +83,9 @@ defineProps<{
   sidebarExpanded: boolean;
   isMobile?: boolean;
   mobileOpen?: boolean;
-  toggleLabel?: string;
 }>();
 
 defineEmits<{
-  "toggle-sidebar": [];
   "update:mobileOpen": [value: boolean];
 }>();
 </script>

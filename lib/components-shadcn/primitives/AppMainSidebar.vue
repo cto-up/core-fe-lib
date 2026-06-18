@@ -5,40 +5,8 @@
     :sidebar-expanded="sidebarExpanded"
     :is-mobile="isMobile"
     :mobile-open="mobileOpen"
-    :toggle-label="labels.toggle"
-    @toggle-sidebar="$emit('toggle-sidebar')"
     @update:mobile-open="$emit('update:mobileOpen', $event)"
   >
-    <template #header="{ expanded }">
-      <slot name="branding" :expanded="expanded">
-        <div class="flex items-center gap-4">
-          <transition name="ams-fade">
-            <h2 v-show="expanded" class="text-xl font-semibold text-foreground">
-              {{ brandingText }}
-            </h2>
-          </transition>
-        </div>
-      </slot>
-    </template>
-
-    <template #mobileHeader="{ onClose }">
-      <slot name="mobileBranding" :on-close="onClose">
-        <div class="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            :title="labels.closeMobile ?? 'Close menu'"
-            @click="onClose"
-          >
-            <Menu class="h-5 w-5 rotate-90" />
-          </Button>
-          <h2 class="text-xl font-semibold text-foreground">
-            {{ brandingText }}
-          </h2>
-        </div>
-      </slot>
-    </template>
-
     <template #default="{ expanded }">
       <!-- Top "loose" section (e.g. super-admin) -->
       <AppSidebarSection
@@ -192,13 +160,12 @@ import AppSidebar from "./AppSidebar.vue";
 import AppSidebarSection from "./AppSidebarSection.vue";
 import SidebarLink from "./SidebarLink.vue";
 import SidebarItemTree from "./SidebarItemTree.vue";
-import { Button } from "../ui/button";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "../ui/collapsible";
-import { ChevronDown, Menu } from "lucide-vue-next";
+import { ChevronDown } from "lucide-vue-next";
 import { useSidebarSectionState } from "../composables/useSidebarSectionState";
 
 export interface SidebarMenuItem {
@@ -257,9 +224,8 @@ const props = withDefaults(
     subGroups?: SidebarSubGroup[];
     canAccess?: (privilege: unknown) => boolean;
     resolveIcon: (name?: string) => Component;
-    brandingText?: string;
     version?: string;
-    labels?: { toggle?: string; closeMobile?: string; version?: string };
+    labels?: { version?: string };
     sectionStateKey?: string;
   }>(),
   {
@@ -268,7 +234,6 @@ const props = withDefaults(
     trailingSections: () => [],
     subGroups: () => [],
     canAccess: () => true,
-    brandingText: "",
     version: "",
     labels: () => ({}),
     sectionStateKey: "sidebar-sections-open",
@@ -276,7 +241,6 @@ const props = withDefaults(
 );
 
 defineEmits<{
-  "toggle-sidebar": [];
   "update:mobileOpen": [value: boolean];
   navigate: [];
 }>();
@@ -313,14 +277,3 @@ const allLinkPaths = computed<string[]>(() => {
 });
 provide("sidebarLinkPaths", allLinkPaths);
 </script>
-
-<style scoped>
-.ams-fade-enter-active,
-.ams-fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.ams-fade-enter-from,
-.ams-fade-leave-to {
-  opacity: 0;
-}
-</style>

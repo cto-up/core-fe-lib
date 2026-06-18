@@ -2,6 +2,16 @@
   <AppNavbar :nav-width="navWidth">
     <template #left>
       <Button
+        v-if="showDesktopToggle"
+        variant="ghost"
+        size="icon"
+        :title="labels.sidebarToggle ?? 'Toggle sidebar'"
+        @click="$emit('toggle-sidebar')"
+      >
+        <PanelLeftClose v-if="sidebarExpanded" class="h-5 w-5" />
+        <PanelLeftOpen v-else class="h-5 w-5" />
+      </Button>
+      <Button
         v-if="showMobileToggle"
         variant="ghost"
         size="icon"
@@ -70,13 +80,20 @@ import AppUserMenu, { type UserMenuItem } from "./AppUserMenu.vue";
 import LanguageSwitcher from "./LanguageSwitcher.vue";
 import DarkModeSwitch from "./DarkModeSwitch.vue";
 import { Button } from "../ui/button";
-import { Menu, Home, LogIn } from "lucide-vue-next";
+import {
+  Menu,
+  Home,
+  LogIn,
+  PanelLeftClose,
+  PanelLeftOpen,
+} from "lucide-vue-next";
 
 export interface AppMainNavbarLabels {
   menu?: string;
   home?: string;
   login?: string;
   signout?: string;
+  sidebarToggle?: string;
 }
 
 /**
@@ -107,6 +124,8 @@ export interface AppMainNavbarLabels {
 withDefaults(
   defineProps<{
     navWidth: string | number;
+    showDesktopToggle?: boolean;
+    sidebarExpanded?: boolean;
     showMobileToggle?: boolean;
     showHome?: boolean;
     showLogin?: boolean;
@@ -121,6 +140,8 @@ withDefaults(
     labels?: AppMainNavbarLabels;
   }>(),
   {
+    showDesktopToggle: false,
+    sidebarExpanded: true,
     showMobileToggle: false,
     showHome: false,
     showLogin: true,
@@ -137,6 +158,7 @@ withDefaults(
 );
 
 defineEmits<{
+  "toggle-sidebar": [];
   "toggle-mobile-sidebar": [];
   "go-home": [];
   "go-signin": [];

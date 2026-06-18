@@ -15,14 +15,10 @@
       :sub-groups="nav.subGroups.value"
       :can-access="nav.canAccess"
       :resolve-icon="resolveIcon"
-      :branding-text="brandingText"
       :version="version"
       :labels="{
-        toggle: t('layout.sidebar.toggle'),
-        closeMobile: t('layout.sidebar.closeMobile'),
         version: t('layout.version'),
       }"
-      @toggle-sidebar="appStore.toggleSidebar"
       @navigate="mobileSidebarOpen = false"
     />
 
@@ -41,6 +37,10 @@
         :nav-width="
           userStore.isLogged && userStore.hasRole ? appStore.navWidth : '100%'
         "
+        :show-desktop-toggle="
+          userStore.isLogged && userStore.hasRole && !isMobile
+        "
+        :sidebar-expanded="appStore.sidebarExpand"
         :show-mobile-toggle="
           userStore.isLogged && userStore.hasRole && isMobile
         "
@@ -56,7 +56,9 @@
           home: t('layout.header.home'),
           login: t('layout.header.login'),
           signout: t('layout.userPanel.signout'),
+          sidebarToggle: t('layout.sidebar.toggle'),
         }"
+        @toggle-sidebar="appStore.toggleSidebar"
         @toggle-mobile-sidebar="mobileSidebarOpen = !mobileSidebarOpen"
         @go-home="router.push(homePath)"
         @go-signin="router.push(signinPath)"
