@@ -187,7 +187,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, type Component } from "vue";
+import { computed, provide, ref, type Component } from "vue";
 import AppSidebar from "./AppSidebar.vue";
 import AppSidebarSection from "./AppSidebarSection.vue";
 import SidebarLink from "./SidebarLink.vue";
@@ -288,6 +288,30 @@ const { isSectionOpen, setSectionOpen } = useSidebarSectionState(
 // Per-sub-group collapse state (in-memory; sub-groups are nested so each
 // section instance shares this map keyed by sub-group linkType).
 const subGroupOpen = ref<Record<string, boolean>>({});
+
+// Every nav link path, flattened, so each SidebarLink can resolve active state
+// by LONGEST prefix match instead of any-ancestor — otherwise a section-index
+// link like `/lms` lights up on every `/lms/*` page (incl. sibling sections).
+function collectPaths(items?: SidebarMenuItem[]): string[] {
+  return (items ?? []).flatMap((it) => [
+    ...(it.link ? [it.link] : []),
+    ...collectPaths(it.items),
+  ]);
+}
+const allLinkPaths = computed<string[]>(() => {
+  const out: string[] = [];
+  for (const s of props.menuLinks ?? []) {
+    if (s.link) out.push(s.link);
+    out.push(...collectPaths(s.items));
+  }
+  out.push(...collectPaths(props.topSection?.items));
+  for (const s of props.trailingSections ?? []) {
+    if (s.link) out.push(s.link);
+    out.push(...collectPaths(s.items));
+  }
+  return out;
+});
+provide("sidebarLinkPaths", allLinkPaths);
 </script>
 
 <style scoped>

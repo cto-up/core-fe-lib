@@ -11,7 +11,7 @@ interface IAppStore {
 
 const LIGHT = "light";
 const DARK = "dark";
-const EXPAND = 280;
+const EXPAND = 252;
 const SHRINKED = 72;
 
 export const useAppStore = defineStore("app", {

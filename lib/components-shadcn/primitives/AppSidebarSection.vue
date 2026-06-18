@@ -3,11 +3,11 @@
     <Collapsible :open="effectiveOpen" @update:open="onOpenChange">
       <CollapsibleTrigger
         v-show="expanded"
-        class="w-full flex items-center justify-between mb-3 text-muted-foreground hover:text-foreground transition-colors"
+        class="w-full flex items-center justify-between mb-3 text-muted-foreground/60 hover:text-foreground transition-colors"
       >
         <span class="flex items-center gap-2 min-w-0">
           <slot name="icon" />
-          <span class="uppercase text-xs font-medium tracking-wider truncate">
+          <span class="uppercase text-[11px] font-medium tracking-wider truncate">
             {{ title }}
           </span>
         </span>

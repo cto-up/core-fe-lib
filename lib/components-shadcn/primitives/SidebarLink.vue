@@ -5,12 +5,12 @@
         <button
           :class="
             cn(
-              'w-full overflow-x-hidden justify-start duration-150 inline-flex items-center rounded-md text-sm font-medium transition-colors',
-              'hover:bg-accent hover:text-accent-foreground',
+              'w-full overflow-x-hidden justify-start duration-150 inline-flex items-center rounded-md text-sm font-medium text-muted-foreground transition-colors',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
               'disabled:pointer-events-none disabled:opacity-50',
               'h-10 px-3',
-              isActive && 'bg-accent text-accent-foreground'
+              !isActive && 'hover:bg-accent hover:text-foreground',
+              isActive && 'bg-primary/10 text-primary'
             )
           "
           @click="navigate"
@@ -44,7 +44,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, type Component } from "vue";
+import { computed, inject, ref, type Component, type Ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import {
   Tooltip,
@@ -82,9 +82,24 @@ const emit = defineEmits<{
 const route = useRoute();
 const router = useRouter();
 
+// All sibling nav paths (provided by AppMainSidebar) so active state resolves by
+// LONGEST prefix match — a section-index link (`/lms`) yields to a more specific
+// sibling (`/lms/admin/courses`) instead of both highlighting. Falls back to the
+// plain prefix check when used outside AppMainSidebar.
+const allLinkPaths = inject<Ref<string[]>>("sidebarLinkPaths", ref([]));
+
 const isActive = computed(() => {
-  if (!props.link) return false;
-  return route.path === props.link || route.path.startsWith(props.link + "/");
+  const link = props.link;
+  if (!link) return false;
+  const matches = (p: string) =>
+    route.path === p || route.path.startsWith(p + "/");
+  if (!matches(link)) return false;
+  const paths = allLinkPaths.value;
+  if (!paths?.length) return true; // standalone fallback
+  const longest = paths
+    .filter(matches)
+    .reduce((best, p) => (p.length > best.length ? p : best), "");
+  return longest === link;
 });
 
 const navigate = async () => {
