@@ -12,7 +12,9 @@ interface IAppStore {
 const LIGHT = "light";
 const DARK = "dark";
 const EXPAND = 252;
-const SHRINKED = 72;
+// Collapsed = fully hidden (drawer-style), not an icon rail. Content goes
+// full-width; the navbar toggle brings the sidebar back.
+const SHRINKED = 0;
 
 export const useAppStore = defineStore("app", {
   state: () =>

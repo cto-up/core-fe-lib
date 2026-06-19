@@ -3,7 +3,8 @@
     <!-- Desktop sidebar -->
     <aside
       v-if="visible"
-      class="sidebar transition-all duration-300 h-screen overflow-hidden bg-background border-r fixed top-0 left-0 z-50 hidden lg:block shadow-sm"
+      class="sidebar transition-all duration-300 h-screen overflow-hidden bg-background fixed top-0 left-0 z-50 hidden lg:block"
+      :class="sidebarExpanded ? 'border-r shadow-sm' : ''"
       :style="{ width: `${sidebarWidth}px` }"
     >
       <div class="relative h-full flex flex-col justify-between">
