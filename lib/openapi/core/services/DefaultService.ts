@@ -341,13 +341,15 @@ export class DefaultService {
         });
     }
     /**
-     * Returns the per-user feature licenses (seats) for a user within the caller's tenant.
+     * Returns the per-user feature licenses (seats) for a user. On a tenant subdomain the caller's tenant is used; super admins / resellers on the root domain pass tenant_id.
      * @param userid ID of user to fetch
+     * @param tenantId Target tenant (UUID). Required only when there is no tenant subdomain context (root/super-admin); the caller must be allowed to manage that tenant.
      * @returns TenantFeatureLicenses user feature licenses response
      * @throws ApiError
      */
     public static getUserFeatureLicenses(
         userid: string,
+        tenantId?: string,
     ): CancelablePromise<TenantFeatureLicenses> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -355,24 +357,32 @@ export class DefaultService {
             path: {
                 'userid': userid,
             },
+            query: {
+                'tenant_id': tenantId,
+            },
         });
     }
     /**
-     * Updates the per-user feature licenses (seats) for a user. Only features enabled for the tenant may be assigned.
+     * Updates the per-user feature licenses (seats) for a user. Only features enabled for the tenant may be assigned. On a tenant subdomain the caller's tenant is used; super admins / resellers on the root domain pass tenant_id.
      * @param userid ID of user to update
      * @param requestBody Feature licenses to set on the user
+     * @param tenantId Target tenant (UUID). Required only when there is no tenant subdomain context (root/super-admin); the caller must be allowed to manage that tenant.
      * @returns void
      * @throws ApiError
      */
     public static updateUserFeatureLicenses(
         userid: string,
         requestBody: TenantFeatureLicenses,
+        tenantId?: string,
     ): CancelablePromise<void> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/v1/users/{userid}/feature-licenses',
             path: {
                 'userid': userid,
+            },
+            query: {
+                'tenant_id': tenantId,
             },
             body: requestBody,
             mediaType: 'application/json',
