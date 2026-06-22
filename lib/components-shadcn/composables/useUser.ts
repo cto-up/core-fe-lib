@@ -329,30 +329,32 @@ export function useUser() {
       });
   };
 
-  const removeUserFromTenant = () => {
-    dialog({
+  const removeUserFromTenant = async () => {
+    const confirmed = await dialog({
       message: t("core.user.actions.removeFromTenant.confirm", {
         name: user.name,
       }),
       cancel: t("actions.cancel"),
       ok: t("actions.remove"),
-    }).onOk(() => {
-      DefaultService.removeUserFromTenant(user.id)
-        .then(() => {
-          toast({
-            title: t("actions.removed"),
-            description: "User removed from tenant",
-            variant: "default",
-          });
-          void router.push({
-            name: "users",
-            query: route.query,
-          });
-        })
-        .catch((e) => {
-          handleError(e);
-        });
     });
+
+    if (!confirmed) return;
+
+    DefaultService.removeUserFromTenant(user.id)
+      .then(() => {
+        toast({
+          title: t("actions.removed"),
+          description: "User removed from tenant",
+          variant: "default",
+        });
+        void router.push({
+          name: "users",
+          query: route.query,
+        });
+      })
+      .catch((e) => {
+        handleError(e);
+      });
   };
 
   const requestPasswordResetByAdmin = async () => {

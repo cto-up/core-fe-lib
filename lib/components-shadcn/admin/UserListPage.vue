@@ -243,19 +243,21 @@ const removeUserFromTenant = async (id: string, name: string) => {
     });
 };
 
-const deleteUser = (id: string, name: string) => {
-  dialog({
+const deleteUser = async (id: string, name: string) => {
+  const confirmed = await dialog({
     message: t("core.user.actions.delete.confirm", { name: name }),
     cancel: t("actions.cancel"),
     ok: t("actions.delete"),
-  }).onOk(() => {
-    DefaultService.deleteUser(id)
-      .then(() => {
-        onRequest({ pagination: pagination.value, getCellValue });
-      })
-      .catch((err) => {
-        handleError(err);
-      });
   });
+
+  if (!confirmed) return;
+
+  DefaultService.deleteUser(id)
+    .then(() => {
+      onRequest({ pagination: pagination.value, getCellValue });
+    })
+    .catch((err) => {
+      handleError(err);
+    });
 };
 </script>
