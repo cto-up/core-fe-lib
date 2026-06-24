@@ -1,50 +1,51 @@
 import { useUrl } from "../composables/useUrl";
 
-/**
- * Dynamically sets the favicon based on the subdomain
- *
- * Naming convention:
- * - Default: /favicon.ico
- * - Subdomain-specific: /favicon-{subdomain}.ico
- *
- * Example:
- * - www.example.com -> /favicon.ico (default)
- * - app.example.com -> /favicon-app.ico (if exists, otherwise default)
- * - tenant1.example.com -> /favicon-tenant1.ico (if exists, otherwise default)
- */
-export function setDynamicFavicon(subdomain?: string) {
-  // Remove existing favicon links
-  const existingLinks = document.querySelectorAll('link[rel*="icon"]');
-  existingLinks.forEach((link) => link.remove());
+const DEFAULT_FAVICON = "/favicon.ico";
 
-  // Determine favicon path
-  let faviconPath = "/favicon.ico"; // default
+function applyFavicon(href: string) {
+  document
+    .querySelectorAll('link[rel*="icon"]')
+    .forEach((link) => link.remove());
 
-  const { isAdminSubdomain } = useUrl();
-  const useTenantFavicon = !isAdminSubdomain(subdomain);
-
-  if (useTenantFavicon) {
-    // Try subdomain-specific favicon first
-    faviconPath = `/favicon-${subdomain}.ico`;
-  }
-
-  // Create new favicon link
   const link = document.createElement("link");
   link.rel = "icon";
   link.type = "image/x-icon";
-  link.href = faviconPath;
+  link.href = href;
+  document.head.appendChild(link);
+}
 
-  // Add error handler to fallback to default if subdomain-specific doesn't exist
-  if (useTenantFavicon) {
-    link.onerror = () => {
-      console.log(
-        `Favicon for subdomain "${subdomain}" not found, using default`
-      );
-      link.href = "/favicon.ico";
-    };
+/**
+ * Dynamically sets the favicon based on the subdomain.
+ *
+ * Naming convention:
+ * - Default: /favicon.ico
+ * - Subdomain-specific: /favicon-{subdomain}.ico (used only when it really exists)
+ *
+ * The subdomain-specific file is probed with fetch and the response's
+ * content-type is inspected before swapping. This is required because on an
+ * SPA host (e.g. Cloudflare Pages) a missing /favicon-{subdomain}.ico is served
+ * the index.html fallback with HTTP 200 — so `res.ok` alone, and the old
+ * `link.onerror` handler, never detect the miss and the tab shows a blank icon.
+ */
+export async function setDynamicFavicon(subdomain?: string) {
+  const { isAdminSubdomain } = useUrl();
+
+  if (!subdomain || isAdminSubdomain(subdomain)) {
+    applyFavicon(DEFAULT_FAVICON);
+    return;
   }
 
-  document.head.appendChild(link);
+  const candidate = `/favicon-${subdomain}.ico`;
+  try {
+    const res = await fetch(candidate, { method: "GET" });
+    const contentType = res.headers.get("content-type") ?? "";
+    if (res.ok && /image|icon/i.test(contentType)) {
+      applyFavicon(candidate);
+      return;
+    }
+  } catch {
+    // network error — fall through to default
+  }
 
-  console.log(`🎨 Favicon set to: ${faviconPath}`);
+  applyFavicon(DEFAULT_FAVICON);
 }
