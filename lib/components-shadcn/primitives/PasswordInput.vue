@@ -42,16 +42,14 @@ const toggleVisibility = () => {
       <Input
         :id="id"
         :type="isPasswordVisible ? 'text' : 'password'"
-        :value="modelValue"
+        :model-value="modelValue"
         :required="required"
         :placeholder="placeholder"
         :class="[
           'pl-9 pr-9',
           error ? 'border-red-500 focus-visible:ring-red-500' : '',
         ]"
-        @input="
-          emit('update:modelValue', ($event.target as HTMLInputElement).value)
-        "
+        @update:model-value="emit('update:modelValue', String($event))"
       />
 
       <button
