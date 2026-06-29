@@ -19,6 +19,24 @@ const messages = {
       },
     },
   },
+  es: {
+    entities: {
+      common: {
+        duration: "Duración",
+        close: "Cerrar",
+        dateTime: "Fecha y hora",
+      },
+    },
+  },
+  it: {
+    entities: {
+      common: {
+        duration: "Durata",
+        close: "Chiudi",
+        dateTime: "Data e ora",
+      },
+    },
+  },
 };
 
 export const i18n = createI18n({

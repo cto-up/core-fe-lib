@@ -56,6 +56,8 @@ if (initialLocale !== "en-US") {
 const localeOptions = [
   { value: "en-US", label: "English" },
   { value: "fr", label: "Français" },
+  { value: "es", label: "Español" },
+  { value: "it", label: "Italiano" },
 ];
 
 const updateLocale = async (newLocale: string) => {
