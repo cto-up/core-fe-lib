@@ -308,14 +308,29 @@ const checkMobile = () => {
   if (isMobile.value) appStore.sidebarExpand = false;
 };
 
+// Toggle the navigation sidebar with ⌘B (mac) / Ctrl+B (win/linux), like VS Code.
+// Skipped only inside rich-text editors (contenteditable), where Ctrl/⌘+B is
+// bold — everywhere else (incl. plain inputs, where it's a no-op) it toggles.
+const onToggleKey = (e: KeyboardEvent) => {
+  if (!(e.metaKey || e.ctrlKey) || e.altKey || e.shiftKey) return;
+  if (e.key !== "b" && e.key !== "B") return;
+  const el = e.target as HTMLElement | null;
+  if (el && (el.isContentEditable || el.closest('[contenteditable="true"]')))
+    return;
+  e.preventDefault();
+  appStore.toggleSidebar();
+};
+
 onMounted(() => {
   checkMobile();
   window.addEventListener("resize", checkMobile);
+  window.addEventListener("keydown", onToggleKey);
   appStore.initTheme();
 });
 
 onUnmounted(() => {
   window.removeEventListener("resize", checkMobile);
+  window.removeEventListener("keydown", onToggleKey);
 });
 </script>
 
