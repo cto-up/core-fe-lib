@@ -156,6 +156,9 @@ const props = withDefaults(
     subGroupsFactory?: () => SidebarSubGroup[];
     /** Optional override: factory for the user-menu dropdown items. */
     userMenuItemsFactory?: () => UserMenuItem[];
+    /** Optional: extra user-menu items appended after the main list (e.g. a
+     *  host-app "Install app" entry). Reactive — recomputed with the menu. */
+    extraUserMenuItemsFactory?: () => UserMenuItem[];
     /** Optional transform applied to the assembled module nav links. Host
      *  apps use this to wrap several modules into a single grouped section. */
     menuLinksTransform?: (links: MenuLink[]) => MenuLink[];
@@ -171,6 +174,7 @@ const props = withDefaults(
     trailingSectionsFactory: undefined,
     subGroupsFactory: undefined,
     userMenuItemsFactory: undefined,
+    extraUserMenuItemsFactory: undefined,
     menuLinksTransform: undefined,
   }
 );
@@ -202,9 +206,10 @@ const defaultUserMenuItems = (): UserMenuItem[] => [
   },
 ];
 
-const userMenu = useAppUserMenu(() =>
-  (props.userMenuItemsFactory ?? defaultUserMenuItems)()
-);
+const userMenu = useAppUserMenu(() => [
+  ...(props.userMenuItemsFactory ?? defaultUserMenuItems)(),
+  ...(props.extraUserMenuItemsFactory?.() ?? []),
+]);
 
 // ── Default sidebar nav config ──────────────────────────────────────────────
 const defaultTopSection = (): SidebarTopSection | undefined => {
