@@ -1,5 +1,5 @@
 <template>
-  <AppNavbar :nav-width="navWidth">
+  <AppNavbar :nav-width="navWidth" :collapsed="collapsed">
     <template #left>
       <Button
         v-if="showDesktopToggle"
@@ -127,6 +127,8 @@ export interface AppMainNavbarLabels {
 withDefaults(
   defineProps<{
     navWidth: string | number;
+    /** Slide the bar out of view (hide-on-scroll-down). */
+    collapsed?: boolean;
     showDesktopToggle?: boolean;
     sidebarExpanded?: boolean;
     showMobileToggle?: boolean;
@@ -143,6 +145,7 @@ withDefaults(
     labels?: AppMainNavbarLabels;
   }>(),
   {
+    collapsed: false,
     showDesktopToggle: false,
     sidebarExpanded: true,
     showMobileToggle: false,

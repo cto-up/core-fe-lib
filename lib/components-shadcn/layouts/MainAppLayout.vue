@@ -34,6 +34,7 @@
     >
       <!-- Top Navbar -->
       <AppMainNavbar
+        :collapsed="navCollapsed"
         :nav-width="
           userStore.isLogged && userStore.hasRole ? appStore.navWidth : '100%'
         "
@@ -94,7 +95,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, type Component } from "vue";
+import { ref, computed, onMounted, onUnmounted, type Component } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import { User, Shield, Settings, Database, ShieldCheck } from "lucide-vue-next";
@@ -104,6 +105,7 @@ import { useUrl } from "../../composables/useUrl";
 import { Role } from "../../openapi/core/models/Role";
 import { useAppStore } from "../stores/app-store";
 import { useAppNav } from "../composables/useAppNav";
+import { useHideOnScroll } from "../composables/useHideOnScroll";
 import { useAppUserMenu } from "../composables/useAppUserMenu";
 import useLoggedUser from "../composables/useLoggedUser";
 import AppMainNavbar from "../primitives/AppMainNavbar.vue";
@@ -312,6 +314,17 @@ const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024;
   if (isMobile.value) appStore.sidebarExpand = false;
 };
+
+// ── Hide-on-scroll top bar (mobile only) ────────────────────────────────────
+// Reclaim vertical space on phones: hide the bar on scroll down, reveal on
+// scroll up. Desktop keeps it pinned (there's room, and the sidebar toggle
+// lives here); frozen while the mobile drawer is open so the header stays put.
+const navAutoHideDisabled = computed(
+  () => !isMobile.value || mobileSidebarOpen.value
+);
+const { collapsed: navCollapsed } = useHideOnScroll({
+  disabled: navAutoHideDisabled,
+});
 
 // Toggle the navigation sidebar with ⌘B (mac) / Ctrl+B (win/linux), like VS Code.
 // Skipped only inside rich-text editors (contenteditable), where Ctrl/⌘+B is
