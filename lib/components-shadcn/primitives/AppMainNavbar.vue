@@ -15,6 +15,7 @@
         v-if="showMobileToggle"
         variant="ghost"
         size="icon"
+        class="h-11 w-11 md:h-10 md:w-10"
         :title="labels.menu ?? 'Menu'"
         @click="$emit('toggle-mobile-sidebar')"
       >
@@ -27,6 +28,7 @@
         v-if="showHome"
         variant="ghost"
         size="icon"
+        class="h-11 w-11 md:h-10 md:w-10"
         :title="labels.home ?? 'Home'"
         @click="$emit('go-home')"
       >
@@ -64,6 +66,7 @@
         v-else-if="showLogin"
         variant="ghost"
         size="icon"
+        class="h-11 w-11 md:h-10 md:w-10"
         :title="labels.login ?? 'Sign in'"
         @click="$emit('go-signin')"
       >

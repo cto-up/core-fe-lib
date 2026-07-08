@@ -72,11 +72,16 @@ const currentLocale = computed({
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
-    <Languages class="h-4 w-4 text-muted-foreground" />
+  <div class="flex items-center">
     <Select v-model="currentLocale">
-      <SelectTrigger class="w-[150px]" variant="ghost">
-        <SelectValue />
+      <SelectTrigger
+        class="h-11 md:h-10 w-auto min-w-[130px]"
+        variant="ghost"
+      >
+        <span class="flex items-center gap-2">
+          <Languages class="h-4 w-4 shrink-0 text-muted-foreground" />
+          <SelectValue />
+        </span>
       </SelectTrigger>
       <SelectContent>
         <SelectItem
