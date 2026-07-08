@@ -10,8 +10,17 @@ const { toasts, dismiss } = useToast();
 
 <template>
   <Teleport to="body">
+    <!--
+      pointer-events-none on the VIEWPORT (toasts themselves keep
+      pointer-events-auto) so the empty/padded container never swallows taps.
+      Without it, this fixed top-0 z-[100] full-width bar sits ON TOP of the
+      z-40 app header and its p-4 padding blocks the top of the header buttons —
+      the cause of "have to tap the header buttons several times" on mobile.
+      On mobile it also sits at top-16 (below the h-16 header) so a *visible*
+      toast never overlaps the header either; desktop is unchanged (bottom-right).
+    -->
     <div
-      class="fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
+      class="pointer-events-none fixed top-16 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]"
     >
       <TransitionGroup
         name="toast"
