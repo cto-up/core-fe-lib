@@ -1,5 +1,10 @@
 <template>
-  <Button variant="ghost" size="icon" @click="toggle">
+  <Button
+    variant="ghost"
+    size="icon"
+    class="h-11 w-11 md:h-10 md:w-10"
+    @click="toggle"
+  >
     <Moon v-if="modelValue" class="h-5 w-5" />
     <Sun v-else class="h-5 w-5" />
   </Button>

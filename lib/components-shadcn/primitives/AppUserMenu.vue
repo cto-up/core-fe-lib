@@ -1,7 +1,7 @@
 <template>
   <DropdownMenu>
     <DropdownMenuTrigger as-child>
-      <Button variant="ghost" class="flex items-center gap-2">
+      <Button variant="ghost" class="flex items-center gap-2 h-11 md:h-10">
         <slot name="avatar" />
         <span v-if="email" class="hidden md:flex flex-col items-start">
           <p class="text-sm font-medium">{{ email }}</p>
