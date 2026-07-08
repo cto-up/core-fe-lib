@@ -42,6 +42,7 @@ export default {
         { value: "fr", label: "Français" },
         { value: "es", label: "Español" },
         { value: "it", label: "Italiano" },
+        { value: "de", label: "Deutsch" },
       ],
     };
   },
