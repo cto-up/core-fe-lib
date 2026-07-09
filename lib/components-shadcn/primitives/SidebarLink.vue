@@ -106,9 +106,12 @@ const isActive = computed(() => {
 // RouterLink handles the actual navigation (and lets the browser natively
 // handle cmd/ctrl/middle-click → "open in new tab"). We only forward the click
 // so callers can react (e.g. close the mobile sidebar) on a plain left-click.
+// Don't gate on event.defaultPrevented: RouterLink's own click handler runs
+// first and calls preventDefault() for normal SPA navigation, so it is always
+// true here on a real left-click — the modifier/button checks below already
+// exclude the open-in-new-tab cases (which never preventDefault).
 const onClick = (event: MouseEvent) => {
   if (
-    event.defaultPrevented ||
     event.button !== 0 ||
     event.metaKey ||
     event.ctrlKey ||
