@@ -2,7 +2,9 @@
   <TooltipProvider :disable-hoverable-content="true">
     <Tooltip :delay-duration="0">
       <TooltipTrigger as-child class="w-full">
-        <button
+        <component
+          :is="link ? RouterLink : 'button'"
+          :to="link ? link : undefined"
           :class="
             cn(
               'w-full overflow-x-hidden justify-start duration-150 inline-flex items-center rounded-md text-sm font-medium text-muted-foreground transition-colors',
@@ -13,7 +15,7 @@
               isActive && 'bg-primary/10 text-primary'
             )
           "
-          @click="navigate"
+          @click="onClick"
         >
           <span class="flex items-center" :class="expanded ? 'mr-4' : 'm-0'">
             <component
@@ -31,7 +33,7 @@
           >
             {{ badge > 99 ? "99+" : badge }}
           </span>
-        </button>
+        </component>
       </TooltipTrigger>
       <TooltipContent v-if="!expanded" side="right">
         <p class="text-sm">{{ title }}</p>
@@ -45,7 +47,7 @@
 
 <script lang="ts" setup>
 import { computed, inject, ref, type Component, type Ref } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { RouterLink, useRoute } from "vue-router";
 import {
   Tooltip,
   TooltipContent,
@@ -80,7 +82,6 @@ const emit = defineEmits<{
 }>();
 
 const route = useRoute();
-const router = useRouter();
 
 // All sibling nav paths (provided by AppMainSidebar) so active state resolves by
 // LONGEST prefix match — a section-index link (`/lms`) yields to a more specific
@@ -102,14 +103,21 @@ const isActive = computed(() => {
   return longest === link;
 });
 
-const navigate = async () => {
-  if (!props.link) return;
-  try {
-    await router.push(props.link);
-    emit("click");
-  } catch (error) {
-    console.warn("Navigation failed:", error);
+// RouterLink handles the actual navigation (and lets the browser natively
+// handle cmd/ctrl/middle-click → "open in new tab"). We only forward the click
+// so callers can react (e.g. close the mobile sidebar) on a plain left-click.
+const onClick = (event: MouseEvent) => {
+  if (
+    event.defaultPrevented ||
+    event.button !== 0 ||
+    event.metaKey ||
+    event.ctrlKey ||
+    event.shiftKey ||
+    event.altKey
+  ) {
+    return;
   }
+  emit("click");
 };
 </script>
 
