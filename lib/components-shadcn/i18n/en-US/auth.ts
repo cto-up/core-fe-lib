@@ -44,11 +44,11 @@ export default {
     nextSteps: "What to do next:",
     step1: "Check your email inbox",
     step2: "Click the secure link we sent you",
-    step3: "You'll be signed in automatically",
+    step3: "You'll be signed in automatically, and can set your password",
     changeEmail: "Entered the wrong email?",
     backToSignIn: "Back to sign in",
     secureExplainer:
-      "We'll send you a secure link to continue. No password needed.",
+      "We'll send you a secure link to continue. No password needed — the link lets you set your password once you're in.",
     notifications: {
       validationError: "Please enter a valid email address.",
       error: "Something went wrong. Please try again.",
@@ -101,6 +101,12 @@ export default {
       "Please check your email for password reset instructions.",
     error: "Failed to send password reset email",
     success: "Password reset successfully",
+    checkEmailTitle: "Check your email",
+    checkEmailDescription:
+      "If an account exists for this address, we've sent a secure link to reset your password.",
+    emailSentTo: "Sent to:",
+    closePageHint:
+      "Open the link to set a new password. You can now close this page.",
   },
   recovery: {
     title: "Set Your Password",

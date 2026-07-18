@@ -95,6 +95,12 @@ export default {
       "Controlla la tua email per le istruzioni di reimpostazione della password.",
     error: "Invio dell'email di reimpostazione della password non riuscito",
     success: "Password reimpostata con successo",
+    checkEmailTitle: "Controlla la tua email",
+    checkEmailDescription:
+      "Se esiste un account per questo indirizzo, ti abbiamo inviato un link sicuro per reimpostare la password.",
+    emailSentTo: "Inviato a:",
+    closePageHint:
+      "Apri il link per impostare una nuova password. Ora puoi chiudere questa pagina.",
   },
   recovery: {
     title: "Imposta la tua password",

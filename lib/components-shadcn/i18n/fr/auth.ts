@@ -95,6 +95,12 @@ export default {
       "Veuillez vérifier votre e-mail pour les instructions de réinitialisation du mot de passe.",
     error: "Échec de l'envoi de l'e-mail de réinitialisation de mot de passe",
     success: "Mot de passe réinitialisé avec succès",
+    checkEmailTitle: "Vérifiez votre e-mail",
+    checkEmailDescription:
+      "Si un compte existe pour cette adresse, nous vous avons envoyé un lien sécurisé pour réinitialiser votre mot de passe.",
+    emailSentTo: "Envoyé à :",
+    closePageHint:
+      "Ouvrez le lien pour définir un nouveau mot de passe. Vous pouvez maintenant fermer cette page.",
   },
   recovery: {
     title: "Définir votre mot de passe",
