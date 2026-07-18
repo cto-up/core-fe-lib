@@ -95,6 +95,12 @@ export default {
       "Por favor, revisa tu correo electrónico para las instrucciones de restablecimiento de contraseña.",
     error: "Error al enviar el correo de restablecimiento de contraseña",
     success: "Contraseña restablecida con éxito",
+    checkEmailTitle: "Revisa tu correo electrónico",
+    checkEmailDescription:
+      "Si existe una cuenta para esta dirección, te hemos enviado un enlace seguro para restablecer tu contraseña.",
+    emailSentTo: "Enviado a:",
+    closePageHint:
+      "Abre el enlace para establecer una nueva contraseña. Ya puedes cerrar esta página.",
   },
   recovery: {
     title: "Establecer tu contraseña",
