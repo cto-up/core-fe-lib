@@ -36,11 +36,12 @@ export default {
   collapse: "Comprimi",
   confirm: "Conferma",
   invite: "Invita",
+  verify: "Verifica",
+  verifying: "Verifica in corso...",
   backToList: "Torna alla lista",
   requestPasswordReset: "Richiedi reimpostazione della password",
   requestPasswordResetSent:
     "Richiesta di reimpostazione della password inviata",
-
   resource: {
     add: "Aggiungi risorsa",
   },
@@ -49,6 +50,11 @@ export default {
   },
   gantt: {
     show: "Mostra Gantt",
+  },
+  common: {
+    duration: "Durata",
+    translations: "Traduzioni",
+    language: "Lingua",
   },
   translation: {
     save: "Salva la traduzione",

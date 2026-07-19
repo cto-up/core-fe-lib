@@ -28,21 +28,33 @@ export default {
   signUp: {
     title: "Inscription",
     subtitle: "Créez votre compte",
+    magicLinkSubtitle: "Saisissez vos informations pour commencer",
     nameLabel: "Nom",
     nameRequired: "Le nom est requis",
     emailLabel: "Adresse e-mail",
     emailInvalid: "Veuillez saisir une adresse e-mail valide",
-    passwordLabel: "Mot de passe",
-    passwordMinLength: "Le mot de passe doit contenir au moins 6 caractères",
-    passwordConfirmLabel: "Confirmez le mot de passe",
-    passwordsNoMatch: "Les mots de passe ne correspondent pas",
-    signUpButton: "S'inscrire",
+    continueButton: "Continuer",
     haveAccount: "Vous avez déjà un compte ?",
     signInLink: "Connectez-vous",
     disabled: "L'inscription est désactivée",
+    checkEmail: "Vérifiez votre e-mail",
+    universalMessage:
+      "Nous avons envoyé un lien sécurisé ou un code si cette adresse e-mail est associée à un compte.",
+    emailSentTo: "Envoyé à :",
+    nextSteps: "Que faire ensuite :",
+    step1: "Consultez votre boîte de réception",
+    step2: "Cliquez sur le lien sécurisé que nous vous avons envoyé",
+    step3:
+      "Vous serez connecté automatiquement et pourrez définir votre mot de passe",
+    changeEmail: "Vous avez saisi la mauvaise adresse e-mail ?",
+    backToSignIn: "Retour à la connexion",
+    secureExplainer:
+      "Nous vous enverrons un lien sécurisé pour continuer. Aucun mot de passe requis — le lien vous permet de définir votre mot de passe une fois connecté.",
+    spamHint:
+      "Vous ne voyez pas l'e-mail ? Pensez à vérifier votre dossier spam ou courrier indésirable.",
     notifications: {
       validationError: "Veuillez vérifier vos saisies.",
-      success: "Inscription réussie ! Redirection...",
+      error: "Une erreur s'est produite. Veuillez réessayer.",
     },
   },
   emailVerification: {
@@ -99,6 +111,8 @@ export default {
     checkEmailDescription:
       "Si un compte existe pour cette adresse, nous vous avons envoyé un lien sécurisé pour réinitialiser votre mot de passe.",
     emailSentTo: "Envoyé à :",
+    spamHint:
+      "Vous ne voyez pas l'e-mail ? Pensez à vérifier votre dossier spam ou courrier indésirable.",
     closePageHint:
       "Ouvrez le lien pour définir un nouveau mot de passe. Vous pouvez maintenant fermer cette page.",
   },

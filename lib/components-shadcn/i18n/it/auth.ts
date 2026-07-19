@@ -28,21 +28,33 @@ export default {
   signUp: {
     title: "Registrazione",
     subtitle: "Crea il tuo account",
+    magicLinkSubtitle: "Inserisci i tuoi dati per iniziare",
     nameLabel: "Nome",
     nameRequired: "Il nome è obbligatorio",
     emailLabel: "Indirizzo email",
     emailInvalid: "Inserisci un indirizzo email valido",
-    passwordLabel: "Password",
-    passwordMinLength: "La password deve contenere almeno 6 caratteri",
-    passwordConfirmLabel: "Conferma la password",
-    passwordsNoMatch: "Le password non corrispondono",
-    signUpButton: "Registrati",
+    continueButton: "Continua",
     haveAccount: "Hai già un account?",
     signInLink: "Accedi",
     disabled: "La registrazione è disattivata",
+    checkEmail: "Controlla la tua email",
+    universalMessage:
+      "Abbiamo inviato un link o un codice sicuro se questa email è associata a un account.",
+    emailSentTo: "Inviato a:",
+    nextSteps: "Cosa fare adesso:",
+    step1: "Controlla la tua casella di posta",
+    step2: "Fai clic sul link sicuro che ti abbiamo inviato",
+    step3:
+      "Verrai connesso automaticamente e potrai impostare la tua password",
+    changeEmail: "Hai inserito l'email sbagliata?",
+    backToSignIn: "Torna all'accesso",
+    secureExplainer:
+      "Ti invieremo un link sicuro per continuare. Nessuna password necessaria: il link ti permette di impostare la tua password una volta effettuato l'accesso.",
+    spamHint:
+      "Non vedi l'email? Controlla la cartella spam o posta indesiderata.",
     notifications: {
       validationError: "Verifica i tuoi dati.",
-      success: "Registrazione riuscita! Reindirizzamento...",
+      error: "Si è verificato un errore. Riprova.",
     },
   },
   emailVerification: {
@@ -99,6 +111,8 @@ export default {
     checkEmailDescription:
       "Se esiste un account per questo indirizzo, ti abbiamo inviato un link sicuro per reimpostare la password.",
     emailSentTo: "Inviato a:",
+    spamHint:
+      "Non vedi l'email? Controlla la cartella spam o posta indesiderata.",
     closePageHint:
       "Apri il link per impostare una nuova password. Ora puoi chiudere questa pagina.",
   },
