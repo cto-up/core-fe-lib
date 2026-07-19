@@ -38,13 +38,19 @@ async function loadLocale(lang: string) {
   locale.value = lang;
 }
 
-// Initialize locale from localStorage or browser preference
+// Initialize locale from localStorage or browser preference. Map the browser's
+// language tag onto a supported locale (falling back to en-US) so a German,
+// Spanish, Italian or Portuguese browser lands on its language automatically.
+function detectBrowserLocale(): string {
+  const nav = (navigator.language || "en-US").toLowerCase();
+  for (const prefix of ["fr", "es", "it", "de", "pt"]) {
+    if (nav.startsWith(prefix)) return prefix;
+  }
+  return "en-US";
+}
+
 const savedLocale = localStorage.getItem("user-locale");
-const initialLocale = savedLocale
-  ? savedLocale
-  : navigator.language.startsWith("fr")
-    ? "fr"
-    : "en-US";
+const initialLocale = savedLocale ? savedLocale : detectBrowserLocale();
 
 if (initialLocale !== "en-US") {
   // Load non-default locale asynchronously on startup
@@ -59,6 +65,7 @@ const localeOptions = [
   { value: "es", label: "Español" },
   { value: "it", label: "Italiano" },
   { value: "de", label: "Deutsch" },
+  { value: "pt", label: "Português" },
 ];
 
 const updateLocale = async (newLocale: string) => {

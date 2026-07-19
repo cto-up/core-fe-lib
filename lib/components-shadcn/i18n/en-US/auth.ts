@@ -49,6 +49,8 @@ export default {
     backToSignIn: "Back to sign in",
     secureExplainer:
       "We'll send you a secure link to continue. No password needed — the link lets you set your password once you're in.",
+    spamHint:
+      "Don't see the email? Check your spam or junk folder.",
     notifications: {
       validationError: "Please enter a valid email address.",
       error: "Something went wrong. Please try again.",
@@ -105,6 +107,8 @@ export default {
     checkEmailDescription:
       "If an account exists for this address, we've sent a secure link to reset your password.",
     emailSentTo: "Sent to:",
+    spamHint:
+      "Don't see the email? Check your spam or junk folder.",
     closePageHint:
       "Open the link to set a new password. You can now close this page.",
   },

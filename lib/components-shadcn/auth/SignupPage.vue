@@ -40,6 +40,9 @@
             <li>{{ $t("auth.signUp.step3") }}</li>
           </ol>
         </div>
+        <p class="text-center text-sm text-muted-foreground">
+          {{ $t("auth.signUp.spamHint") }}
+        </p>
       </CardContent>
       <CardFooter class="flex flex-col space-y-3 p-4">
         <Button variant="outline" class="w-full" @click="resetForm">

@@ -1,0 +1,145 @@
+export default {
+  error: "Erro de autenticação",
+  noAccess: {
+    title: "Acesso necessário",
+    subtitle: "Ainda não tem acesso a este inquilino",
+    message1:
+      "A sua conta está autenticada, mas precisa de pedir acesso a",
+    message2: "para continuar.",
+    message3:
+      "Contacte o seu administrador para lhe conceder acesso a este inquilino.",
+    signedInAs: "Sessão iniciada como",
+    signOutButton: "Terminar sessão",
+    contactAdminButton: "Contactar o administrador",
+    emailSubject: "Pedido de acesso para {tenantName}",
+    emailBody:
+      "Olá,\n\nGostaria de pedir acesso a {tenantName}.\n\nO meu email: {userEmail}\n\nObrigado.",
+  },
+  signIn: {
+    title: "Iniciar sessão",
+    subtitle: "Inicie sessão para aceder à sua conta",
+    emailLabel: "Endereço de email",
+    passwordLabel: "Palavra-passe",
+    loginButton: "Entrar",
+    forgotPassword: "Esqueceu-se da palavra-passe?",
+    noAccount: "Ainda não tem uma conta?",
+    signUpLink: "Registar-se",
+  },
+  signUp: {
+    title: "Registar-se",
+    subtitle: "Crie a sua conta",
+    magicLinkSubtitle: "Introduza os seus dados para começar",
+    nameLabel: "Nome",
+    nameRequired: "O nome é obrigatório",
+    emailLabel: "Endereço de email",
+    emailInvalid: "Introduza um email válido",
+    continueButton: "Continuar",
+    haveAccount: "Já tem uma conta?",
+    signInLink: "Iniciar sessão",
+    disabled: "O registo está desativado",
+    checkEmail: "Verifique o seu email",
+    universalMessage:
+      "Enviámos uma ligação ou código seguro se este email estiver associado a uma conta.",
+    emailSentTo: "Enviado para:",
+    nextSteps: "O que fazer a seguir:",
+    step1: "Verifique a caixa de entrada do seu email",
+    step2: "Clique na ligação segura que lhe enviámos",
+    step3: "A sessão será iniciada automaticamente e poderá definir a sua palavra-passe",
+    changeEmail: "Introduziu o email errado?",
+    backToSignIn: "Voltar ao início de sessão",
+    secureExplainer:
+      "Enviaremos uma ligação segura para continuar. Não é necessária palavra-passe — a ligação permite-lhe definir a sua palavra-passe assim que entrar.",
+    spamHint:
+      "Não vê o e-mail? Verifique a sua pasta de spam ou lixo eletrónico.",
+    notifications: {
+      validationError: "Introduza um endereço de email válido.",
+      error: "Algo correu mal. Tente novamente.",
+    },
+  },
+  emailVerification: {
+    loading: {
+      title: "A verificar o seu email...",
+      subtitle: "Aguarde enquanto confirmamos o seu endereço de email.",
+    },
+    success: {
+      title: "Email verificado com sucesso!",
+      subtitle:
+        "O seu endereço de email foi confirmado. Tem agora acesso total à sua conta.",
+      continueButton: "Continuar para o painel",
+      signInButton: "Iniciar sessão",
+    },
+    error: {
+      title: "Falha na verificação",
+      noToken: "Não foi fornecido nenhum token de verificação. Verifique a ligação do seu email.",
+      network: "Erro de rede. Verifique a sua ligação e tente novamente.",
+      resendHelpText: "Precisa de uma nova ligação de verificação?",
+      resendButton: "Reenviar email de verificação",
+      resending: "A enviar...",
+      resendCooldown: "Reenviar em {seconds}s",
+      backToSignIn: "Voltar ao início de sessão",
+      contactSupport: "Contactar o suporte",
+    },
+    expired: {
+      title: "Ligação de verificação expirada",
+      subtitle:
+        "Esta ligação de verificação expirou por motivos de segurança. As ligações de verificação são válidas durante 24 horas.",
+      getNewLinkButton: "Obter nova ligação de verificação",
+      backToSignIn: "Voltar ao início de sessão",
+    },
+    toasts: {
+      success: "Email verificado com sucesso!",
+      resendSuccess: "Email de verificação enviado! Verifique a sua caixa de entrada.",
+      networkError: "Erro de rede. Tente novamente.",
+    },
+  },
+  passwordReset: {
+    title: "Repor palavra-passe",
+    emailLabel: "Email",
+    newPasswordLabel: "Nova palavra-passe",
+    resetButton: "Repor palavra-passe",
+    sending: "A enviar...",
+    emailSent: "Email de reposição de palavra-passe enviado",
+    emailSentDescription:
+      "Verifique o seu email para obter instruções de reposição da palavra-passe.",
+    error: "Falha ao enviar o email de reposição da palavra-passe",
+    success: "Palavra-passe reposta com sucesso",
+    checkEmailTitle: "Verifique o seu email",
+    checkEmailDescription:
+      "Se existir uma conta para este endereço, enviámos uma ligação segura para repor a sua palavra-passe.",
+    emailSentTo: "Enviado para:",
+    spamHint:
+      "Não vê o e-mail? Verifique a sua pasta de spam ou lixo eletrónico.",
+    closePageHint:
+      "Abra a ligação para definir uma nova palavra-passe. Pode agora fechar esta página.",
+  },
+  recovery: {
+    title: "Defina a sua palavra-passe",
+    activatingLink: "A ativar a ligação de recuperação...",
+    pleaseSetPassword: "Defina a sua palavra-passe",
+    newPasswordLabel: "Nova palavra-passe",
+    newPasswordPlaceholder: "Introduza a sua nova palavra-passe",
+    confirmPasswordLabel: "Confirmar palavra-passe",
+    confirmPasswordPlaceholder: "Confirme a sua nova palavra-passe",
+    setPasswordButton: "Definir palavra-passe",
+    settingPassword: "A definir a palavra-passe...",
+    mismatchedPasswords: "Palavras-passe não coincidentes",
+    passwordTooShort: "A palavra-passe deve ter pelo menos 8 caracteres",
+    passwordsDoNotMatch: "As palavras-passe não coincidem",
+    invalidLink:
+      "Ligação de recuperação inválida. Faltam parâmetros obrigatórios (flow ou token).",
+    invalidToken: "A ligação de recuperação é inválida.",
+    csrfTokenError: "Falha ao extrair o token CSRF do fluxo de definições",
+    sessionExpired: "A sessão expirou. Peça uma nova ligação de recuperação.",
+    processingError: "Falha ao processar a ligação de recuperação. Tente novamente.",
+    failedToSetPassword: "Falha ao definir a palavra-passe",
+    passwordSetSuccess: "Palavra-passe definida com sucesso! A redirecionar para o início de sessão...",
+    requestNewLink: "Peça uma nova ligação de reposição de palavra-passe.",
+  },
+  securitySettings: {
+    title: "Definições de segurança",
+    subtitle: "Faça a gestão da segurança da sua conta e da autenticação multifator",
+  },
+  loginSuccess: "Sessão iniciada com sucesso",
+  logoutSuccess: "Sessão terminada com sucesso",
+  success: "Sucesso",
+};

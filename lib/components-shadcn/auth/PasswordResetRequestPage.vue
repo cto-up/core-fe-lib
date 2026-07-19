@@ -23,6 +23,9 @@
         <div class="bg-muted/50 border rounded-md p-3 text-sm text-muted-foreground text-center">
           {{ t("auth.passwordReset.closePageHint") }}
         </div>
+        <p class="text-center text-sm text-muted-foreground">
+          {{ t("auth.passwordReset.spamHint") }}
+        </p>
       </CardContent>
     </Card>
 

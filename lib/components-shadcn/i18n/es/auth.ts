@@ -28,21 +28,33 @@ export default {
   signUp: {
     title: "Registro",
     subtitle: "Crea tu cuenta",
+    magicLinkSubtitle: "Introduce tus datos para empezar",
     nameLabel: "Nombre",
     nameRequired: "El nombre es obligatorio",
     emailLabel: "Correo electrónico",
     emailInvalid: "Por favor, introduce un correo electrónico válido",
-    passwordLabel: "Contraseña",
-    passwordMinLength: "La contraseña debe tener al menos 6 caracteres",
-    passwordConfirmLabel: "Confirmar la contraseña",
-    passwordsNoMatch: "Las contraseñas no coinciden",
-    signUpButton: "Registrarse",
+    continueButton: "Continuar",
     haveAccount: "¿Ya tienes una cuenta?",
     signInLink: "Inicia sesión",
     disabled: "El registro está desactivado",
+    checkEmail: "Revisa tu correo electrónico",
+    universalMessage:
+      "Hemos enviado un enlace seguro o un código si este correo electrónico está asociado a una cuenta.",
+    emailSentTo: "Enviado a:",
+    nextSteps: "Qué hacer a continuación:",
+    step1: "Revisa tu bandeja de entrada",
+    step2: "Haz clic en el enlace seguro que te hemos enviado",
+    step3:
+      "Iniciarás sesión automáticamente y podrás establecer tu contraseña",
+    changeEmail: "¿Introdujiste el correo electrónico incorrecto?",
+    backToSignIn: "Volver al inicio de sesión",
+    secureExplainer:
+      "Te enviaremos un enlace seguro para continuar. No necesitas contraseña — el enlace te permite establecer tu contraseña una vez que hayas entrado.",
+    spamHint:
+      "¿No ves el correo? Revisa tu carpeta de spam o correo no deseado.",
     notifications: {
       validationError: "Por favor, verifica tus datos.",
-      success: "¡Registro exitoso! Redirigiendo...",
+      error: "Algo salió mal. Por favor, inténtalo de nuevo.",
     },
   },
   emailVerification: {
@@ -99,6 +111,8 @@ export default {
     checkEmailDescription:
       "Si existe una cuenta para esta dirección, te hemos enviado un enlace seguro para restablecer tu contraseña.",
     emailSentTo: "Enviado a:",
+    spamHint:
+      "¿No ves el correo? Revisa tu carpeta de spam o correo no deseado.",
     closePageHint:
       "Abre el enlace para establecer una nueva contraseña. Ya puedes cerrar esta página.",
   },
