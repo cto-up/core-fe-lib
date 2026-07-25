@@ -3,8 +3,7 @@ export default {
   noAccess: {
     title: "Acesso necessário",
     subtitle: "Ainda não tem acesso a este inquilino",
-    message1:
-      "A sua conta está autenticada, mas precisa de pedir acesso a",
+    message1: "A sua conta está autenticada, mas precisa de pedir acesso a",
     message2: "para continuar.",
     message3:
       "Contacte o seu administrador para lhe conceder acesso a este inquilino.",
@@ -44,7 +43,8 @@ export default {
     nextSteps: "O que fazer a seguir:",
     step1: "Verifique a caixa de entrada do seu email",
     step2: "Clique na ligação segura que lhe enviámos",
-    step3: "A sessão será iniciada automaticamente e poderá definir a sua palavra-passe",
+    step3:
+      "A sessão será iniciada automaticamente e poderá definir a sua palavra-passe",
     changeEmail: "Introduziu o email errado?",
     backToSignIn: "Voltar ao início de sessão",
     secureExplainer:
@@ -70,7 +70,8 @@ export default {
     },
     error: {
       title: "Falha na verificação",
-      noToken: "Não foi fornecido nenhum token de verificação. Verifique a ligação do seu email.",
+      noToken:
+        "Não foi fornecido nenhum token de verificação. Verifique a ligação do seu email.",
       network: "Erro de rede. Verifique a sua ligação e tente novamente.",
       resendHelpText: "Precisa de uma nova ligação de verificação?",
       resendButton: "Reenviar email de verificação",
@@ -88,7 +89,8 @@ export default {
     },
     toasts: {
       success: "Email verificado com sucesso!",
-      resendSuccess: "Email de verificação enviado! Verifique a sua caixa de entrada.",
+      resendSuccess:
+        "Email de verificação enviado! Verifique a sua caixa de entrada.",
       networkError: "Erro de rede. Tente novamente.",
     },
   },
@@ -130,14 +132,17 @@ export default {
     invalidToken: "A ligação de recuperação é inválida.",
     csrfTokenError: "Falha ao extrair o token CSRF do fluxo de definições",
     sessionExpired: "A sessão expirou. Peça uma nova ligação de recuperação.",
-    processingError: "Falha ao processar a ligação de recuperação. Tente novamente.",
+    processingError:
+      "Falha ao processar a ligação de recuperação. Tente novamente.",
     failedToSetPassword: "Falha ao definir a palavra-passe",
-    passwordSetSuccess: "Palavra-passe definida com sucesso! A redirecionar para o início de sessão...",
+    passwordSetSuccess:
+      "Palavra-passe definida com sucesso! A redirecionar para o início de sessão...",
     requestNewLink: "Peça uma nova ligação de reposição de palavra-passe.",
   },
   securitySettings: {
     title: "Definições de segurança",
-    subtitle: "Faça a gestão da segurança da sua conta e da autenticação multifator",
+    subtitle:
+      "Faça a gestão da segurança da sua conta e da autenticação multifator",
   },
   loginSuccess: "Sessão iniciada com sucesso",
   logoutSuccess: "Sessão terminada com sucesso",

@@ -78,8 +78,7 @@ export default {
       },
       sample: {
         title: "Dati di esempio",
-        caption:
-          "Inizializza le aziende di esempio e i dati associati",
+        caption: "Inizializza le aziende di esempio e i dati associati",
         action: "Inizializza i dati di esempio",
         success: "Dati di esempio inizializzati con successo",
         error: "Inizializzazione dei dati di esempio non riuscita",

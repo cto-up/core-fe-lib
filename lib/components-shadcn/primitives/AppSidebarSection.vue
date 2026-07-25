@@ -7,7 +7,9 @@
       >
         <span class="flex items-center gap-2 min-w-0">
           <slot name="icon" />
-          <span class="uppercase text-[11px] font-medium tracking-wider truncate">
+          <span
+            class="uppercase text-[11px] font-medium tracking-wider truncate"
+          >
             {{ title }}
           </span>
         </span>

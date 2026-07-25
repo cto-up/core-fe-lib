@@ -20,7 +20,9 @@
           </p>
           <p class="font-medium text-foreground">{{ sentTo }}</p>
         </div>
-        <div class="bg-muted/50 border rounded-md p-3 text-sm text-muted-foreground text-center">
+        <div
+          class="bg-muted/50 border rounded-md p-3 text-sm text-muted-foreground text-center"
+        >
           {{ t("auth.passwordReset.closePageHint") }}
         </div>
         <p class="text-center text-sm text-muted-foreground">

@@ -129,7 +129,8 @@ export default {
     actions: {
       delete: {
         label: "Eliminar",
-        confirm: "Tem a certeza de que pretende eliminar a configuração global %{name}?",
+        confirm:
+          "Tem a certeza de que pretende eliminar a configuração global %{name}?",
       },
     },
   },
@@ -149,7 +150,8 @@ export default {
     actions: {
       delete: {
         label: "Eliminar",
-        confirm: "Tem a certeza de que pretende eliminar a configuração do inquilino %{name}?",
+        confirm:
+          "Tem a certeza de que pretende eliminar a configuração do inquilino %{name}?",
       },
     },
   },
@@ -243,7 +245,8 @@ export default {
       checking: "A verificar...",
     },
     messages: {
-      emailPlaceholder: "Introduza o email para verificar se o utilizador existe",
+      emailPlaceholder:
+        "Introduza o email para verificar se o utilizador existe",
       userFound: "Utilizador encontrado: {name}",
       userFoundDescription:
         "Este utilizador existe e é membro de {count} inquilino(s). Selecione as funções abaixo para o adicionar a este inquilino.",

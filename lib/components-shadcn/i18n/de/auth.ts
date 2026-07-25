@@ -44,7 +44,8 @@ export default {
     nextSteps: "Nächste Schritte:",
     step1: "Überprüfen Sie Ihren E-Mail-Posteingang",
     step2: "Klicken Sie auf den sicheren Link, den wir Ihnen gesendet haben",
-    step3: "Sie werden automatisch angemeldet und können Ihr Passwort festlegen",
+    step3:
+      "Sie werden automatisch angemeldet und können Ihr Passwort festlegen",
     changeEmail: "Falsche E-Mail-Adresse eingegeben?",
     backToSignIn: "Zurück zur Anmeldung",
     secureExplainer:
@@ -70,8 +71,10 @@ export default {
     },
     error: {
       title: "Verifizierung fehlgeschlagen",
-      noToken: "Kein Verifizierungs-Token angegeben. Bitte überprüfen Sie Ihren E-Mail-Link.",
-      network: "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
+      noToken:
+        "Kein Verifizierungs-Token angegeben. Bitte überprüfen Sie Ihren E-Mail-Link.",
+      network:
+        "Netzwerkfehler. Bitte überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.",
       resendHelpText: "Benötigen Sie einen neuen Verifizierungslink?",
       resendButton: "Verifizierungs-E-Mail erneut senden",
       resending: "Wird gesendet...",
@@ -88,7 +91,8 @@ export default {
     },
     toasts: {
       success: "E-Mail-Adresse erfolgreich verifiziert!",
-      resendSuccess: "Verifizierungs-E-Mail gesendet! Bitte überprüfen Sie Ihren Posteingang.",
+      resendSuccess:
+        "Verifizierungs-E-Mail gesendet! Bitte überprüfen Sie Ihren Posteingang.",
       networkError: "Netzwerkfehler. Bitte versuchen Sie es erneut.",
     },
   },
@@ -128,16 +132,22 @@ export default {
     invalidLink:
       "Ungültiger Wiederherstellungslink. Erforderliche Parameter fehlen (Flow oder Token).",
     invalidToken: "Der Wiederherstellungslink ist ungültig.",
-    csrfTokenError: "CSRF-Token konnte nicht aus dem Einstellungs-Flow extrahiert werden",
-    sessionExpired: "Sitzung abgelaufen. Bitte fordern Sie einen neuen Wiederherstellungslink an.",
-    processingError: "Wiederherstellungslink konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.",
+    csrfTokenError:
+      "CSRF-Token konnte nicht aus dem Einstellungs-Flow extrahiert werden",
+    sessionExpired:
+      "Sitzung abgelaufen. Bitte fordern Sie einen neuen Wiederherstellungslink an.",
+    processingError:
+      "Wiederherstellungslink konnte nicht verarbeitet werden. Bitte versuchen Sie es erneut.",
     failedToSetPassword: "Passwort konnte nicht festgelegt werden",
-    passwordSetSuccess: "Passwort erfolgreich festgelegt! Weiterleitung zur Anmeldung...",
-    requestNewLink: "Bitte fordern Sie einen neuen Link zum Zurücksetzen des Passworts an.",
+    passwordSetSuccess:
+      "Passwort erfolgreich festgelegt! Weiterleitung zur Anmeldung...",
+    requestNewLink:
+      "Bitte fordern Sie einen neuen Link zum Zurücksetzen des Passworts an.",
   },
   securitySettings: {
     title: "Sicherheitseinstellungen",
-    subtitle: "Verwalten Sie Ihre Kontosicherheit und Multi-Faktor-Authentifizierung",
+    subtitle:
+      "Verwalten Sie Ihre Kontosicherheit und Multi-Faktor-Authentifizierung",
   },
   loginSuccess: "Erfolgreich angemeldet",
   logoutSuccess: "Erfolgreich abgemeldet",

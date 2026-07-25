@@ -1,7 +1,6 @@
 export default {
   title: "Autenticación multifactor",
-  subtitle:
-    "Gestiona la seguridad de tu cuenta y la autenticación multifactor",
+  subtitle: "Gestiona la seguridad de tu cuenta y la autenticación multifactor",
   currentLevel: "Nivel de seguridad actual",
   levelStandard: "Estándar",
   levelEnhanced: "Reforzado (MFA activa)",
@@ -20,8 +19,7 @@ export default {
     },
     webauthn: {
       title: "Llave de seguridad (WebAuthn)",
-      description:
-        "Usa llaves físicas como YubiKey o la biometría integrada",
+      description: "Usa llaves físicas como YubiKey o la biometría integrada",
       setup: "Configurar la llave de seguridad",
       manage: "Gestionar las llaves",
       enabled: "Activado",
@@ -69,8 +67,7 @@ export default {
       copy: "Copiar",
       saved: "Los he guardado",
       confirm: "He guardado estos códigos",
-      interactionHint:
-        "Debes copiar o descargar los códigos para continuar",
+      interactionHint: "Debes copiar o descargar los códigos para continuar",
     },
   },
   notifications: {
@@ -127,7 +124,8 @@ export default {
     methodTotp: "Aplicación de autenticación",
     methodRecovery: "Código de recuperación",
     methodWebauthn: "Llave de seguridad",
-    webauthnComingSoon: "Verificación por llave de seguridad disponible próximamente",
+    webauthnComingSoon:
+      "Verificación por llave de seguridad disponible próximamente",
     useRecoveryCode: "Usar un código de recuperación en su lugar",
     useAuthenticator: "Usar la aplicación de autenticación en su lugar",
     totpHint:
@@ -148,6 +146,7 @@ export default {
   },
   recovery: {
     enterCode: "Introduce el código de recuperación",
-    invalidCode: "Código de recuperación inválido. Por favor, inténtalo de nuevo.",
+    invalidCode:
+      "Código de recuperación inválido. Por favor, inténtalo de nuevo.",
   },
 };

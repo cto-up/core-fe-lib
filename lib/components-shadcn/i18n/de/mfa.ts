@@ -1,6 +1,7 @@
 export default {
   title: "Multi-Faktor-Authentifizierung",
-  subtitle: "Verwalten Sie Ihre Kontosicherheit und Multi-Faktor-Authentifizierung",
+  subtitle:
+    "Verwalten Sie Ihre Kontosicherheit und Multi-Faktor-Authentifizierung",
   currentLevel: "Aktuelle Sicherheitsstufe",
   levelStandard: "Standard",
   levelEnhanced: "Erhöht (MFA aktiv)",
@@ -10,7 +11,8 @@ export default {
     recoveryCode: "Wiederherstellungscode",
     totp: {
       title: "Authenticator-App (TOTP)",
-      description: "Verwenden Sie Apps wie Google Authenticator, Authy oder 1Password",
+      description:
+        "Verwenden Sie Apps wie Google Authenticator, Authy oder 1Password",
       setup: "Authenticator-App einrichten",
       disable: "TOTP deaktivieren",
       enabled: "Aktiviert",
@@ -18,7 +20,8 @@ export default {
     },
     webauthn: {
       title: "Sicherheitsschlüssel (WebAuthn)",
-      description: "Verwenden Sie Hardware-Schlüssel wie YubiKey oder integrierte Biometrie",
+      description:
+        "Verwenden Sie Hardware-Schlüssel wie YubiKey oder integrierte Biometrie",
       setup: "Sicherheitsschlüssel einrichten",
       disable: "Sicherheitsschlüssel deaktivieren",
       enabled: "Aktiviert",
@@ -26,7 +29,8 @@ export default {
     },
     recovery: {
       title: "Wiederherstellungscodes",
-      description: "Verwenden Sie diese Codes, wenn Sie den Zugriff auf Ihr MFA-Gerät verlieren",
+      description:
+        "Verwenden Sie diese Codes, wenn Sie den Zugriff auf Ihr MFA-Gerät verlieren",
       generate: "Codes generieren",
       regenerate: "Codes neu generieren",
       generated: "Generiert",
@@ -38,7 +42,8 @@ export default {
       title: "Authenticator-App einrichten",
       scanQR: "Scannen Sie diesen QR-Code mit Ihrer Authenticator-App:",
       manualEntry: "Oder geben Sie diesen Schlüssel manuell ein:",
-      enterCode: "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein:",
+      enterCode:
+        "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein:",
       codePlaceholder: "000000",
       invalidCode: "Ungültiger Code. Bitte versuchen Sie es erneut.",
       cancel: "Abbrechen",
@@ -47,7 +52,8 @@ export default {
     },
     webauthn: {
       title: "Registrierung des Sicherheitsschlüssels",
-      description: "Bitte folgen Sie den Anweisungen, um Ihren Sicherheitsschlüssel zu registrieren",
+      description:
+        "Bitte folgen Sie den Anweisungen, um Ihren Sicherheitsschlüssel zu registrieren",
       processing: "Ihr Sicherheitsschlüssel wird registriert...",
       ready: "Bereit, Ihren Sicherheitsschlüssel zu registrieren",
       success: "Sicherheitsschlüssel erfolgreich registriert. Weiterleitung...",
@@ -63,7 +69,8 @@ export default {
       copy: "Kopieren",
       saved: "Ich habe sie gespeichert",
       confirm: "Ich habe diese Codes gespeichert",
-      interactionHint: "Sie müssen die Codes kopieren oder herunterladen, um fortzufahren",
+      interactionHint:
+        "Sie müssen die Codes kopieren oder herunterladen, um fortzufahren",
     },
   },
   notifications: {
@@ -80,11 +87,13 @@ export default {
     webauthnEnabled: "Sicherheitsschlüssel erfolgreich registriert",
     webauthnDisabled: "Sicherheitsschlüssel erfolgreich deaktiviert",
     webauthnError: "Sicherheitsschlüssel konnte nicht registriert werden",
-    webauthnDisableError: "Sicherheitsschlüssel konnte nicht deaktiviert werden",
+    webauthnDisableError:
+      "Sicherheitsschlüssel konnte nicht deaktiviert werden",
     recoveryGenerated: "Wiederherstellungscodes erfolgreich generiert",
     recoveryError: "Wiederherstellungscodes konnten nicht generiert werden",
     recoveryCopied: "Wiederherstellungscodes in die Zwischenablage kopiert",
-    setupError: "Einrichtung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
+    setupError:
+      "Einrichtung konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut.",
     verificationError: "Verifizierung fehlgeschlagen",
     verificationErrorDesc:
       "Verifizierung konnte nicht initialisiert werden. Bitte versuchen Sie es erneut oder kontaktieren Sie den Support.",
@@ -99,10 +108,12 @@ export default {
       "Sie haben keine MFA-Methoden konfiguriert. Bitte richten Sie zuerst MFA ein.",
   },
   confirmations: {
-    disableTotp: "Möchten Sie die TOTP-Authentifizierung wirklich deaktivieren?",
+    disableTotp:
+      "Möchten Sie die TOTP-Authentifizierung wirklich deaktivieren?",
     disableTotpDescription:
       "Dadurch wird die Zwei-Faktor-Authentifizierung von Ihrem Konto entfernt. Sie können sie jederzeit erneut einrichten.",
-    disableWebauthn: "Möchten Sie Ihren Sicherheitsschlüssel wirklich deaktivieren?",
+    disableWebauthn:
+      "Möchten Sie Ihren Sicherheitsschlüssel wirklich deaktivieren?",
     disableWebauthnDescription:
       "Dadurch wird Ihr Sicherheitsschlüssel von Ihrem Konto entfernt. Sie können jederzeit einen neuen Schlüssel registrieren.",
     cancelRecoveryCodes:
@@ -122,10 +133,12 @@ export default {
     useRecoveryCode: "Stattdessen einen Wiederherstellungscode verwenden",
     useAuthenticator: "Stattdessen die Authenticator-App verwenden",
     totpHint: "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein",
-    webauthnHint: "Stecken Sie Ihren Sicherheitsschlüssel ein und folgen Sie den Anweisungen",
+    webauthnHint:
+      "Stecken Sie Ihren Sicherheitsschlüssel ein und folgen Sie den Anweisungen",
     recoveryHint: "Geben Sie einen Ihrer Backup-Wiederherstellungscodes ein",
     webauthnTitle: "Verifizierung des Sicherheitsschlüssels",
-    webauthnDescription: "Bitte verwenden Sie Ihren Sicherheitsschlüssel, um Ihre Identität zu verifizieren",
+    webauthnDescription:
+      "Bitte verwenden Sie Ihren Sicherheitsschlüssel, um Ihre Identität zu verifizieren",
     webauthnProcessing: "Ihr Sicherheitsschlüssel wird verifiziert...",
     webauthnReady: "Bereit zur Verifizierung mit Ihrem Sicherheitsschlüssel",
     noMfaRegistered:
@@ -137,6 +150,7 @@ export default {
   },
   recovery: {
     enterCode: "Wiederherstellungscode eingeben",
-    invalidCode: "Ungültiger Wiederherstellungscode. Bitte versuchen Sie es erneut.",
+    invalidCode:
+      "Ungültiger Wiederherstellungscode. Bitte versuchen Sie es erneut.",
   },
 };

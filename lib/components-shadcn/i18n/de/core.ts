@@ -129,7 +129,8 @@ export default {
     actions: {
       delete: {
         label: "Löschen",
-        confirm: "Möchten Sie die globale Konfiguration %{name} wirklich löschen?",
+        confirm:
+          "Möchten Sie die globale Konfiguration %{name} wirklich löschen?",
       },
     },
   },
@@ -149,7 +150,8 @@ export default {
     actions: {
       delete: {
         label: "Löschen",
-        confirm: "Möchten Sie die Mandantenkonfiguration %{name} wirklich löschen?",
+        confirm:
+          "Möchten Sie die Mandantenkonfiguration %{name} wirklich löschen?",
       },
     },
   },
@@ -243,12 +245,14 @@ export default {
       checking: "Wird geprüft...",
     },
     messages: {
-      emailPlaceholder: "E-Mail eingeben, um zu prüfen, ob der Benutzer existiert",
+      emailPlaceholder:
+        "E-Mail eingeben, um zu prüfen, ob der Benutzer existiert",
       userFound: "Benutzer gefunden: {name}",
       userFoundDescription:
         "Dieser Benutzer existiert und ist Mitglied von {count} Mandant(en). Wählen Sie unten Rollen aus, um ihn diesem Mandanten hinzuzufügen.",
       alreadyMember: "Bereits Mitglied",
-      alreadyMemberDescription: "Dieser Benutzer ist bereits Mitglied dieses Mandanten.",
+      alreadyMemberDescription:
+        "Dieser Benutzer ist bereits Mitglied dieses Mandanten.",
       editUser: "Benutzer bearbeiten",
       userNotFound: "Benutzer nicht gefunden",
       userNotFoundDescription:

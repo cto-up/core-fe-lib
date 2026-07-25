@@ -11,7 +11,8 @@ export default {
       clearCompleted: "Abgeschlossene entfernen",
       preview: "Dateivorschau",
       sizeLimits: "Maximalgrößen: Bilder {image}, Audio {audio}, Video {video}",
-      tooManyFiles: "Zu viele Dateien ausgewählt. Maximal {max} Dateien erlaubt.",
+      tooManyFiles:
+        "Zu viele Dateien ausgewählt. Maximal {max} Dateien erlaubt.",
       cancelUpload: "Upload abbrechen",
       removeUpload: "Upload entfernen",
       removeFile: "Datei entfernen",
@@ -62,8 +63,7 @@ export default {
       editMetadata: "Metadaten bearbeiten",
       order: "Reihenfolge",
       deleteConfirm: "Möchten Sie diesen Anhang wirklich löschen?",
-      deleteMultipleConfirm:
-        "Möchten Sie {count} Anhänge wirklich löschen?",
+      deleteMultipleConfirm: "Möchten Sie {count} Anhänge wirklich löschen?",
       deleteSuccess: "Anhang erfolgreich gelöscht",
       deleteError: "Anhang konnte nicht gelöscht werden",
       updateSuccess: "Anhang erfolgreich aktualisiert",
