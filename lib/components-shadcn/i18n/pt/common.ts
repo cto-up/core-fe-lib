@@ -10,8 +10,10 @@ export default {
       completed: "Concluído",
       clearCompleted: "Limpar concluídos",
       preview: "Pré-visualização do ficheiro",
-      sizeLimits: "Tamanhos máximos: Imagens {image}, Áudio {audio}, Vídeo {video}",
-      tooManyFiles: "Demasiados ficheiros selecionados. São permitidos no máximo {max} ficheiros.",
+      sizeLimits:
+        "Tamanhos máximos: Imagens {image}, Áudio {audio}, Vídeo {video}",
+      tooManyFiles:
+        "Demasiados ficheiros selecionados. São permitidos no máximo {max} ficheiros.",
       cancelUpload: "Cancelar carregamento",
       removeUpload: "Remover carregamento",
       removeFile: "Remover ficheiro",

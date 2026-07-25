@@ -10,9 +10,9 @@ export default {
       completed: "Completato",
       clearCompleted: "Cancella i completati",
       preview: "Anteprima del file",
-      sizeLimits: "Dimensioni max: Immagini {image}, Audio {audio}, Video {video}",
-      tooManyFiles:
-        "Troppi file selezionati. Massimo {max} file consentiti.",
+      sizeLimits:
+        "Dimensioni max: Immagini {image}, Audio {audio}, Video {video}",
+      tooManyFiles: "Troppi file selezionati. Massimo {max} file consentiti.",
       cancelUpload: "Annulla il caricamento",
       removeUpload: "Rimuovi il caricamento",
       removeFile: "Rimuovi il file",
@@ -63,8 +63,7 @@ export default {
       editMetadata: "Modifica i metadati",
       order: "Ordine",
       deleteConfirm: "Sei sicuro di voler eliminare questo allegato?",
-      deleteMultipleConfirm:
-        "Sei sicuro di voler eliminare {count} allegati?",
+      deleteMultipleConfirm: "Sei sicuro di voler eliminare {count} allegati?",
       deleteSuccess: "Allegato eliminato con successo",
       deleteError: "Eliminazione dell'allegato non riuscita",
       updateSuccess: "Allegato aggiornato con successo",

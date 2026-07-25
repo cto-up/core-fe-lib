@@ -3,8 +3,7 @@ export default {
   noAccess: {
     title: "Acceso requerido",
     subtitle: "Aún no tienes acceso a este tenant",
-    message1:
-      "Tu cuenta está autenticada, pero debes solicitar acceso a",
+    message1: "Tu cuenta está autenticada, pero debes solicitar acceso a",
     message2: "para continuar.",
     message3:
       "Por favor, contacta a tu administrador para que te conceda acceso a este tenant.",
@@ -44,8 +43,7 @@ export default {
     nextSteps: "Qué hacer a continuación:",
     step1: "Revisa tu bandeja de entrada",
     step2: "Haz clic en el enlace seguro que te hemos enviado",
-    step3:
-      "Iniciarás sesión automáticamente y podrás establecer tu contraseña",
+    step3: "Iniciarás sesión automáticamente y podrás establecer tu contraseña",
     changeEmail: "¿Introdujiste el correo electrónico incorrecto?",
     backToSignIn: "Volver al inicio de sesión",
     secureExplainer:
@@ -74,7 +72,8 @@ export default {
       title: "La verificación ha fallado",
       noToken:
         "No se ha proporcionado ningún token de verificación. Por favor, verifica el enlace en tu correo electrónico.",
-      network: "Error de red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+      network:
+        "Error de red. Por favor, verifica tu conexión e inténtalo de nuevo.",
       resendHelpText: "¿Necesitas un nuevo enlace de verificación?",
       resendButton: "Reenviar el correo de verificación",
       resending: "Enviando...",

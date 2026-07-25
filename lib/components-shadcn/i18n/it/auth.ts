@@ -3,8 +3,7 @@ export default {
   noAccess: {
     title: "Accesso richiesto",
     subtitle: "Non hai ancora accesso a questo tenant",
-    message1:
-      "Il tuo account è autenticato, ma devi richiedere l'accesso a",
+    message1: "Il tuo account è autenticato, ma devi richiedere l'accesso a",
     message2: "per continuare.",
     message3:
       "Contatta il tuo amministratore per ottenere l'accesso a questo tenant.",
@@ -44,8 +43,7 @@ export default {
     nextSteps: "Cosa fare adesso:",
     step1: "Controlla la tua casella di posta",
     step2: "Fai clic sul link sicuro che ti abbiamo inviato",
-    step3:
-      "Verrai connesso automaticamente e potrai impostare la tua password",
+    step3: "Verrai connesso automaticamente e potrai impostare la tua password",
     changeEmail: "Hai inserito l'email sbagliata?",
     backToSignIn: "Torna all'accesso",
     secureExplainer:
@@ -60,8 +58,7 @@ export default {
   emailVerification: {
     loading: {
       title: "Verifica della tua email in corso...",
-      subtitle:
-        "Attendi mentre confermiamo il tuo indirizzo email.",
+      subtitle: "Attendi mentre confermiamo il tuo indirizzo email.",
     },
     success: {
       title: "Email verificata con successo!",
@@ -132,16 +129,14 @@ export default {
     invalidLink:
       "Link di recupero non valido. Parametri richiesti mancanti (flusso o token).",
     invalidToken: "Il link di recupero non è valido.",
-    csrfTokenError: "Estrazione del token CSRF dal flusso di parametri non riuscita",
-    sessionExpired:
-      "Sessione scaduta. Richiedi un nuovo link di recupero.",
-    processingError:
-      "Elaborazione del link di recupero non riuscita. Riprova.",
+    csrfTokenError:
+      "Estrazione del token CSRF dal flusso di parametri non riuscita",
+    sessionExpired: "Sessione scaduta. Richiedi un nuovo link di recupero.",
+    processingError: "Elaborazione del link di recupero non riuscita. Riprova.",
     failedToSetPassword: "Impostazione della password non riuscita",
     passwordSetSuccess:
       "Password impostata con successo! Reindirizzamento all'accesso...",
-    requestNewLink:
-      "Richiedi un nuovo link di reimpostazione della password.",
+    requestNewLink: "Richiedi un nuovo link di reimpostazione della password.",
   },
   securitySettings: {
     title: "Impostazioni di sicurezza",

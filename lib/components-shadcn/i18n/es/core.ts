@@ -104,7 +104,8 @@ export default {
     actions: {
       deactivate: {
         label: "Desactivar",
-        confirm: "¿Estás seguro de que deseas desactivar la aplicación %{name}?",
+        confirm:
+          "¿Estás seguro de que deseas desactivar la aplicación %{name}?",
       },
       delete: {
         label: "Eliminar",
@@ -168,7 +169,8 @@ export default {
       tenantId: "Tenant Id",
       name: "Nombre",
       subdomain: "Subdomain",
-      enableEmailLinkSignIn: "Activar el enlace de inicio de sesión por correo electrónico",
+      enableEmailLinkSignIn:
+        "Activar el enlace de inicio de sesión por correo electrónico",
       allowPasswordSignUp: "Permitir el registro por contraseña",
       allowSignUp: "Permitir el registro",
     },
@@ -245,7 +247,8 @@ export default {
       checking: "Verificando...",
     },
     messages: {
-      emailPlaceholder: "Introduce el correo electrónico para verificar si el usuario existe",
+      emailPlaceholder:
+        "Introduce el correo electrónico para verificar si el usuario existe",
       userFound: "Usuario encontrado: {name}",
       userFoundDescription:
         "Este usuario existe y es miembro de {count} tenant(s). Selecciona los roles a continuación para añadirlo a este tenant.",

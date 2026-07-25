@@ -1,6 +1,7 @@
 export default {
   title: "Autenticação multifator",
-  subtitle: "Faça a gestão da segurança da sua conta e da autenticação multifator",
+  subtitle:
+    "Faça a gestão da segurança da sua conta e da autenticação multifator",
   currentLevel: "Nível de segurança atual",
   levelStandard: "Padrão",
   levelEnhanced: "Reforçado (MFA ativo)",
@@ -10,7 +11,8 @@ export default {
     recoveryCode: "Código de recuperação",
     totp: {
       title: "Aplicação de autenticação (TOTP)",
-      description: "Utilize aplicações como o Google Authenticator, Authy ou 1Password",
+      description:
+        "Utilize aplicações como o Google Authenticator, Authy ou 1Password",
       setup: "Configurar aplicação de autenticação",
       disable: "Desativar TOTP",
       enabled: "Ativado",
@@ -18,7 +20,8 @@ export default {
     },
     webauthn: {
       title: "Chave de segurança (WebAuthn)",
-      description: "Utilize chaves de hardware como YubiKey ou biometria integrada",
+      description:
+        "Utilize chaves de hardware como YubiKey ou biometria integrada",
       setup: "Configurar chave de segurança",
       disable: "Desativar chave de segurança",
       enabled: "Ativado",
@@ -26,7 +29,8 @@ export default {
     },
     recovery: {
       title: "Códigos de recuperação",
-      description: "Utilize estes códigos se perder o acesso ao seu dispositivo MFA",
+      description:
+        "Utilize estes códigos se perder o acesso ao seu dispositivo MFA",
       generate: "Gerar códigos",
       regenerate: "Regenerar códigos",
       generated: "Gerado",
@@ -38,7 +42,8 @@ export default {
       title: "Configurar aplicação de autenticação",
       scanQR: "Leia este código QR com a sua aplicação de autenticação:",
       manualEntry: "Ou introduza esta chave manualmente:",
-      enterCode: "Introduza o código de 6 dígitos da sua aplicação de autenticação:",
+      enterCode:
+        "Introduza o código de 6 dígitos da sua aplicação de autenticação:",
       codePlaceholder: "000000",
       invalidCode: "Código inválido. Tente novamente.",
       cancel: "Cancelar",
@@ -83,7 +88,8 @@ export default {
     webauthnDisableError: "Falha ao desativar a chave de segurança",
     recoveryGenerated: "Códigos de recuperação gerados com sucesso",
     recoveryError: "Falha ao gerar os códigos de recuperação",
-    recoveryCopied: "Códigos de recuperação copiados para a área de transferência",
+    recoveryCopied:
+      "Códigos de recuperação copiados para a área de transferência",
     setupError: "Falha ao concluir a configuração. Tente novamente.",
     verificationError: "Falha na verificação",
     verificationErrorDesc:
@@ -102,7 +108,8 @@ export default {
     disableTotp: "Tem a certeza de que pretende desativar a autenticação TOTP?",
     disableTotpDescription:
       "Isto irá remover a autenticação de dois fatores da sua conta. Pode voltar a configurá-la a qualquer momento.",
-    disableWebauthn: "Tem a certeza de que pretende desativar a sua chave de segurança?",
+    disableWebauthn:
+      "Tem a certeza de que pretende desativar a sua chave de segurança?",
     disableWebauthnDescription:
       "Isto irá remover a sua chave de segurança da sua conta. Pode registar uma nova chave a qualquer momento.",
     cancelRecoveryCodes:
@@ -118,14 +125,17 @@ export default {
     methodTotp: "Aplicação de autenticação",
     methodRecovery: "Código de recuperação",
     methodWebauthn: "Chave de segurança",
-    webauthnComingSoon: "Verificação por chave de segurança brevemente disponível",
+    webauthnComingSoon:
+      "Verificação por chave de segurança brevemente disponível",
     useRecoveryCode: "Utilizar um código de recuperação em alternativa",
     useAuthenticator: "Utilizar a aplicação de autenticação em alternativa",
-    totpHint: "Introduza o código de 6 dígitos da sua aplicação de autenticação",
+    totpHint:
+      "Introduza o código de 6 dígitos da sua aplicação de autenticação",
     webauthnHint: "Insira a sua chave de segurança e siga as instruções",
     recoveryHint: "Introduza um dos seus códigos de recuperação de reserva",
     webauthnTitle: "Verificação por chave de segurança",
-    webauthnDescription: "Utilize a sua chave de segurança para verificar a sua identidade",
+    webauthnDescription:
+      "Utilize a sua chave de segurança para verificar a sua identidade",
     webauthnProcessing: "A verificar a sua chave de segurança...",
     webauthnReady: "Pronto para verificar com a sua chave de segurança",
     noMfaRegistered:

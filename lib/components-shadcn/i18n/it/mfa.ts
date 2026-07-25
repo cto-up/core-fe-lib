@@ -11,8 +11,7 @@ export default {
     recoveryCode: "Codici di recupero",
     totp: {
       title: "App di autenticazione (TOTP)",
-      description:
-        "Usa app come Google Authenticator, Authy o 1Password",
+      description: "Usa app come Google Authenticator, Authy o 1Password",
       setup: "Configura l'app di autenticazione",
       disable: "Disattiva TOTP",
       enabled: "Attivato",
@@ -20,8 +19,7 @@ export default {
     },
     webauthn: {
       title: "Chiave di sicurezza (WebAuthn)",
-      description:
-        "Usa chiavi hardware come YubiKey o la biometria integrata",
+      description: "Usa chiavi hardware come YubiKey o la biometria integrata",
       setup: "Configura la chiave di sicurezza",
       manage: "Gestisci le chiavi",
       enabled: "Attivato",
@@ -56,7 +54,8 @@ export default {
         "Segui le istruzioni per registrare la tua chiave di sicurezza",
       processing: "Registrazione della tua chiave di sicurezza in corso...",
       ready: "Pronto a registrare la tua chiave di sicurezza",
-      success: "Chiave di sicurezza registrata con successo. Reindirizzamento...",
+      success:
+        "Chiave di sicurezza registrata con successo. Reindirizzamento...",
     },
     recovery: {
       title: "Codici di recupero",
@@ -69,8 +68,7 @@ export default {
       copy: "Copia",
       saved: "Li ho salvati",
       confirm: "Ho salvato questi codici",
-      interactionHint:
-        "Devi copiare o scaricare i codici per continuare",
+      interactionHint: "Devi copiare o scaricare i codici per continuare",
     },
   },
   notifications: {
@@ -87,7 +85,8 @@ export default {
     webauthnEnabled: "Chiave di sicurezza registrata con successo",
     webauthnDisabled: "Chiave di sicurezza disattivata con successo",
     webauthnError: "Registrazione della chiave di sicurezza non riuscita",
-    webauthnDisableError: "Disattivazione della chiave di sicurezza non riuscita",
+    webauthnDisableError:
+      "Disattivazione della chiave di sicurezza non riuscita",
     recoveryGenerated: "Codici di recupero generati con successo",
     recoveryError: "Generazione dei codici di recupero non riuscita",
     recoveryCopied: "Codici di recupero copiati negli appunti",
@@ -106,8 +105,7 @@ export default {
       "Non hai alcun metodo MFA configurato. Configura prima MFA.",
   },
   confirmations: {
-    disableTotp:
-      "Sei sicuro di voler disattivare l'autenticazione TOTP?",
+    disableTotp: "Sei sicuro di voler disattivare l'autenticazione TOTP?",
     disableTotpDescription:
       "Questo rimuoverà l'autenticazione a due fattori dal tuo account. Potrai riconfigurarla in qualsiasi momento.",
     disableWebauthn:
@@ -127,11 +125,11 @@ export default {
     methodTotp: "App di autenticazione",
     methodRecovery: "Codice di recupero",
     methodWebauthn: "Chiave di sicurezza",
-    webauthnComingSoon: "Verifica tramite chiave di sicurezza disponibile a breve",
+    webauthnComingSoon:
+      "Verifica tramite chiave di sicurezza disponibile a breve",
     useRecoveryCode: "Usa un codice di recupero al suo posto",
     useAuthenticator: "Usa l'app di autenticazione al suo posto",
-    totpHint:
-      "Inserisci il codice a 6 cifre della tua app di autenticazione",
+    totpHint: "Inserisci il codice a 6 cifre della tua app di autenticazione",
     webauthnHint: "Inserisci la tua chiave di sicurezza e segui le istruzioni",
     recoveryHint: "Inserisci uno dei tuoi codici di recupero di riserva",
     webauthnTitle: "Verifica tramite chiave di sicurezza",
