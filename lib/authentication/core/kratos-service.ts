@@ -161,8 +161,63 @@ export type LoginFlowData =
   | LookupSecretLoginFlowData
   | WebAuthnLoginFlowData;
 
+/**
+ * Session cache TTLs (roadmap 020, item 3).
+ *
+ * A positive result is reusable for as long as we are willing to be wrong about
+ * a session that died elsewhere; a negative one must expire fast so a fresh
+ * sign-in is picked up promptly.
+ */
+const SESSION_TTL_MS = 30_000;
+const SESSION_NEGATIVE_TTL_MS = 2_000;
+
+interface SessionCacheEntry {
+  value: KratosSession | null;
+  expiresAt: number;
+}
+
 class KratosService {
   private readonly client: AxiosInstance;
+
+  /**
+   * ── Session cache (roadmap 020, item 3) ────────────────────────────────────
+   *
+   * THE PROBLEM. `getSession()` is called from two per-request hot paths in
+   * `components-shadcn/auth/initializeAuth.ts`: the global axios REQUEST
+   * interceptor (to read `tenant_id` for the `X-Tenant-ID` header) and the
+   * `OpenAPI.TOKEN` resolver (invoked by every generated client call). Each was
+   * an uncached network round-trip, so every API call was preceded by one or
+   * two serialized `GET /kratos/sessions/whoami`.
+   *
+   * Measured in Sentry over 14 days: 17,850 sampled calls at 20% sampling
+   * (~89,000 real), avg 536 ms, p95 1,767 ms — 63% of all frontend HTTP
+   * requests and 84% of all time the frontend spent waiting on the network.
+   * Roughly nine session lookups per page view.
+   *
+   * THE FIX, in two parts:
+   *   1. In-flight de-duplication. Concurrent callers share one promise. This
+   *      alone collapses the burst, because the interceptor and the TOKEN
+   *      resolver fire microseconds apart for the same request.
+   *   2. A short TTL cache, bounded additionally by the session's own
+   *      `expires_at` so we never serve a session we know has lapsed.
+   *
+   * WHY THIS IS SAFE — and why it is NOT the backend cache that roadmap 018 T5
+   * dropped. The cached value is used for exactly two things: the `X-Tenant-ID`
+   * request header and the bearer token. Neither is an authorization decision:
+   * the BACKEND independently re-validates every request against Kratos, so a
+   * stale entry here cannot grant access to anything. The worst case is one
+   * request that 401s — and the existing 401 handler already invalidates and
+   * redirects. 018 T5 was different in kind: it cached a tenant- and
+   * path-dependent authorization *verdict* on the server.
+   *
+   * Cross-tab logout is the one behaviour change: this tab may keep a positive
+   * entry for up to SESSION_TTL_MS after another tab signs out. The next
+   * request then 401s and recovers, exactly as it would today for any request
+   * already in flight at the moment of logout.
+   */
+  private sessionCache: SessionCacheEntry | null = null;
+  private sessionInFlight: Promise<KratosSession | null> | null = null;
+
   constructor() {
     const baseURL = getKratosConfig().publicUrl;
 
@@ -174,6 +229,26 @@ class KratosService {
         Accept: "application/json",
       },
     });
+
+    // Any self-service MUTATION may change who we are — sign-in, sign-out,
+    // registration, recovery, an AAL2 upgrade, a settings submission that
+    // rewrites traits or metadata. Rather than remembering to invalidate at
+    // nine call sites (and at the tenth one added later), drop the cache on
+    // every non-GET to /self-service/ that this client issues. Registered in
+    // the constructor so it runs before any caller-supplied interceptor.
+    this.client.interceptors.response.use(
+      (response) => {
+        const method = (response.config.method ?? "get").toLowerCase();
+        if (
+          method !== "get" &&
+          (response.config.url ?? "").includes("/self-service/")
+        ) {
+          this.invalidateSession();
+        }
+        return response;
+      },
+      (error) => Promise.reject(error)
+    );
 
     console.log("🔧 Kratos service initialized with baseURL:", baseURL);
   }
@@ -193,10 +268,86 @@ class KratosService {
   }
 
   /**
-   * Get the current session
-   * Returns null if not authenticated (401) - this is normal, not an error
+   * Drop any cached session.
+   *
+   * MUST be called whenever the session's identity may have changed underneath
+   * us: sign-in, sign-out, AAL2 upgrade, a settings submission that alters
+   * traits or metadata, and on any 401 from the API. Cheap and idempotent —
+   * when in doubt, call it.
    */
-  async getSession(): Promise<KratosSession | null> {
+  invalidateSession(): void {
+    this.sessionCache = null;
+    this.sessionInFlight = null;
+  }
+
+  /**
+   * Get the current session.
+   * Returns null if not authenticated (401) — this is normal, not an error.
+   *
+   * Served from a short-lived in-memory cache with in-flight de-duplication;
+   * see the `sessionCache` field for the full rationale and safety argument.
+   * Pass `{ force: true }` to bypass the cache and refresh it (used by paths
+   * that have just mutated the identity and need to observe the result).
+   */
+  async getSession(
+    options: { force?: boolean } = {}
+  ): Promise<KratosSession | null> {
+    if (!options.force) {
+      const cached = this.sessionCache;
+      if (cached && cached.expiresAt > Date.now()) {
+        return cached.value;
+      }
+      // A fetch is already running — join it instead of opening a second
+      // connection. This is what collapses the interceptor/TOKEN-resolver pair.
+      if (this.sessionInFlight) {
+        return this.sessionInFlight;
+      }
+    }
+
+    const inFlight = this.fetchSession()
+      .then((session) => {
+        this.sessionCache = {
+          value: session,
+          expiresAt: this.sessionCacheDeadline(session),
+        };
+        return session;
+      })
+      .finally(() => {
+        // Only clear the slot if it is still ours: a concurrent force-refresh
+        // may have replaced it, and clearing that one would strand its joiners.
+        if (this.sessionInFlight === inFlight) {
+          this.sessionInFlight = null;
+        }
+      });
+
+    this.sessionInFlight = inFlight;
+    return inFlight;
+  }
+
+  /**
+   * How long the given result may be reused.
+   *
+   * A positive result additionally never outlives the session's own
+   * `expires_at`, so we cannot serve a session we already know has lapsed.
+   * A negative result gets a much shorter window so that a sign-in completing
+   * in another part of the app is picked up promptly even if some code path
+   * forgets to call `invalidateSession()`.
+   */
+  private sessionCacheDeadline(session: KratosSession | null): number {
+    const now = Date.now();
+    if (!session) return now + SESSION_NEGATIVE_TTL_MS;
+
+    let deadline = now + SESSION_TTL_MS;
+    const expiresAt = Date.parse(session.expires_at ?? "");
+    if (Number.isFinite(expiresAt)) {
+      deadline = Math.min(deadline, expiresAt);
+    }
+    // Never cache into the past — an already-expired session must re-fetch.
+    return Math.max(deadline, now);
+  }
+
+  /** The uncached round-trip. Everything else goes through `getSession()`. */
+  private async fetchSession(): Promise<KratosSession | null> {
     try {
       const response = await this.client.get("/sessions/whoami");
       return response.data;
@@ -335,6 +486,13 @@ class KratosService {
       );
     }
 
+    // A session cookie now exists, but this request went out via `fetch` rather
+    // than `this.client`, so the constructor's mutation interceptor never saw
+    // it. Without this line the cached "signed out" answer would survive until
+    // the 2s negative TTL lapses. The TTL bounds the damage; it should not be
+    // what we rely on.
+    this.invalidateSession();
+
     console.log("✅ Recovery link activated. Session cookie is now set.");
   }
 
@@ -405,6 +563,10 @@ class KratosService {
         });
         throw e;
       }
+      // Same reason as activateRecoveryLink: this is a raw `fetch`, so the
+      // interceptor on `this.client` does not fire, and Kratos has just set a
+      // session cookie in the response headers.
+      this.invalidateSession();
       return {};
     }
 
@@ -472,6 +634,12 @@ class KratosService {
     } catch (error) {
       console.error("Logout error:", error);
       throw error;
+    } finally {
+      // Explicit because logout is a GET, so the mutation interceptor in the
+      // constructor does not fire — and because it must also drop the cache
+      // when the call FAILS: a half-completed logout that left the cookie dead
+      // must not keep serving a positive session from memory.
+      this.invalidateSession();
     }
   }
 
@@ -495,30 +663,42 @@ class KratosService {
     available_methods: string[];
     aal: string;
   }> {
-    const response = await this.client.get("/sessions/whoami");
-    const session = response.data;
+    // Force-refresh rather than issuing a second, separately-uncached whoami:
+    // MFA status must reflect an enrolment that just completed, and routing it
+    // through getSession() means this call primes the shared cache instead of
+    // being a parallel source of the fan-out that cache exists to remove.
+    //
+    // `credentials` is only present on whoami when Kratos is configured to
+    // return it and is absent from the KratosSession contract, so this stays
+    // loosely typed exactly as it was when it read `response.data`.
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    const session = (await this.getSession({ force: true })) as any;
 
     const status = {
       totp_enabled: false,
       webauthn_enabled: false,
       recovery_codes_set: false,
       available_methods: ["totp", "webauthn", "lookup_secret"],
-      aal: session.authenticator_assurance_level || "aal1",
+      // A null session (401) is now reachable here where `response.data` would
+      // previously have thrown from the interceptor. Degrade to aal1 rather
+      // than blowing up the settings page.
+      aal: session?.authenticator_assurance_level || "aal1",
     };
 
-    if (session.identity?.credentials?.totp?.config) {
+    if (session?.identity?.credentials?.totp?.config) {
       status.totp_enabled = true;
     }
 
     if (
-      session.identity?.credentials?.webauthn?.config?.credentials?.length > 0
+      session?.identity?.credentials?.webauthn?.config?.credentials?.length > 0
     ) {
       status.webauthn_enabled = true;
     }
 
-    if (session.identity?.credentials?.lookup_secret?.config) {
+    if (session?.identity?.credentials?.lookup_secret?.config) {
       status.recovery_codes_set = true;
     }
+    /* eslint-enable @typescript-eslint/no-explicit-any */
 
     return status;
   }

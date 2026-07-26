@@ -151,6 +151,133 @@ const app = createApp(App);
 
 ## Session Management
 
+### Session Cache
+
+`kratosService.getSession()` is **cached in memory**. Everything below that reads
+a session goes through it, so understanding this is a prerequisite for
+understanding the interceptors.
+
+#### Why it exists
+
+`getSession()` is called from two places that run on **every single API request**
+— the axios request interceptor (for `X-Tenant-ID`) and the `OpenAPI.TOKEN`
+resolver (for the bearer token), both documented below. Uncached, each API call
+was preceded by one or two serialized `GET /kratos/sessions/whoami` round-trips.
+
+Measured in Sentry over 14 days before the fix: **17,850 sampled calls at 20%
+sampling (~89,000 real), avg 536 ms, p95 1,767 ms — 63% of all frontend HTTP
+requests and 84% of all the time the frontend spent waiting on the network.**
+Roughly nine session lookups per page view. Verified after: **≤3 per page load.**
+
+#### How it works
+
+Two mechanisms, in `lib/authentication/core/kratos-service.ts`:
+
+1. **In-flight de-duplication.** Concurrent callers share one promise. This alone
+   collapses the burst, because the interceptor and the `OpenAPI.TOKEN` resolver
+   fire microseconds apart for the same request, before any response exists to
+   cache.
+2. **A short TTL cache**, additionally bounded by the session's own `expires_at`,
+   so a session known to have lapsed is never served.
+
+```
+SESSION_TTL_MS          = 30_000   // positive result
+SESSION_NEGATIVE_TTL_MS =  2_000   // 401 / signed out
+```
+
+A **positive** entry is reusable for as long as we are willing to be wrong about
+a session that died elsewhere. A **negative** entry expires fast, so a sign-in
+completing by some path that forgot to invalidate is still picked up in ~2s
+rather than 30s.
+
+An already-expired `expires_at` clamps the deadline to *now* — the entry is never
+cached into the past.
+
+#### How it is updated (invalidation)
+
+| Trigger | Mechanism |
+| --- | --- |
+| Any **non-GET to `/self-service/` issued through `this.client`** — sign-in, registration, AAL2 upgrade, a settings submission that rewrites traits or metadata | A response interceptor registered in the `KratosService` **constructor**. Covers every present and future call site that uses the axios client — but *only* those. See the guarantee table below. |
+| `logout()` | Explicit, in a `finally` block. Logout is a **GET**, so the mutation interceptor does not fire — and it must clear even when the call *fails*, because a half-completed logout may have killed the cookie server-side. |
+| `activateRecoveryLink()` and `submitRecoveryFlow()` with a token/code | Explicit. Both use raw `fetch` (browsers always follow the 303 that Kratos answers with, so `redirect: "manual"` is required), which means the axios interceptor **never sees them** — and both establish a session cookie. |
+| **A 401 from any API call** | The response interceptor in `initializeAuth.ts` calls `getSession({ force: true })`. |
+| Manually | `kratosService.invalidateSession()` — cheap and idempotent. When in doubt, call it. |
+| Time | TTL lapse, or the session's own `expires_at`, whichever is sooner. |
+
+`getSession({ force: true })` bypasses the cache **and re-primes it**, so every
+later reader sees the refreshed value.
+
+> **`force: true` in the 401 handler is required, not defensive.** A 401 is
+> precisely the signal that whatever is cached is wrong. Re-reading the cache
+> there would retry with the same dead token and 401 again — and since
+> `_retry` is already set, that second failure surfaces to the caller instead of
+> recovering.
+
+#### What is actually guaranteed
+
+Be precise about this — "it is invalidated" is three different strengths of claim.
+
+| Claim | Strength | Depends on |
+| --- | --- | --- |
+| **No entry outlives `min(TTL, expires_at)`** | **Unconditional.** Staleness is bounded at 30s / 2s even if every hook below is broken or forgotten. | Nothing. It is a timestamp comparison on read. |
+| **A stale entry cannot grant access** | **Unconditional.** The backend re-validates every request against Kratos; this cache only supplies a header and a token. | The backend, which does not trust the client. |
+| **A mutation through `this.client` invalidates** | **Structural.** The interceptor is on the client instance, so it cannot be forgotten by a new call site. | Every mutation actually using `this.client`, and the URL containing `/self-service/`. |
+| **A mutation *not* through `this.client` invalidates** | **By convention only.** Must be called explicitly. | A human remembering. This is the weak link — it was already violated twice (both recovery paths) and is now covered by tests. |
+
+So the honest summary: **correctness does not depend on invalidation being
+complete.** Invalidation makes the cache *prompt*; the TTL and the backend make
+it *safe*. If you add a code path that establishes or destroys a session without
+going through `this.client`, call `invalidateSession()` — and if you forget, the
+failure mode is a few seconds of staleness, not an auth bypass.
+
+**Not covered by any hook, bounded only by the TTL:**
+
+- **Another tab** signing in or out — this cache is per-tab memory, not shared.
+- **Server-side revocation** (an admin kills the session, Kratos expires it early).
+- **A URL shape change** that stops matching `/self-service/` in the interceptor.
+
+None of these can escalate privilege; each resolves within one TTL, or
+immediately on the next 401.
+
+#### Why this is safe
+
+The cached value feeds exactly two things: the `X-Tenant-ID` header and the
+bearer token. **Neither is an authorization decision.** The backend
+independently re-validates every request against Kratos, so a stale entry here
+cannot grant access to anything. The worst case is one request that 401s, and
+the 401 handler above recovers it.
+
+This is why a *client-side* session cache is acceptable where a *server-side*
+one was rejected: a backend cache would be caching a tenant- and path-dependent
+authorization **verdict**, which is a different kind of object entirely.
+
+Two consequences worth knowing:
+
+- **Cross-tab logout.** This tab may keep a positive entry for up to 30s after
+  another tab signs out. The next request then 401s and recovers — exactly what
+  already happens to any request in flight at the moment of logout.
+- **Errors are not "signed out".** Only a **401** is cached as `null`. A 5xx
+  propagates as a thrown error, so a backend blip cannot sign users out.
+
+#### Tests
+
+Do not change this code without re-running both levels — the unit tests cannot
+see the interceptor wiring that caused the original bug.
+
+```bash
+# 25 unit tests: cache mechanics + auth sequences
+npx vitest run core-fe-lib/lib/authentication/core/
+
+# 3 browser tests: real interceptor, real OpenAPI.TOKEN resolver, real router
+# guard. Stubs the whole network, so no backend is required.
+E2E_BASE_URL=http://localhost:5173 \
+  npx playwright test session-cache --project=chromium-nostate
+```
+
+The browser spec asserts a **call-count budget** (≤3 whoami per page load). It
+was validated by deliberately disabling the cache and confirming it fails at 27
+— a budget test that passes with the feature turned off is worthless.
+
 ### Axios Request Interceptor
 
 Automatically adds session token and tenant context to API requests (excludes Kratos self-service flows):
@@ -178,7 +305,9 @@ axios.interceptors.request.use(
     }
 
     try {
-      // Get current Kratos session for tenant context
+      // Get current Kratos session for tenant context.
+      // CACHED — see "Session Cache" above. This runs on every API request, and
+      // uncached it was 84% of all frontend network wait.
       const session = await kratosService.getSession();
       if (session?.active) {
         // Add tenant context from session metadata if available
@@ -232,7 +361,9 @@ axios.interceptors.response.use(
 
       try {
         // Try to get fresh session
-        const session = await kratosService.getSession();
+        // force: REQUIRED here — see Session Cache above. A 401 means the
+        // cached value is wrong; re-reading it would retry the dead token.
+        const session = await kratosService.getSession({ force: true });
 
         if (session?.active) {
           // Update session token and retry
@@ -576,6 +707,11 @@ COOKIES_DOMAIN=.yourdomain.com
 - **Session Cookie**: `ory_kratos_session` cookie set by Kratos, domain `.ctoup.localhost`
 - **Session Token**: Extracted from cookie and sent as `X-Session-Token` header to backend
 - **Tenant Context**: `X-Tenant-ID` header derived from session metadata
+- **Session Cache**: `getSession()` is memoised in memory (30s positive / 2s
+  negative, capped by `expires_at`) with in-flight de-duplication. Invalidated
+  by any non-GET `/self-service/` call, by `logout()`, and by a 401. See
+  [Session Cache](#session-cache) — **read it before changing anything that
+  reads a session**
 - **AAL1**: Standard authentication (username/password)
 - **AAL2**: Enhanced authentication (AAL1 + MFA)
 - **Same-Origin Policy**: WebAuthn credentials bound to auth subdomain for cross-tenant compatibility
