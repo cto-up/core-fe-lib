@@ -144,8 +144,15 @@ export function initializeAuth(options: InitializeAuthOptions = {}) {
         );
 
         try {
-          // Try to get fresh session
-          const session = await kratosService.getSession();
+          // Try to get fresh session.
+          //
+          // `force: true` is REQUIRED, not defensive. getSession() is cached
+          // (roadmap 020 item 3); a 401 is precisely the signal that whatever
+          // we have cached is wrong, so re-reading the cache here would retry
+          // with the same dead token and 401 again — except `_retry` is already
+          // set, so the second failure would surface to the caller instead of
+          // recovering. Force also re-primes the cache for every later caller.
+          const session = await kratosService.getSession({ force: true });
 
           if (session?.active) {
             // Update session token and tenant context
