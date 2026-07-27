@@ -15,6 +15,16 @@ export default {
     emailBody:
       "Hello,\n\nI would like to request access to {tenantName}.\n\nMy email: {userEmail}\n\nThank you.",
   },
+  alreadySignedIn: {
+    title: "You're already signed in",
+    subtitle: "This browser already has an active session.",
+    signedInAs: "Signed in as",
+    continueButton: "Continue",
+    switchButton: "Sign in as a different user",
+    switching: "Signing out...",
+    toastTitle: "Already signed in",
+    toastDescription: "We've taken you back to where you left off.",
+  },
   signIn: {
     title: "Sign In",
     subtitle: "Sign in to access your account",

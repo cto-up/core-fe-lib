@@ -14,6 +14,16 @@ export default {
     emailBody:
       "Olá,\n\nGostaria de pedir acesso a {tenantName}.\n\nO meu email: {userEmail}\n\nObrigado.",
   },
+  alreadySignedIn: {
+    title: "Já tem sessão iniciada",
+    subtitle: "Este navegador já tem uma sessão ativa.",
+    signedInAs: "Sessão iniciada como",
+    continueButton: "Continuar",
+    switchButton: "Iniciar sessão com outra conta",
+    switching: "A terminar sessão...",
+    toastTitle: "Sessão já iniciada",
+    toastDescription: "Levamo-lo de volta ao ponto onde ficou.",
+  },
   signIn: {
     title: "Iniciar sessão",
     subtitle: "Inicie sessão para aceder à sua conta",
