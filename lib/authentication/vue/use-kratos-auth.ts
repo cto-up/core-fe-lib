@@ -13,16 +13,33 @@ import { updateUserFromSession } from "./kratos-update-user";
 import {
   kratosService,
   type KratosSession,
+  type KratosFlow,
   type KratosFlowNode,
   type PasswordLoginFlowData,
 } from "../core/kratos-service";
+import {
+  isKratosErrorId,
+  KratosErrorIds,
+} from "../core/kratos-error-processor";
 import type { AxiosError } from "axios";
+
+/** Kratos identifiers are case-insensitive; compare them that way. */
+function sameIdentifier(a?: string | null, b?: string | null): boolean {
+  if (!a || !b) return false;
+  return a.trim().toLowerCase() === b.trim().toLowerCase();
+}
 
 export const useKratosAuth = () => {
   const router = useRouter();
   const route = useRoute();
-  const { t } = useI18n();
+  const { t, te } = useI18n();
   const notifications = inject(notificationServiceKey);
+
+  // Consumer apps may ship their own `auth.*` dictionary rather than
+  // core-fe-lib's. Keys added after they forked would render as a raw key path,
+  // so anything introduced here must carry a literal fallback.
+  const tf = (key: string, fallback: string): string =>
+    te(key) ? t(key) : fallback;
   const userStore = useUserStore();
 
   if (!notifications) {
@@ -49,12 +66,74 @@ export const useKratosAuth = () => {
     }
   }
 
+  function redirectAfterLogin(returnTo?: string): void {
+    const target = returnTo || "/";
+    if (target.startsWith("http")) {
+      globalThis.location.href = target;
+    } else {
+      void router.push(target);
+    }
+  }
+
+  /**
+   * Kratos refuses to mint a login flow while a session cookie is still live —
+   * it answers 400 `session_already_available`. That is not an authentication
+   * failure, so it must never surface as one:
+   *
+   *  - same identity  → the sign-in is a no-op that already succeeded; adopt the
+   *    session and go where the user was headed.
+   *  - other identity → the user means "switch account", which requires a real
+   *    logout first. `refresh=true` is the wrong tool: it re-authenticates the
+   *    SAME identity and would fail with `security_identity_mismatch`.
+   *
+   * Returns true when the sign-in is already complete and the caller must stop.
+   */
+  async function resolveExistingSession(
+    email: string,
+    returnTo?: string
+  ): Promise<boolean> {
+    const current = await kratosService
+      .getSession({ force: true })
+      .catch(() => null);
+
+    if (
+      current?.active &&
+      sameIdentifier(current.identity?.traits?.email, email)
+    ) {
+      await updateUserFromSession(current);
+      notifications.info(
+        tf("auth.alreadySignedIn.toastTitle", "Already signed in"),
+        tf(
+          "auth.alreadySignedIn.toastDescription",
+          "We've taken you back to where you left off."
+        )
+      );
+      redirectAfterLogin(returnTo);
+      return true;
+    }
+
+    await clearSession();
+    return false;
+  }
+
   async function signMeIn(email: string, password: string): Promise<void> {
     try {
       userStore.setIsLoading(true);
 
       const returnTo = route.query["from"] as string;
-      const flow = await kratosService.initLoginFlow(false);
+
+      let flow: KratosFlow;
+      try {
+        flow = await kratosService.initLoginFlow(false);
+      } catch (error: unknown) {
+        if (
+          !isKratosErrorId(error, KratosErrorIds.SESSION_ALREADY_AVAILABLE)
+        ) {
+          throw error;
+        }
+        if (await resolveExistingSession(email, returnTo)) return;
+        flow = await kratosService.initLoginFlow(false);
+      }
 
       const csrfNode = flow.ui.nodes.find(
         (node: KratosFlowNode) => node.attributes?.name === "csrf_token"
@@ -83,12 +162,7 @@ export const useKratosAuth = () => {
         await getCurrentSession();
       }
 
-      const redirectTo = returnTo || "/";
-      if (redirectTo.startsWith("http")) {
-        globalThis.location.href = redirectTo;
-      } else {
-        void router.push(redirectTo);
-      }
+      redirectAfterLogin(returnTo);
 
       notifications.success(t("auth.success"), t("auth.loginSuccess"));
     } catch (error: unknown) {
@@ -174,6 +248,22 @@ export const useKratosAuth = () => {
     }
   }
 
+  /**
+   * Drop the session without navigating or notifying — the "sign in as a
+   * different user" path, where the user stays on the sign-in form.
+   */
+  async function clearSession(): Promise<void> {
+    try {
+      await kratosService.logout();
+    } catch (error) {
+      // Best-effort: the cookie may already be dead server-side. `logout()`
+      // invalidates the session cache either way, so the local store is still
+      // the thing that has to be corrected.
+      console.warn("Logout failed while switching account:", error);
+    }
+    await updateUserFromSession(null);
+  }
+
   async function signMeOut(
     redirectQuery?: Record<string, string>
   ): Promise<void> {
@@ -252,6 +342,7 @@ export const useKratosAuth = () => {
     signMeIn,
     signMeUp,
     signMeOut,
+    clearSession,
     requestPasswordReset,
     getSessionToken,
   };

@@ -15,6 +15,16 @@ export default {
     emailBody:
       "Hallo,\n\nich möchte Zugriff auf {tenantName} anfordern.\n\nMeine E-Mail-Adresse: {userEmail}\n\nVielen Dank.",
   },
+  alreadySignedIn: {
+    title: "Sie sind bereits angemeldet",
+    subtitle: "In diesem Browser ist bereits eine Sitzung aktiv.",
+    signedInAs: "Angemeldet als",
+    continueButton: "Weiter",
+    switchButton: "Mit einem anderen Konto anmelden",
+    switching: "Abmelden...",
+    toastTitle: "Bereits angemeldet",
+    toastDescription: "Wir bringen Sie dorthin zurück, wo Sie aufgehört haben.",
+  },
   signIn: {
     title: "Anmelden",
     subtitle: "Melden Sie sich an, um auf Ihr Konto zuzugreifen",
