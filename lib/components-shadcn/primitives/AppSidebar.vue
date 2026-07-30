@@ -15,11 +15,12 @@
           </div>
         </ScrollArea>
 
-        <!-- Footer -->
+        <!-- Footer. Stays visible when collapsed — it can hold actionable
+             items (help, settings) that must survive the icon-only state; it
+             is up to the slot content to hide its own text labels. -->
         <div
           v-if="$slots.footer"
           class="border-t transition-all duration-300 py-4"
-          :class="sidebarExpanded ? 'opacity-100' : 'opacity-0'"
         >
           <slot name="footer" :expanded="sidebarExpanded" />
         </div>
