@@ -144,9 +144,23 @@
       </AppSidebarSection>
     </template>
 
-    <template #footer>
+    <template #footer="{ expanded }">
       <slot name="footer">
-        <p class="text-xs text-foreground/50 text-center">
+        <!-- Utility zone: not navigation, so it sits below the sections and
+             stays put while the menu scrolls. -->
+        <div v-if="showHelp" class="px-2 pb-3">
+          <SidebarLink
+            :title="labels.help ?? 'Help & contact'"
+            :caption="labels.helpCaption"
+            :icon-component="LifeBuoy"
+            :expanded="expanded"
+            @click="$emit('help')"
+          />
+        </div>
+        <p
+          v-show="expanded"
+          class="text-xs text-foreground/50 text-center transition-opacity duration-300"
+        >
           {{ labels.version ?? "Version" }} {{ version }}
         </p>
       </slot>
@@ -165,7 +179,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "../ui/collapsible";
-import { ChevronDown } from "lucide-vue-next";
+import { ChevronDown, LifeBuoy } from "lucide-vue-next";
 import { useSidebarSectionState } from "../composables/useSidebarSectionState";
 
 export interface SidebarMenuItem {
@@ -225,8 +239,10 @@ const props = withDefaults(
     canAccess?: (privilege: unknown) => boolean;
     resolveIcon: (name?: string) => Component;
     version?: string;
-    labels?: { version?: string };
+    labels?: { version?: string; help?: string; helpCaption?: string };
     sectionStateKey?: string;
+    /** Show the "Help & contact" utility entry above the version line. */
+    showHelp?: boolean;
   }>(),
   {
     mobileOpen: false,
@@ -237,12 +253,14 @@ const props = withDefaults(
     version: "",
     labels: () => ({}),
     sectionStateKey: "sidebar-sections-open",
+    showHelp: false,
   }
 );
 
 defineEmits<{
   "update:mobileOpen": [value: boolean];
   navigate: [];
+  help: [];
 }>();
 
 const { isSectionOpen, setSectionOpen } = useSidebarSectionState(

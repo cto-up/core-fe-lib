@@ -16,10 +16,13 @@
       :can-access="nav.canAccess"
       :resolve-icon="resolveIcon"
       :version="version"
+      :show-help="!!support"
       :labels="{
         version: t('layout.version'),
+        help: t('support.fab'),
       }"
       @navigate="mobileSidebarOpen = false"
+      @help="openSupport"
     />
 
     <!-- Main Content Area -->
@@ -91,6 +94,16 @@
         </RouterView>
       </main>
     </div>
+
+    <!-- Help & contact — opened from the sidebar's utility entry. Opt-in: only
+         apps that pass `support` get it. -->
+    <SupportDialog
+      v-if="support"
+      v-model:open="supportOpen"
+      :config="support"
+      :topics="supportTopics"
+      :version="version"
+    />
   </div>
 </template>
 
@@ -111,6 +124,8 @@ import useLoggedUser from "../composables/useLoggedUser";
 import AppMainNavbar from "../primitives/AppMainNavbar.vue";
 import AppMainSidebar from "../primitives/AppMainSidebar.vue";
 import AppBackground from "../primitives/AppBackground.vue";
+import SupportDialog from "../support/SupportDialog.vue";
+import type { SupportConfig, SupportTopic } from "../support/types";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
 import type {
   SidebarTopSection,
@@ -164,6 +179,11 @@ const props = withDefaults(
     /** Optional transform applied to the assembled module nav links. Host
      *  apps use this to wrap several modules into a single grouped section. */
     menuLinksTransform?: (links: MenuLink[]) => MenuLink[];
+    /** Optional: mailboxes for the sidebar's "Help & contact" entry. Omit and
+     *  no entry is rendered — apps without a support desk stay unchanged. */
+    support?: SupportConfig;
+    /** Optional: which desks the support dialog offers. */
+    supportTopics?: SupportTopic[];
   }>(),
   {
     brandingText: "App",
@@ -178,6 +198,8 @@ const props = withDefaults(
     userMenuItemsFactory: undefined,
     extraUserMenuItemsFactory: undefined,
     menuLinksTransform: undefined,
+    support: undefined,
+    supportTopics: () => ["technical", "sales", "other"] as SupportTopic[],
   }
 );
 
@@ -309,6 +331,14 @@ const nav = useAppNav({
 
 // ── Mobile/viewport ─────────────────────────────────────────────────────────
 const mobileSidebarOpen = ref(false);
+
+// Help & contact dialog, opened from the sidebar's utility entry. On mobile the
+// sidebar is a Sheet, so close it first or the dialog opens behind it.
+const supportOpen = ref(false);
+function openSupport() {
+  mobileSidebarOpen.value = false;
+  supportOpen.value = true;
+}
 const isMobile = ref(false);
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024;
