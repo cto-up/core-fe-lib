@@ -27,6 +27,10 @@ export const Roles: Record<Role, RoleDefinition> = {
     key: Role.CUSTOMER_ADMIN,
     privilegeLevel: 50,
   },
+  USER: {
+    key: Role.USER,
+    privilegeLevel: 10,
+  },
 };
 
 /**
@@ -36,7 +40,7 @@ export const Roles: Record<Role, RoleDefinition> = {
  * @returns boolean - true if any userRole has >= privilege than requiredRole
  */
 export function hasPrivilege(userRoles: string[], requiredRole: Role): boolean {
-  const requiredLevel = Roles[requiredRole].privilegeLevel;
+  const requiredLevel = Roles[requiredRole]?.privilegeLevel ?? 0;
 
   return userRoles.some((roleStr) => {
     const role = roleStr as Role;

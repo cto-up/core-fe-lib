@@ -116,7 +116,9 @@ describe("auth sequence: account recovery (raw fetch — no interceptor)", () =>
   // establish a session cookie. They must invalidate explicitly; the 2s negative
   // TTL is a backstop, not the mechanism.
   const okFetch = () =>
-    vi.fn().mockResolvedValue({ status: 303, ok: false, json: async () => ({}) });
+    vi
+      .fn()
+      .mockResolvedValue({ status: 303, ok: false, json: async () => ({}) });
 
   it("activateRecoveryLink clears a cached signed-out answer", async () => {
     const svc = await newService();
@@ -155,7 +157,9 @@ describe("auth sequence: account recovery (raw fetch — no interceptor)", () =>
 
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ status: 400, ok: false, json: async () => ({}) })
+      vi
+        .fn()
+        .mockResolvedValue({ status: 400, ok: false, json: async () => ({}) })
     );
     await expect(
       svc.submitRecoveryFlow("flow-1", { token: "bad", method: "link" })
@@ -248,7 +252,9 @@ describe("what the two hot consumers read", () => {
     // Mirrors initializeAuth.ts: the request interceptor reads
     // identity.metadata_public.tenant_id, the OpenAPI.TOKEN resolver reads .id.
     const svc = await newService();
-    get.mockResolvedValue({ data: sessionFor("u1", "tenant-corpa", "sess-xyz") });
+    get.mockResolvedValue({
+      data: sessionFor("u1", "tenant-corpa", "sess-xyz"),
+    });
 
     for (let i = 0; i < 5; i++) {
       const s = await svc.getSession();
@@ -271,11 +277,15 @@ describe("what the two hot consumers read", () => {
   it("a tenant switch is observed once the settings mutation invalidates", async () => {
     const svc = await newService();
     get.mockResolvedValue({ data: sessionFor("u1", "tenant-a") });
-    expect((await svc.getSession())?.identity.metadata_public?.tenant_id).toBe("tenant-a");
+    expect((await svc.getSession())?.identity.metadata_public?.tenant_id).toBe(
+      "tenant-a"
+    );
 
     get.mockResolvedValue({ data: sessionFor("u1", "tenant-b") });
     simulateSelfServicePost("/self-service/settings?flow=xyz");
-    expect((await svc.getSession())?.identity.metadata_public?.tenant_id).toBe("tenant-b");
+    expect((await svc.getSession())?.identity.metadata_public?.tenant_id).toBe(
+      "tenant-b"
+    );
   });
 });
 

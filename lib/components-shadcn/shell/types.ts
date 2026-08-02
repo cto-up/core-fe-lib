@@ -2,6 +2,7 @@ import type { App, Component } from "vue";
 import type { RouteRecordRaw } from "vue-router";
 import type { Pinia } from "pinia";
 import type { MenuLink } from "../types/menu-link";
+import type { Role } from "../../openapi/core/models/Role";
 
 export interface AppLayouts {
   MainLayout: Component;
@@ -30,9 +31,11 @@ export interface HubModule {
   // Feature gating
   /** Key in tenant.features that must be truthy to enable this module */
   requiredFeature?: string;
-  /** Only admins (ADMIN or SUPER_ADMIN) see this module */
+  /** Minimum privilege level to see this module (hierarchical) */
+  requiredPrivilege?: Role;
+  /** Shorthand for `requiredPrivilege: Role.ADMIN` */
   adminOnly?: boolean;
-  /** Only super admins see this module */
+  /** Shorthand for `requiredPrivilege: Role.SUPER_ADMIN` */
   superAdminOnly?: boolean;
 
   // Navigation — module owns its own sidebar links

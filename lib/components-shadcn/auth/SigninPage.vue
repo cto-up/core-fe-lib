@@ -49,7 +49,10 @@
       </CardFooter>
     </Card>
 
-    <Card v-else class="relative z-10 w-full max-w-sm backdrop-blur-sm bg-card/80">
+    <Card
+      v-else
+      class="relative z-10 w-full max-w-sm backdrop-blur-sm bg-card/80"
+    >
       <CardHeader class="space-y-1 text-center">
         <CardTitle class="text-2xl font-bold">
           {{ $t("auth.signIn.title") }}
