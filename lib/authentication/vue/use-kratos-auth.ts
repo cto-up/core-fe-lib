@@ -126,9 +126,7 @@ export const useKratosAuth = () => {
       try {
         flow = await kratosService.initLoginFlow(false);
       } catch (error: unknown) {
-        if (
-          !isKratosErrorId(error, KratosErrorIds.SESSION_ALREADY_AVAILABLE)
-        ) {
+        if (!isKratosErrorId(error, KratosErrorIds.SESSION_ALREADY_AVAILABLE)) {
           throw error;
         }
         if (await resolveExistingSession(email, returnTo)) return;
