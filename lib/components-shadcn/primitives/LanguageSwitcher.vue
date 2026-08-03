@@ -9,6 +9,10 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Languages } from "lucide-vue-next";
+import {
+  getDefaultLocale,
+  getSupportedLocales,
+} from "../i18n/supported-locales";
 
 const { locale, getLocaleMessage, setLocaleMessage } = useI18n({
   useScope: "global",
@@ -39,34 +43,36 @@ async function loadLocale(lang: string) {
 }
 
 // Initialize locale from localStorage or browser preference. Map the browser's
-// language tag onto a supported locale (falling back to en-US) so a German,
-// Spanish, Italian or Portuguese browser lands on its language automatically.
-function detectBrowserLocale(): string {
-  const nav = (navigator.language || "en-US").toLowerCase();
-  for (const prefix of ["fr", "es", "it", "de", "pt"]) {
-    if (nav.startsWith(prefix)) return prefix;
-  }
-  return "en-US";
+// language tag onto a locale the app actually ships, so e.g. a German browser
+// lands on German only where German exists — otherwise on the default.
+const localeOptions = getSupportedLocales();
+
+function isSupported(value: string | null): value is string {
+  return !!value && localeOptions.some((option) => option.value === value);
 }
 
-const savedLocale = localStorage.getItem("user-locale");
-const initialLocale = savedLocale ? savedLocale : detectBrowserLocale();
+function detectBrowserLocale(): string {
+  const nav = (navigator.language || "").toLowerCase();
+  const match = localeOptions.find((option) =>
+    nav.startsWith(option.value.slice(0, 2).toLowerCase())
+  );
+  return match?.value ?? getDefaultLocale();
+}
 
-if (initialLocale !== "en-US") {
+// A stored locale the app no longer offers (a narrowed list, a shared
+// `.localhost` cookie jar) must not strand the user on a language with no
+// messages — fall back to detection.
+const savedLocale = localStorage.getItem("user-locale");
+const initialLocale = isSupported(savedLocale)
+  ? savedLocale
+  : detectBrowserLocale();
+
+if (initialLocale !== getDefaultLocale()) {
   // Load non-default locale asynchronously on startup
   void loadLocale(initialLocale);
 } else {
-  locale.value = "en-US";
+  locale.value = initialLocale;
 }
-
-const localeOptions = [
-  { value: "en-US", label: "English" },
-  { value: "fr", label: "Français" },
-  { value: "es", label: "Español" },
-  { value: "it", label: "Italiano" },
-  { value: "de", label: "Deutsch" },
-  { value: "pt", label: "Português" },
-];
 
 const updateLocale = async (newLocale: string) => {
   localStorage.setItem("user-locale", newLocale);
