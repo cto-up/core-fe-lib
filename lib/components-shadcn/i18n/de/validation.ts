@@ -1,4 +1,5 @@
 export default {
+  invalidForm: "Das Formular enthält Fehler",
   required: "Dieses Feld ist erforderlich",
   maxLength: "Maximale Länge: {length}",
   minLength: "Minimale Länge: {length}",

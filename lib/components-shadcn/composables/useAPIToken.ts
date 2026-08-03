@@ -33,7 +33,7 @@ export function useAPIToken(clientApplicationId: string) {
     const isFormCorrect = await v$.value.$validate();
     if (!isFormCorrect) {
       toast({
-        title: t("info.invalidForm"),
+        title: t("validation.invalidForm"),
         variant: "destructive",
       });
       return;

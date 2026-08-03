@@ -65,7 +65,7 @@ export function useGlobalConfig(getDefault?: GetDefaultFn) {
 
     if (!isFormCorrect) {
       toast({
-        title: t("info.invalidForm"),
+        title: t("validation.invalidForm"),
       });
       return;
     }
