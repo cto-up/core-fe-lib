@@ -85,7 +85,7 @@ export function useTenant() {
 
     if (!isFormCorrect) {
       toast({
-        title: t("info.invalidForm"),
+        title: t("validation.invalidForm"),
       });
       return;
     }

@@ -155,7 +155,7 @@ export function useUser() {
   const checkUserExists = async () => {
     if (!emailInput.value) {
       toast({
-        title: t("info.invalidForm"),
+        title: t("validation.invalidForm"),
         description: "Please enter an email address",
         variant: "destructive",
       });
@@ -218,7 +218,7 @@ export function useUser() {
 
     if (!isFormCorrect) {
       toast({
-        title: t("info.invalidForm"),
+        title: t("validation.invalidForm"),
         variant: "destructive",
       });
       return;
