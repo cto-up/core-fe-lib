@@ -8,6 +8,7 @@ import {
 import { ref, reactive, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useErrors } from "../composables/useErrors";
+import { useUrl } from "../../composables/useUrl";
 import useVuelidate from "@vuelidate/core";
 import { email, minLength, maxLength, required } from "@vuelidate/validators";
 import { useI18n } from "vue-i18n";
@@ -31,6 +32,7 @@ export function useUser() {
   const { toast } = useToast();
   const { dialog } = useDialog();
   const { handleError } = useErrors();
+  const { isTenantSubdomain } = useUrl();
 
   // Smart form state
   const emailInput = ref("");
@@ -52,8 +54,11 @@ export function useUser() {
     id: "",
     name: "",
     email: "",
-    roles: [] as Array<string>, // Tenant roles from membership table
-    globalRoles: [] as Array<string>, // Global roles from Kratos metadata
+    // On a tenant subdomain these are the tenant roles from the membership
+    // table; on the admin/root host the backend reads and writes this same
+    // field as the GLOBAL role set. There is no separate globalRoles field —
+    // neither NewUser/User in the generated client nor the Go structs have one.
+    roles: [] as Array<string>,
     email_verified: false,
     disabled: false,
     profile: {} as UserProfileSchema,
@@ -196,12 +201,13 @@ export function useUser() {
         user.name = response.profile?.name || "";
         Object.assign(user, response);
 
-        // Initialize selected roles from user's tenant membership
-        selectedRoles.value = [...(user.roles || [])];
-
-        // Check for SUPER_ADMIN in global roles
-        isSuperAdmin.value = (user.globalRoles || []).includes(
-          GLOBAL_ROLES.SUPER_ADMIN
+        // `roles` carries tenant roles on a tenant subdomain and global roles
+        // on the admin/root host. Split SUPER_ADMIN out so it drives the
+        // Global Roles checkbox rather than the tenant-role checkboxes.
+        const fetched = [...(user.roles || [])];
+        isSuperAdmin.value = fetched.includes(GLOBAL_ROLES.SUPER_ADMIN);
+        selectedRoles.value = fetched.filter(
+          (role) => role !== GLOBAL_ROLES.SUPER_ADMIN
         );
 
         // Set email input for display
@@ -229,23 +235,24 @@ export function useUser() {
       selectedRoles.value.push(TENANT_ROLES.USER);
     }
 
-    // Update user roles with selected roles
-    user.roles = [...selectedRoles.value];
-
-    // Update global roles
-    if (isSuperAdmin.value) {
-      if (!user.globalRoles.includes(GLOBAL_ROLES.SUPER_ADMIN)) {
-        user.globalRoles.push(GLOBAL_ROLES.SUPER_ADMIN);
-      }
-    } else {
-      user.globalRoles = user.globalRoles.filter(
-        (role) => role !== GLOBAL_ROLES.SUPER_ADMIN
-      );
+    // SUPER_ADMIN is a global role. Only fold it into the outgoing role set on
+    // the admin/root host, where the backend treats `roles` as the global set.
+    // On a tenant subdomain it must never leak through as a tenant role.
+    const roles = selectedRoles.value.filter(
+      (role) => role !== GLOBAL_ROLES.SUPER_ADMIN
+    );
+    if (!isTenantSubdomain() && isSuperAdmin.value) {
+      roles.push(GLOBAL_ROLES.SUPER_ADMIN);
     }
+    user.roles = roles;
 
     loading.value = true;
     try {
-      if (userExists.value && !userExists.value.isMemberOfCurrentTenant) {
+      if (
+        isTenantSubdomain() &&
+        userExists.value &&
+        !userExists.value.isMemberOfCurrentTenant
+      ) {
         // Add existing user to tenant
         const addedUser = await DefaultService.addUserMembership(
           userExists.value.id,
@@ -266,11 +273,14 @@ export function useUser() {
           variant: "default",
         });
       } else if (!user.id) {
-        // Create new user
+        // On the admin/root host there is no current tenant, so we never reach
+        // addUserMembership above — it would insert a membership with an empty
+        // tenant_id and trip fk_tenant. addUser covers both the new-identity
+        // case and "email already exists, promote to the requested global
+        // role" (backend: attachGlobalRolesToExistingUser).
         const newUser = await DefaultService.addUser({
           ...user,
           roles: user.roles as any,
-          globalRoles: user.globalRoles as any,
         } as NewUser);
         user.id = newUser.id;
 
@@ -284,7 +294,6 @@ export function useUser() {
         await DefaultService.updateUser(user.id, {
           ...user,
           roles: user.roles as any,
-          globalRoles: user.globalRoles as any,
         } as User);
 
         toast({
@@ -391,7 +400,11 @@ export function useUser() {
   // Helper for button text
   const getSaveButtonText = () => {
     if (loading.value) return t("actions.saving") || "Saving...";
-    if (userExists.value && !userExists.value.isMemberOfCurrentTenant) {
+    if (
+      isTenantSubdomain() &&
+      userExists.value &&
+      !userExists.value.isMemberOfCurrentTenant
+    ) {
       return "Add to Tenant";
     }
     return isNew.value
