@@ -6,6 +6,7 @@ import mfa from "./mfa";
 import layout from "./layout";
 import core from "./core";
 import support from "./support";
+import llm from "./llm";
 
 /**
  * Shared SaaS i18n dictionary (en-US) for components-shadcn.
@@ -22,4 +23,5 @@ export default {
   layout,
   core,
   support,
+  llm,
 };
