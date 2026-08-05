@@ -82,9 +82,17 @@
               />
             </svg>
           </div>
-          <p class="text-sm text-muted-foreground">
-            {{ t("mfa.aal2.webauthnReady") }}
+          <p class="text-sm text-muted-foreground mb-4">
+            {{ state.notice || t("mfa.aal2.webauthnReady") }}
           </p>
+          <div class="flex flex-col items-center gap-2">
+            <Button @click="runCeremony()">
+              {{ t("mfa.aal2.webauthnStart") }}
+            </Button>
+            <Button variant="ghost" size="sm" @click="cancel">
+              {{ t("actions.cancel") }}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -122,10 +130,20 @@ const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 
+interface PreparedCeremony {
+  flowId: string;
+  csrfToken: string;
+  userEmail: string;
+  requestOptions: PublicKeyCredentialRequestOptions;
+}
+
 const state = reactive({
   loading: true,
   error: "",
+  notice: "",
 });
+
+let prepared: PreparedCeremony | null = null;
 
 // Popup mode: opened by the AAL2 dialog via useAal2().submitWebAuthnVerification.
 // Report the result to the opener via postMessage and close, instead of
@@ -146,62 +164,91 @@ function reportToOpener(success: boolean) {
 }
 
 onMounted(async () => {
-  await performWebAuthnVerification();
+  try {
+    prepared = await prepareCeremony();
+  } catch (error: unknown) {
+    console.error("WebAuthn verification failed:", error);
+    state.error = describeError(error);
+    state.loading = false;
+    return;
+  }
+  // WebKit rejects credentials.get() outside a user gesture, which this page
+  // does not have on load. Try once for engines that allow it, and fall back
+  // to the explicit button below.
+  await runCeremony(true);
 });
 
-async function performWebAuthnVerification() {
+/**
+ * Fetches the flow and decodes the challenge. Kept separate from the ceremony
+ * so runCeremony() can call the authenticator without an intervening await,
+ * which would consume the transient user activation WebKit requires.
+ */
+async function prepareCeremony(): Promise<PreparedCeremony> {
+  state.loading = true;
+  state.error = "";
+
+  // Get current session
+  const session = await kratosService.getSession();
+  if (!session?.identity?.traits?.email) {
+    throw new Error("No active session found");
+  }
+
+  const userEmail = session.identity.traits.email;
+
+  // Initialize AAL2 upgrade flow
+  const flow = await kratosService.initAal2UpgradeFlow();
+
+  // Extract CSRF token and WebAuthn challenge
+  let csrfToken = "";
+  let webauthnChallenge: string | undefined;
+
+  flow.ui?.nodes?.forEach((node: KratosFlowNode) => {
+    if (node.attributes?.name === "csrf_token") {
+      csrfToken = String(node.attributes.value || "");
+    } else if (node.attributes?.name === "webauthn_login_trigger") {
+      webauthnChallenge = String(node.attributes.value);
+    }
+  });
+
+  if (!webauthnChallenge) {
+    throw new Error("No WebAuthn challenge available");
+  }
+
+  // Parse and prepare WebAuthn challenge
+  const publicKeyOptions = JSON.parse(webauthnChallenge);
+  const requestOptions: PublicKeyCredentialRequestOptions = {
+    ...publicKeyOptions.publicKey,
+    challenge: base64urlToArrayBuffer(publicKeyOptions.publicKey.challenge),
+    allowCredentials: publicKeyOptions.publicKey.allowCredentials?.map(
+      (cred: PublicKeyCredentialDescriptor & { id: string }) => ({
+        ...cred,
+        id: base64urlToArrayBuffer(cred.id as unknown as string),
+      })
+    ),
+  };
+
+  return { flowId: flow.id, csrfToken, userEmail, requestOptions };
+}
+
+async function runCeremony(auto = false) {
+  if (!prepared) return;
+
+  state.loading = true;
+  state.error = "";
+  state.notice = "";
+
   try {
-    state.loading = true;
-    state.error = "";
-
-    // Get current session
-    const session = await kratosService.getSession();
-    if (!session?.identity?.traits?.email) {
-      throw new Error("No active session found");
-    }
-
-    const userEmail = session.identity.traits.email;
-
-    // Initialize AAL2 upgrade flow
-    const flow = await kratosService.initAal2UpgradeFlow();
-
-    // Extract CSRF token and WebAuthn challenge
-    let csrfToken = "";
-    let webauthnChallenge: string | undefined;
-
-    flow.ui?.nodes?.forEach((node: KratosFlowNode) => {
-      if (node.attributes?.name === "csrf_token") {
-        csrfToken = String(node.attributes.value || "");
-      } else if (node.attributes?.name === "webauthn_login_trigger") {
-        webauthnChallenge = String(node.attributes.value);
-      }
-    });
-
-    if (!webauthnChallenge) {
-      throw new Error("No WebAuthn challenge available");
-    }
-
-    // Parse and prepare WebAuthn challenge
-    const publicKeyOptions = JSON.parse(webauthnChallenge);
-    const publicKeyCredentialRequestOptions: PublicKeyCredentialRequestOptions =
-      {
-        ...publicKeyOptions.publicKey,
-        challenge: base64urlToArrayBuffer(publicKeyOptions.publicKey.challenge),
-        allowCredentials: publicKeyOptions.publicKey.allowCredentials?.map(
-          (cred: PublicKeyCredentialDescriptor & { id: string }) => ({
-            ...cred,
-            id: base64urlToArrayBuffer(cred.id as unknown as string),
-          })
-        ),
-      };
-
-    // Call browser WebAuthn API
+    // Must remain the first await in this function: on WebKit the transient
+    // user activation from the click is gone once anything else is awaited.
     const credential = (await navigator.credentials.get({
-      publicKey: publicKeyCredentialRequestOptions,
+      publicKey: prepared.requestOptions,
     })) as PublicKeyCredential | null;
 
     if (!credential) {
-      throw new Error("WebAuthn authentication was cancelled");
+      throw new DOMException(
+        "WebAuthn authentication was cancelled",
+        "NotAllowedError"
+      );
     }
 
     // Format credential for Kratos
@@ -229,12 +276,12 @@ async function performWebAuthnVerification() {
     // Submit to Kratos
     const webauthnData: WebAuthnLoginFlowData = {
       method: "webauthn",
-      csrf_token: csrfToken,
-      identifier: userEmail,
+      csrf_token: prepared.csrfToken,
+      identifier: prepared.userEmail,
       webauthn_login: JSON.stringify(credentialData),
     };
 
-    await kratosService.submitLoginFlow(flow.id, webauthnData);
+    await kratosService.submitLoginFlow(prepared.flowId, webauthnData);
 
     // Success - report to opener (popup) or redirect back to return_to URL
     if (isPopup) {
@@ -248,25 +295,33 @@ async function performWebAuthnVerification() {
       router.push(props.homePath);
     }
   } catch (error: unknown) {
-    console.error("WebAuthn verification failed:", error);
-
-    let errorMessage = "WebAuthn verification failed";
-    if (error instanceof DOMException) {
-      if (error.name === "NotAllowedError") {
-        errorMessage = "Security key verification was cancelled or timed out";
-      } else if (error.name === "NotSupportedError") {
-        errorMessage = "WebAuthn is not supported by your browser";
-      }
-    } else {
-      errorMessage =
-        getUserFriendlyMessage(error) ||
-        (error instanceof Error ? error.message : errorMessage);
+    // NotAllowedError covers both "no user activation" (WebKit, on the
+    // automatic attempt) and a prompt the user dismissed. Both recover the
+    // same way: fall back to letting the user start the ceremony themselves.
+    if (error instanceof DOMException && error.name === "NotAllowedError") {
+      state.notice = auto ? "" : t("mfa.aal2.webauthnCancelled");
+      return;
     }
-
-    state.error = errorMessage;
+    console.error("WebAuthn verification failed:", error);
+    state.error = describeError(error);
   } finally {
     state.loading = false;
   }
+}
+
+function describeError(error: unknown): string {
+  if (error instanceof DOMException) {
+    if (error.name === "NotAllowedError") {
+      return "Security key verification was cancelled or timed out";
+    }
+    if (error.name === "NotSupportedError") {
+      return "WebAuthn is not supported by your browser";
+    }
+  }
+  return (
+    getUserFriendlyMessage(error) ||
+    (error instanceof Error ? error.message : "WebAuthn verification failed")
+  );
 }
 
 function cancel() {

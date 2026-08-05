@@ -102,9 +102,17 @@
               />
             </svg>
           </div>
-          <p class="text-sm text-muted-foreground">
-            {{ t("mfa.setup.webauthn.ready") }}
+          <p class="text-sm text-muted-foreground mb-4">
+            {{ state.notice || t("mfa.setup.webauthn.ready") }}
           </p>
+          <div class="flex flex-col items-center gap-2">
+            <Button @click="runCeremony()">
+              {{ t("mfa.setup.webauthn.start") }}
+            </Button>
+            <Button variant="ghost" size="sm" @click="cancel">
+              {{ t("actions.cancel") }}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
@@ -129,52 +137,80 @@ import AppBackground from "../primitives/AppBackground.vue";
 
 const { t } = useI18n();
 const route = useRoute();
-const { performWebAuthnRegistration } = useMfa();
+const { prepareWebAuthnRegistration, completeWebAuthnRegistration } = useMfa();
 
 const state = reactive({
   loading: true,
   error: "",
+  notice: "",
   success: false,
 });
 
+let prepared: Awaited<ReturnType<typeof prepareWebAuthnRegistration>> | null =
+  null;
+
 onMounted(async () => {
   try {
-    state.loading = true;
-    state.error = "";
+    prepared = await prepareWebAuthnRegistration();
+  } catch (error: unknown) {
+    console.error("WebAuthn registration failed:", error);
+    state.error = describeError(error);
+    state.loading = false;
+    return;
+  }
+  // WebKit rejects credentials.create() outside a user gesture, which this
+  // page does not have on load. Try once for engines that allow it, and fall
+  // back to the explicit button below.
+  await runCeremony(true);
+});
 
-    await performWebAuthnRegistration();
+async function runCeremony(auto = false) {
+  if (!prepared) return;
+
+  state.loading = true;
+  state.error = "";
+  state.notice = "";
+
+  try {
+    // Must remain the first await in this function: on WebKit the transient
+    // user activation from the click is gone once anything else is awaited.
+    await completeWebAuthnRegistration(prepared);
 
     state.success = true;
 
     const returnTo = route.query.return_to as string;
     setTimeout(() => {
-      if (returnTo) {
-        globalThis.location.href = returnTo;
-      } else {
-        globalThis.location.href = "/";
-      }
+      globalThis.location.href = returnTo || "/";
     }, 1500);
   } catch (error: unknown) {
-    console.error("WebAuthn registration failed:", error);
-
-    let errorMessage = "WebAuthn registration failed";
-    if (error instanceof DOMException) {
-      if (error.name === "NotAllowedError") {
-        errorMessage = "Security key registration was cancelled or timed out";
-      } else if (error.name === "NotSupportedError") {
-        errorMessage = "WebAuthn is not supported by your browser";
-      }
-    } else {
-      errorMessage =
-        getUserFriendlyMessage(error) ||
-        (error instanceof Error ? error.message : errorMessage);
+    // NotAllowedError covers both "no user activation" (WebKit, on the
+    // automatic attempt) and a prompt the user dismissed. Both recover the
+    // same way: fall back to letting the user start the ceremony themselves.
+    if (error instanceof DOMException && error.name === "NotAllowedError") {
+      state.notice = auto ? "" : t("mfa.setup.webauthn.cancelled");
+      return;
     }
-
-    state.error = errorMessage;
+    console.error("WebAuthn registration failed:", error);
+    state.error = describeError(error);
   } finally {
     state.loading = false;
   }
-});
+}
+
+function describeError(error: unknown): string {
+  if (error instanceof DOMException) {
+    if (error.name === "NotAllowedError") {
+      return "Security key registration was cancelled or timed out";
+    }
+    if (error.name === "NotSupportedError") {
+      return "WebAuthn is not supported by your browser";
+    }
+  }
+  return (
+    getUserFriendlyMessage(error) ||
+    (error instanceof Error ? error.message : "WebAuthn registration failed")
+  );
+}
 
 function cancel() {
   const returnTo = route.query.return_to as string;
