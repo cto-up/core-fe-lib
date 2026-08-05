@@ -154,7 +154,14 @@ export default {
     requestNewLink:
       "Bitte fordern Sie einen neuen Link zum Zurücksetzen des Passworts an.",
     linkExpired: "Dieser Link ist abgelaufen oder wurde bereits verwendet.",
+    linkExpiredOnly: "Dieser Link ist abgelaufen.",
+    linkAlreadyUsed: "Dieser Link wurde bereits verwendet.",
+    cookiesBlocked:
+      "Ihr Browser blockiert Cookies, die diese Seite zur Anmeldung benötigt. Erlauben Sie Cookies für diese Website und öffnen Sie den Link erneut.",
     requestNewLinkButton: "Neuen Link anfordern",
+    diagnosticsTitle: "Technische Details",
+    diagnosticsCopy: "Details kopieren",
+    diagnosticsCopied: "Kopiert",
   },
   securitySettings: {
     title: "Sicherheitseinstellungen",

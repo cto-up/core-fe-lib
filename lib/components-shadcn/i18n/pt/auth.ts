@@ -149,7 +149,14 @@ export default {
       "Palavra-passe definida com sucesso! A redirecionar para o início de sessão...",
     requestNewLink: "Peça uma nova ligação de reposição de palavra-passe.",
     linkExpired: "Esta ligação expirou ou já foi utilizada.",
+    linkExpiredOnly: "Esta ligação expirou.",
+    linkAlreadyUsed: "Esta ligação já foi utilizada.",
+    cookiesBlocked:
+      "O seu navegador está a bloquear os cookies de que esta página precisa para iniciar a sessão. Permita os cookies para este site e abra novamente a ligação.",
     requestNewLinkButton: "Pedir uma nova ligação",
+    diagnosticsTitle: "Detalhes técnicos",
+    diagnosticsCopy: "Copiar detalhes",
+    diagnosticsCopied: "Copiado",
   },
   securitySettings: {
     title: "Definições de segurança",

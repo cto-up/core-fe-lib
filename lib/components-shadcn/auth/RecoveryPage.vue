@@ -19,7 +19,10 @@
             <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
               {{ error }}
             </h3>
-            <p class="mt-2 text-sm text-red-700 dark:text-red-300">
+            <p
+              v-if="!report || report.reason !== 'cookies_blocked'"
+              class="mt-2 text-sm text-red-700 dark:text-red-300"
+            >
               {{ t("auth.recovery.requestNewLink") }}
             </p>
             <Button
@@ -29,6 +32,53 @@
             >
               {{ tf("requestNewLinkButton", "Request a new link") }}
             </Button>
+
+            <!-- Shown to the USER on purpose. When this fails again, the
+                 person in front of the screen is the only reporter we have;
+                 a screenshot of these fields is what makes it diagnosable
+                 without asking them to open devtools. Discreet by default so
+                 it never competes with the actual instruction above. -->
+            <div v-if="report" class="mt-4">
+              <button
+                type="button"
+                class="inline-flex items-center gap-1 text-xs text-red-700/70 underline-offset-2 hover:underline dark:text-red-300/70"
+                :aria-expanded="detailsOpen"
+                @click="detailsOpen = !detailsOpen"
+              >
+                <ChevronDown v-if="detailsOpen" class="h-3 w-3" />
+                <ChevronRight v-else class="h-3 w-3" />
+                {{ tf("diagnosticsTitle", "Technical details") }}
+              </button>
+
+              <div v-if="detailsOpen">
+                <dl
+                  class="mt-2 space-y-1 font-mono text-[11px] text-red-800/80 dark:text-red-200/80"
+                >
+                  <div
+                    v-for="row in diagnosticRows"
+                    :key="row.label"
+                    class="flex gap-2"
+                  >
+                    <dt class="shrink-0 opacity-70">{{ row.label }}</dt>
+                    <dd class="break-all">{{ row.value }}</dd>
+                  </div>
+                </dl>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  class="mt-3"
+                  @click="copyDiagnostics"
+                >
+                  <Check v-if="copied" class="mr-1.5 h-3 w-3" />
+                  <Copy v-else class="mr-1.5 h-3 w-3" />
+                  {{
+                    copied
+                      ? tf("diagnosticsCopied", "Copied")
+                      : tf("diagnosticsCopy", "Copy details")
+                  }}
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -112,6 +162,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
+import { Check, ChevronDown, ChevronRight, Copy } from "lucide-vue-next";
 import {
   extractKratosError,
   extractValidationErrors,
@@ -120,7 +171,20 @@ import {
   useKratosAuth,
   useAal2Store,
 } from "../../authentication/vue";
-import { kratosService } from "../../authentication/core/kratos-service";
+import {
+  kratosService,
+  KratosFlowType,
+} from "../../authentication/core/kratos-service";
+import {
+  buildDiagnosticRows,
+  classifyRecoveryFailure,
+  collectBrowserFacts,
+  REASON_MESSAGE_FALLBACK,
+  REASON_MESSAGE_KEY,
+  type RecoveryFailureFacts,
+  type RecoveryFailureReport,
+  type RecoveryFailureStage,
+} from "./recovery-diagnostics";
 import { Button } from "../ui/button";
 import PasswordInput from "../primitives/PasswordInput.vue";
 import AppBackground from "../primitives/AppBackground.vue";
@@ -130,8 +194,18 @@ const props = withDefaults(
     homePath?: string;
     /** Where the "request a new link" button goes when the link is spent. */
     recoveryRequestPath?: string;
+    /**
+     * Optional sink for a failure report (hub wires this to Sentry).
+     * Injected rather than imported: core-fe-lib is consumed by apps that do
+     * not ship Sentry, and a hard dependency here would break their build.
+     */
+    reportFailure?: (report: RecoveryFailureReport) => void;
   }>(),
-  { homePath: "/", recoveryRequestPath: "/user/me/password-reset-request" }
+  {
+    homePath: "/",
+    recoveryRequestPath: "/user/me/password-reset-request",
+    reportFailure: undefined,
+  }
 );
 
 const route = useRoute();
@@ -155,6 +229,8 @@ const showPasswordForm = ref(false);
 const submitting = ref(false);
 /** The recovery token was rejected — only a fresh email can unblock the user. */
 const linkDead = ref(false);
+/** Reconstructed cause, shown to the user and forwarded to `reportFailure`. */
+const report = ref<RecoveryFailureReport | null>(null);
 
 const password = ref("");
 const confirmPassword = ref("");
@@ -198,14 +274,123 @@ const stripTokenFromUrl = () => {
   }
 };
 
-const failAsDeadLink = () => {
-  linkDead.value = true;
+/**
+ * Reconstruct what happened, from everything still observable after the fact.
+ *
+ * The flow is read back for its timestamps because that is the ONLY thing that
+ * separates "expired" from "already used" — two causes that need different
+ * advice from us, and which a single message conflated. It also yields
+ * expires_at − issued_at, i.e. the lifespan the server is REALLY running, which
+ * is the only way to notice from outside that a config change never got applied.
+ * Best-effort: if the flow is gone, the report says unknown rather than guess.
+ */
+const buildReport = async (
+  stage: RecoveryFailureStage,
+  flowId: string,
+  hadToken: boolean,
+  err?: unknown
+): Promise<RecoveryFailureReport> => {
+  const browser = collectBrowserFacts();
+  const kratosError = err === undefined ? undefined : extractKratosError(err);
+
+  let flowExpiresAt: string | undefined;
+  let flowIssuedAt: string | undefined;
+  try {
+    const flow = await kratosService.getFlow(KratosFlowType.Recovery, flowId);
+    flowExpiresAt = flow?.expires_at;
+    flowIssuedAt = flow?.issued_at;
+  } catch {
+    // Flow already pruned, or the id was never valid. Expiry stays unprovable
+    // and classifyRecoveryFailure() reports "unknown" rather than inventing it.
+  }
+
+  const issuedMs = flowIssuedAt ? Date.parse(flowIssuedAt) : Number.NaN;
+  const expiresMs = flowExpiresAt ? Date.parse(flowExpiresAt) : Number.NaN;
+  const bothKnown = Number.isFinite(issuedMs) && Number.isFinite(expiresMs);
+
+  const facts: RecoveryFailureFacts = {
+    ...browser,
+    flowId,
+    hadToken,
+    flowExpiresAt,
+    flowIssuedAt,
+    flowLifespanMinutes: bothKnown
+      ? Math.round((expiresMs - issuedMs) / 60000)
+      : undefined,
+    linkAgeMs: Number.isFinite(issuedMs) ? browser.now - issuedMs : undefined,
+    kratosErrorId: kratosError?.id,
+    kratosErrorCode: kratosError?.code,
+  };
+
+  return { ...facts, stage, reason: classifyRecoveryFailure(facts) };
+};
+
+const notifyFailure = (built: RecoveryFailureReport) => {
+  try {
+    props.reportFailure?.(built);
+  } catch (reportErr) {
+    // Telemetry must never become the reason the page breaks.
+    console.warn("Failed to report recovery failure:", reportErr);
+  }
+};
+
+/**
+ * Attach diagnostics to a failure the page is already reporting its own way
+ * (a generic error, or a cancelled MFA prompt). `notify` is false for the MFA
+ * case: the user chose to cancel, so it is not an incident and should not
+ * pollute the Sentry signal.
+ */
+const attachDiagnostics = async (
+  stage: RecoveryFailureStage,
+  flowId: string,
+  hadToken: boolean,
+  err: unknown,
+  notify = true
+) => {
+  const built = await buildReport(stage, flowId, hadToken, err);
+  report.value = built;
+  if (notify) notifyFailure(built);
+};
+
+const failAsDeadLink = async (
+  stage: RecoveryFailureStage,
+  flowId: string,
+  hadToken: boolean,
+  err?: unknown
+) => {
+  const built = await buildReport(stage, flowId, hadToken, err);
+
+  report.value = built;
+  // A replacement link cannot fix a browser that refuses to store the session
+  // cookie, so don't offer one — it would loop the user forever.
+  linkDead.value = built.reason !== "cookies_blocked";
   statusMessage.value = "";
   error.value = tf(
-    "linkExpired",
-    "This link has expired or has already been used."
+    REASON_MESSAGE_KEY[built.reason],
+    REASON_MESSAGE_FALLBACK[built.reason]
   );
   loading.value = false;
+  notifyFailure(built);
+};
+
+const detailsOpen = ref(false);
+const diagnosticRows = computed(() =>
+  report.value ? buildDiagnosticRows(report.value) : []
+);
+
+const copied = ref(false);
+const copyDiagnostics = async () => {
+  const text = diagnosticRows.value
+    .map((row) => `${row.label}: ${row.value}`)
+    .join("\n");
+  try {
+    await globalThis.navigator?.clipboard?.writeText(text);
+    copied.value = true;
+    setTimeout(() => (copied.value = false), 2000);
+  } catch {
+    // Clipboard denied (insecure context / permission). The details are still
+    // on screen to read or screenshot, which is the point.
+  }
 };
 
 onMounted(async () => {
@@ -267,7 +452,7 @@ onMounted(async () => {
         .catch(() => null);
       if (!session?.active) {
         console.warn("❌ Recovery token was not redeemed — no session.");
-        failAsDeadLink();
+        await failAsDeadLink("activate", flowId, true);
         return;
       }
 
@@ -330,14 +515,18 @@ onMounted(async () => {
     // new link" would be a dead end — a fresh link lands them right back here.
     if (kratosError?.id === KratosErrorIds.SESSION_AAL2_REQUIRED) {
       error.value = t("auth.recovery.sessionExpired");
+      // Diagnostics without telemetry: cancelling MFA is a choice, not an
+      // incident, but the details still help if the user reports confusion.
+      await attachDiagnostics("settings", flowId, Boolean(token), err, false);
     } else if (kratosError?.code === 401 || kratosError?.code === 403) {
-      failAsDeadLink();
+      await failAsDeadLink("settings", flowId, Boolean(token), err);
       return;
     } else {
       error.value =
         getUserFriendlyMessage(err) ||
         (err instanceof Error ? err.message : null) ||
         t("auth.recovery.processingError");
+      await attachDiagnostics("settings", flowId, Boolean(token), err);
     }
     loading.value = false;
   }

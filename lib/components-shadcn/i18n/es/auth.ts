@@ -152,7 +152,14 @@ export default {
     requestNewLink:
       "Por favor, solicita un nuevo enlace de restablecimiento de contraseña.",
     linkExpired: "Este enlace ha caducado o ya se ha utilizado.",
+    linkExpiredOnly: "Este enlace ha caducado.",
+    linkAlreadyUsed: "Este enlace ya se ha utilizado.",
+    cookiesBlocked:
+      "Tu navegador está bloqueando las cookies que esta página necesita para iniciar tu sesión. Permite las cookies para este sitio y vuelve a abrir el enlace.",
     requestNewLinkButton: "Solicitar un nuevo enlace",
+    diagnosticsTitle: "Detalles técnicos",
+    diagnosticsCopy: "Copiar detalles",
+    diagnosticsCopied: "Copiado",
   },
   securitySettings: {
     title: "Configuración de seguridad",
