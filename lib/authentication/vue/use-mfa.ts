@@ -506,7 +506,34 @@ export function useMfa() {
     globalThis.location.href = registerUrl;
   }
 
-  async function performWebAuthnRegistration(): Promise<void> {
+  interface PublicKeyCredentialCreationOptionsExt extends Omit<
+    PublicKeyCredentialCreationOptions,
+    "challenge" | "user" | "excludeCredentials"
+  > {
+    challenge: ArrayBuffer;
+    user: Omit<PublicKeyCredentialCreationOptions["user"], "id"> & {
+      id: ArrayBuffer;
+    };
+    excludeCredentials?: Array<
+      Omit<PublicKeyCredentialDescriptor, "id"> & { id: ArrayBuffer }
+    >;
+  }
+
+  interface PreparedWebAuthnRegistration {
+    flowId: string;
+    csrf: string;
+    displayName: string;
+    creationOptions: PublicKeyCredentialCreationOptionsExt;
+  }
+
+  /**
+   * Fetches the settings flow and decodes the challenge, without touching the
+   * authenticator. Split from the ceremony so that
+   * `navigator.credentials.create()` can be the first statement in a click
+   * handler: WebKit requires transient user activation, and any intervening
+   * await consumes it.
+   */
+  async function prepareWebAuthnRegistration(): Promise<PreparedWebAuthnRegistration> {
     const session = await kratosService.getSession();
     if (!session?.identity?.traits?.email) {
       notifications.error(
@@ -553,19 +580,6 @@ export function useMfa() {
 
     const publicKeyOptions = JSON.parse(String(triggerNode.attributes.value));
 
-    interface PublicKeyCredentialCreationOptionsExt extends Omit<
-      PublicKeyCredentialCreationOptions,
-      "challenge" | "user" | "excludeCredentials"
-    > {
-      challenge: ArrayBuffer;
-      user: Omit<PublicKeyCredentialCreationOptions["user"], "id"> & {
-        id: ArrayBuffer;
-      };
-      excludeCredentials?: Array<
-        Omit<PublicKeyCredentialDescriptor, "id"> & { id: ArrayBuffer }
-      >;
-    }
-
     const publicKeyCredentialCreationOptions: PublicKeyCredentialCreationOptionsExt =
       {
         ...publicKeyOptions.publicKey,
@@ -583,9 +597,23 @@ export function useMfa() {
           ) || [],
       };
 
+    return {
+      flowId: flow.id || "",
+      csrf,
+      displayName,
+      creationOptions: publicKeyCredentialCreationOptions,
+    };
+  }
+
+  /**
+   * Runs the authenticator ceremony. Call this directly from a user gesture —
+   * it must not be preceded by an await in the handler.
+   */
+  async function completeWebAuthnRegistration(
+    prepared: PreparedWebAuthnRegistration
+  ): Promise<void> {
     const credential = await navigator.credentials.create({
-      publicKey:
-        publicKeyCredentialCreationOptions as PublicKeyCredentialCreationOptions,
+      publicKey: prepared.creationOptions as PublicKeyCredentialCreationOptions,
     });
 
     if (!credential) {
@@ -606,11 +634,15 @@ export function useMfa() {
       },
     };
 
-    await kratosService.submitSettingsMethod(flow.id || "", "webauthn", {
+    await kratosService.submitSettingsMethod(prepared.flowId, "webauthn", {
       webauthn_register: JSON.stringify(credentialData),
-      webauthn_register_displayname: displayName,
-      csrf_token: csrf,
+      webauthn_register_displayname: prepared.displayName,
+      csrf_token: prepared.csrf,
     });
+  }
+
+  async function performWebAuthnRegistration(): Promise<void> {
+    await completeWebAuthnRegistration(await prepareWebAuthnRegistration());
   }
 
   /**
@@ -829,6 +861,8 @@ export function useMfa() {
     disableTOTP,
     setupWebAuthn,
     performWebAuthnRegistration,
+    prepareWebAuthnRegistration,
+    completeWebAuthnRegistration,
     disableWebAuthn,
     generateRecoveryCodes,
     downloadRecoveryCodes,

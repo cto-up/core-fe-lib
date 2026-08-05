@@ -56,6 +56,9 @@ export default {
         "Veuillez suivre les instructions pour enregistrer votre clé de sécurité",
       processing: "Enregistrement de votre clé de sécurité...",
       ready: "Prêt à enregistrer votre clé de sécurité",
+      start: "Enregistrer votre clé de sécurité",
+      cancelled:
+        "L'enregistrement a été annulé. Réessayez quand vous le souhaitez.",
       success: "Clé de sécurité enregistrée avec succès. Redirection...",
     },
     recovery: {
@@ -139,6 +142,9 @@ export default {
       "Veuillez utiliser votre clé de sécurité pour vérifier votre identité",
     webauthnProcessing: "Vérification de votre clé de sécurité...",
     webauthnReady: "Prêt à vérifier avec votre clé de sécurité",
+    webauthnStart: "Vérifier avec votre clé de sécurité",
+    webauthnCancelled:
+      "La vérification a été annulée. Réessayez quand vous le souhaitez.",
     noMfaRegistered:
       "Vous devez enregistrer un niveau d'authentification plus élevé pour accéder à cette fonctionnalité. Veuillez accéder aux Paramètres de Sécurité pour configurer l'authentification multi-facteurs.",
     goToSecuritySettings: "Ouvrir les Paramètres de Sécurité",

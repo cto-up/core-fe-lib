@@ -50,6 +50,8 @@ export default {
       description: "Please follow the prompts to register your security key",
       processing: "Registering your security key...",
       ready: "Ready to register your security key",
+      start: "Register your security key",
+      cancelled: "Registration was cancelled. Try again when you're ready.",
       success: "Security key registered successfully. Redirecting...",
     },
     recovery: {
@@ -128,6 +130,9 @@ export default {
     webauthnDescription: "Please use your security key to verify your identity",
     webauthnProcessing: "Verifying your security key...",
     webauthnReady: "Ready to verify with your security key",
+    webauthnStart: "Verify with your security key",
+    webauthnCancelled:
+      "Verification was cancelled. Try again when you're ready.",
     noMfaRegistered:
       "You need to register a higher level of authentication to access this feature. Please go to Security Settings to set up multi-factor authentication.",
     goToSecuritySettings: "Open Security Settings",
