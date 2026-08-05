@@ -147,6 +147,8 @@ export default {
     passwordSetSuccess:
       "Password impostata con successo! Reindirizzamento all'accesso...",
     requestNewLink: "Richiedi un nuovo link di reimpostazione della password.",
+    linkExpired: "Questo link è scaduto o è già stato utilizzato.",
+    requestNewLinkButton: "Richiedi un nuovo link",
   },
   securitySettings: {
     title: "Impostazioni di sicurezza",

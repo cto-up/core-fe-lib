@@ -142,6 +142,8 @@ export default {
     failedToSetPassword: "Failed to set password",
     passwordSetSuccess: "Password set successfully! Redirecting to sign in...",
     requestNewLink: "Please request a new password reset link.",
+    linkExpired: "This link has expired or has already been used.",
+    requestNewLinkButton: "Request a new link",
   },
   securitySettings: {
     title: "Security Settings",

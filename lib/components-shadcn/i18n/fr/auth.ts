@@ -152,6 +152,8 @@ export default {
       "Mot de passe défini avec succès ! Redirection vers la connexion...",
     requestNewLink:
       "Veuillez demander un nouveau lien de réinitialisation de mot de passe.",
+    linkExpired: "Ce lien a expiré ou a déjà été utilisé.",
+    requestNewLinkButton: "Demander un nouveau lien",
   },
   securitySettings: {
     title: "Paramètres de Sécurité",

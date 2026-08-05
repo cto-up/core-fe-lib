@@ -22,6 +22,13 @@
             <p class="mt-2 text-sm text-red-700 dark:text-red-300">
               {{ t("auth.recovery.requestNewLink") }}
             </p>
+            <Button
+              v-if="linkDead"
+              class="mt-4"
+              @click="router.push(props.recoveryRequestPath)"
+            >
+              {{ tf("requestNewLinkButton", "Request a new link") }}
+            </Button>
           </div>
         </div>
       </div>
@@ -121,13 +128,22 @@ import AppBackground from "../primitives/AppBackground.vue";
 const props = withDefaults(
   defineProps<{
     homePath?: string;
+    /** Where the "request a new link" button goes when the link is spent. */
+    recoveryRequestPath?: string;
   }>(),
-  { homePath: "/" }
+  { homePath: "/", recoveryRequestPath: "/user/me/password-reset-request" }
 );
 
 const route = useRoute();
 const router = useRouter();
-const { t } = useI18n();
+// Consumer apps may ship their own `auth.*` dictionary rather than
+// core-fe-lib's, in which case keys added here would render as raw key paths.
+// Every new string therefore carries a literal fallback.
+const { t, te } = useI18n();
+const tf = (key: string, fallback: string): string => {
+  const full = `auth.recovery.${key}`;
+  return te(full) ? t(full) : fallback;
+};
 const { getCurrentSession } = useKratosAuth();
 const aal2Store = useAal2Store();
 
@@ -137,6 +153,8 @@ const error = ref("");
 const success = ref(false);
 const showPasswordForm = ref(false);
 const submitting = ref(false);
+/** The recovery token was rejected — only a fresh email can unblock the user. */
+const linkDead = ref(false);
 
 const password = ref("");
 const confirmPassword = ref("");
@@ -159,6 +177,37 @@ const passwordError = ref("");
 const settingsFlowId = ref("");
 const csrfToken = ref("");
 
+/**
+ * Drop the one-time token from the address bar before it is spent. A reload, a
+ * back-navigation or a mobile tab restore would otherwise re-submit a token
+ * Kratos has already consumed, and the second attempt fails — turning a link
+ * that worked into a dead one.
+ */
+const stripTokenFromUrl = () => {
+  try {
+    const url = new URL(globalThis.location.href);
+    if (!url.searchParams.has("token")) return;
+    url.searchParams.delete("token");
+    globalThis.history.replaceState(
+      globalThis.history.state,
+      "",
+      url.toString()
+    );
+  } catch {
+    // Non-fatal: the token just stays visible in the URL.
+  }
+};
+
+const failAsDeadLink = () => {
+  linkDead.value = true;
+  statusMessage.value = "";
+  error.value = tf(
+    "linkExpired",
+    "This link has expired or has already been used."
+  );
+  loading.value = false;
+};
+
 onMounted(async () => {
   const flowId = route.query.flow as string;
   const token = route.query.token as string;
@@ -178,11 +227,13 @@ onMounted(async () => {
   }
 
   try {
-    // If a token is present, we need to submit it to activate the recovery flow.
-    // Kratos will 303-redirect back to this page with a new flow ID and no token,
-    // at which point the session is established and we can init settings.
+    // If a token is present, we need to submit it to activate the recovery
+    // flow. On success Kratos redeems the token and sets a session cookie, at
+    // which point we can init settings. See below for why the POST alone tells
+    // us nothing about whether that happened.
     if (token) {
       statusMessage.value = t("auth.recovery.activatingLink");
+      stripTokenFromUrl();
       try {
         await kratosService.submitRecoveryFlow(flowId, {
           method: "link",
@@ -196,6 +247,28 @@ onMounted(async () => {
           throw err;
         }
         console.log("ℹ️  Session already active, proceeding to settings.");
+      }
+
+      // The POST resolving proves NOTHING about the token. Kratos answers a
+      // browser recovery flow with a 303 whether it accepted the token or
+      // rejected it (expired / already used → it mints a fresh flow and
+      // redirects to the recovery UI carrying the error), and submitRecoveryFlow
+      // uses `redirect: "manual"`, which makes every redirect an opaque
+      // status-0 response with unreadable headers. Success and failure are
+      // therefore indistinguishable at the call site.
+      //
+      // The session cookie is the only honest signal: it exists if and only if
+      // the token was redeemed. Without this check a dead link sails on to
+      // initSettingsFlow() and surfaces as "request does not have a valid
+      // authentication session" — a 401 that reads like a bug in the app rather
+      // than "ask for a new email", which is what the user actually needs.
+      const session = await kratosService
+        .getSession({ force: true })
+        .catch(() => null);
+      if (!session?.active) {
+        console.warn("❌ Recovery token was not redeemed — no session.");
+        failAsDeadLink();
+        return;
       }
 
       // When a return_to destination is present (invitation flow), skip the
@@ -247,8 +320,12 @@ onMounted(async () => {
       data: kratosError,
     });
 
-    if (kratosError?.code === 403) {
-      error.value = t("auth.recovery.sessionExpired");
+    // 401/403 out of the settings flow means there is no usable session, which
+    // on this page only ever has one cause: the recovery link did not redeem.
+    // Say that, and offer the one action that fixes it.
+    if (kratosError?.code === 401 || kratosError?.code === 403) {
+      failAsDeadLink();
+      return;
     } else {
       error.value =
         getUserFriendlyMessage(err) ||
