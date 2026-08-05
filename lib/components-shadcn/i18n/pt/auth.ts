@@ -148,6 +148,8 @@ export default {
     passwordSetSuccess:
       "Palavra-passe definida com sucesso! A redirecionar para o início de sessão...",
     requestNewLink: "Peça uma nova ligação de reposição de palavra-passe.",
+    linkExpired: "Esta ligação expirou ou já foi utilizada.",
+    requestNewLinkButton: "Pedir uma nova ligação",
   },
   securitySettings: {
     title: "Definições de segurança",

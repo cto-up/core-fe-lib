@@ -153,6 +153,8 @@ export default {
       "Passwort erfolgreich festgelegt! Weiterleitung zur Anmeldung...",
     requestNewLink:
       "Bitte fordern Sie einen neuen Link zum Zurücksetzen des Passworts an.",
+    linkExpired: "Dieser Link ist abgelaufen oder wurde bereits verwendet.",
+    requestNewLinkButton: "Neuen Link anfordern",
   },
   securitySettings: {
     title: "Sicherheitseinstellungen",

@@ -151,6 +151,8 @@ export default {
       "¡Contraseña establecida con éxito! Redirigiendo al inicio de sesión...",
     requestNewLink:
       "Por favor, solicita un nuevo enlace de restablecimiento de contraseña.",
+    linkExpired: "Este enlace ha caducado o ya se ha utilizado.",
+    requestNewLinkButton: "Solicitar un nuevo enlace",
   },
   securitySettings: {
     title: "Configuración de seguridad",
