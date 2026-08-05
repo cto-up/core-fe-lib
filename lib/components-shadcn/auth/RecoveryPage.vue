@@ -323,7 +323,14 @@ onMounted(async () => {
     // 401/403 out of the settings flow means there is no usable session, which
     // on this page only ever has one cause: the recovery link did not redeem.
     // Say that, and offer the one action that fixes it.
-    if (kratosError?.code === 401 || kratosError?.code === 403) {
+    //
+    // AAL2 must be tested FIRST and excluded. `session_aal2_required` is also a
+    // 403, but it means the opposite: the link redeemed, the session is live,
+    // and the user simply declined the MFA prompt. Sending them to "request a
+    // new link" would be a dead end — a fresh link lands them right back here.
+    if (kratosError?.id === KratosErrorIds.SESSION_AAL2_REQUIRED) {
+      error.value = t("auth.recovery.sessionExpired");
+    } else if (kratosError?.code === 401 || kratosError?.code === 403) {
       failAsDeadLink();
       return;
     } else {
