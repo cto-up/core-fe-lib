@@ -153,7 +153,14 @@ export default {
     requestNewLink:
       "Veuillez demander un nouveau lien de réinitialisation de mot de passe.",
     linkExpired: "Ce lien a expiré ou a déjà été utilisé.",
+    linkExpiredOnly: "Ce lien a expiré.",
+    linkAlreadyUsed: "Ce lien a déjà été utilisé.",
+    cookiesBlocked:
+      "Votre navigateur bloque les cookies, dont cette page a besoin pour vous connecter. Autorisez les cookies pour ce site, puis rouvrez le lien.",
     requestNewLinkButton: "Demander un nouveau lien",
+    diagnosticsTitle: "Détails techniques",
+    diagnosticsCopy: "Copier les détails",
+    diagnosticsCopied: "Copié",
   },
   securitySettings: {
     title: "Paramètres de Sécurité",

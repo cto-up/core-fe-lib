@@ -148,7 +148,14 @@ export default {
       "Password impostata con successo! Reindirizzamento all'accesso...",
     requestNewLink: "Richiedi un nuovo link di reimpostazione della password.",
     linkExpired: "Questo link è scaduto o è già stato utilizzato.",
+    linkExpiredOnly: "Questo link è scaduto.",
+    linkAlreadyUsed: "Questo link è già stato utilizzato.",
+    cookiesBlocked:
+      "Il tuo browser sta bloccando i cookie necessari a questa pagina per effettuare l'accesso. Consenti i cookie per questo sito e riapri il link.",
     requestNewLinkButton: "Richiedi un nuovo link",
+    diagnosticsTitle: "Dettagli tecnici",
+    diagnosticsCopy: "Copia dettagli",
+    diagnosticsCopied: "Copiato",
   },
   securitySettings: {
     title: "Impostazioni di sicurezza",

@@ -143,7 +143,14 @@ export default {
     passwordSetSuccess: "Password set successfully! Redirecting to sign in...",
     requestNewLink: "Please request a new password reset link.",
     linkExpired: "This link has expired or has already been used.",
+    linkExpiredOnly: "This link has expired.",
+    linkAlreadyUsed: "This link has already been used.",
+    cookiesBlocked:
+      "Your browser is blocking cookies, which this page needs to sign you in. Enable cookies for this site and open the link again.",
     requestNewLinkButton: "Request a new link",
+    diagnosticsTitle: "Technical details",
+    diagnosticsCopy: "Copy details",
+    diagnosticsCopied: "Copied",
   },
   securitySettings: {
     title: "Security Settings",
