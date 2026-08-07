@@ -23,6 +23,24 @@ import {
 } from "../core/kratos-error-processor";
 import type { AxiosError } from "axios";
 
+export interface SignInWithProviderOptions {
+  /** Where Kratos returns the browser after the round trip. */
+  returnTo?: string;
+  /** A flow Kratos handed us via `?flow=` — submit it rather than replacing it. */
+  flow?: KratosFlow | null;
+  /**
+   * OAuth `prompt`, passed through to the provider.
+   *
+   * Signing out of this app does not sign the user out of the provider, so by
+   * default the next click round-trips through a live provider session and
+   * comes straight back — correct, but it reads as "sign-out did nothing".
+   * `select_account` makes the provider show its account chooser every time,
+   * at the cost of one click per sign-in. `login` forces full
+   * re-authentication.
+   */
+  prompt?: string;
+}
+
 /** POST a set of fields as a top-level navigation, the way a `<form>` would. */
 function submitFormNavigation(
   action: string,
@@ -237,9 +255,9 @@ export const useKratosAuth = () => {
    */
   async function signInWithProvider(
     provider: string,
-    returnTo?: string,
-    existingFlow?: KratosFlow | null
+    options: SignInWithProviderOptions = {}
   ): Promise<void> {
+    const { returnTo, flow: existingFlow, prompt } = options;
     try {
       userStore.setIsLoading(true);
 
@@ -275,6 +293,11 @@ export const useKratosAuth = () => {
       submitFormNavigation(kratosService.buildFlowSubmitUrl(flow.ui.action), {
         csrf_token: csrfToken,
         provider,
+        // Dotted name on purpose: Kratos decodes form fields into the nested
+        // `upstream_parameters` object its schema declares, the same way
+        // `traits.email` works. It allows only login_hint / hd / prompt /
+        // auth_type and drops anything else.
+        ...(prompt ? { "upstream_parameters.prompt": prompt } : {}),
       });
     } catch (error: unknown) {
       userStore.setIsLoading(false);
