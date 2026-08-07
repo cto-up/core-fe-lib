@@ -34,6 +34,14 @@ export default {
     reference: "Referenz",
     retry: "Zurück zur Anmeldung",
   },
+  // Where a social sign-in round-trip lands: the identity exists, the
+  // tenant membership is being attached. See ADR 039 in the lms repo.
+  socialCallback: {
+    working: { title: "Anmeldung wird abgeschlossen", body: "Ihr Konto wird eingerichtet…" },
+    denied: { title: "Dieser Bereich ist nur auf Einladung", body: "Ihr Konto ist angemeldet, aber dieser Bereich erlaubt keine Selbstregistrierung. Bitten Sie eine Administratorin oder einen Administrator um eine Einladung." },
+    failed: { title: "Anmeldung konnte nicht abgeschlossen werden", body: "Ihr Konto wurde erstellt, konnte diesem Bereich aber nicht zugeordnet werden. Bitte versuchen Sie es gleich noch einmal." },
+    backToSignIn: "Zurück zur Anmeldung",
+  },
   signIn: {
     title: "Anmelden",
     subtitle: "Melden Sie sich an, um auf Ihr Konto zuzugreifen",

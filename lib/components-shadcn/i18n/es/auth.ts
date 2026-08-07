@@ -33,6 +33,14 @@ export default {
     reference: "Referencia",
     retry: "Volver al inicio de sesión",
   },
+  // Where a social sign-in round-trip lands: the identity exists, the
+  // tenant membership is being attached. See ADR 039 in the lms repo.
+  socialCallback: {
+    working: { title: "Finalizando el inicio de sesión", body: "Configurando tu cuenta…" },
+    denied: { title: "Este espacio es solo por invitación", body: "Tu cuenta inició sesión, pero este espacio no acepta registros libres. Pide una invitación a un administrador." },
+    failed: { title: "No pudimos completar el inicio de sesión", body: "Tu cuenta se creó, pero no pudimos vincularla a este espacio. Inténtalo de nuevo en un momento." },
+    backToSignIn: "Volver al inicio de sesión",
+  },
   signIn: {
     title: "Iniciar sesión",
     subtitle: "Inicia sesión para acceder a tu cuenta",
