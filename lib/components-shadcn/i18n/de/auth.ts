@@ -25,6 +25,15 @@ export default {
     toastTitle: "Bereits angemeldet",
     toastDescription: "Wir bringen Sie dorthin zurück, wo Sie aufgehört haben.",
   },
+  // Kratos redirects here (selfservice.flows.error.ui_url) when a flow
+  // dies before it can render — expired, interrupted, or traits rejected.
+  flowError: {
+    title: "Anmeldung konnte nicht abgeschlossen werden",
+    subtitle: "An Ihrem Konto wurde nichts geändert.",
+    generic: "Der Anmeldeversuch ist abgelaufen oder wurde unterbrochen. Ein neuer Versuch behebt das meist.",
+    reference: "Referenz",
+    retry: "Zurück zur Anmeldung",
+  },
   signIn: {
     title: "Anmelden",
     subtitle: "Melden Sie sich an, um auf Ihr Konto zuzugreifen",

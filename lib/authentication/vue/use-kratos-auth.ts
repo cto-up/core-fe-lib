@@ -135,21 +135,40 @@ export const useKratosAuth = () => {
     return false;
   }
 
-  async function signMeIn(email: string, password: string): Promise<void> {
+  /**
+   * `existingFlow` — a flow Kratos itself handed us by redirecting to the login
+   * UI with `?flow=`. It MUST be submitted rather than replaced: in the
+   * account-linking case (a social sign-in whose email already belongs to a
+   * password account) that flow carries the pending provider credential, and
+   * completing it is what links the two. Minting a fresh flow instead logs the
+   * user in and silently drops the link, so the next Google click hits the very
+   * same wall.
+   */
+  async function signMeIn(
+    email: string,
+    password: string,
+    existingFlow?: KratosFlow | null
+  ): Promise<void> {
     try {
       userStore.setIsLoading(true);
 
       const returnTo = route.query["from"] as string;
 
       let flow: KratosFlow;
-      try {
-        flow = await kratosService.initLoginFlow(false);
-      } catch (error: unknown) {
-        if (!isKratosErrorId(error, KratosErrorIds.SESSION_ALREADY_AVAILABLE)) {
-          throw error;
+      if (existingFlow) {
+        flow = existingFlow;
+      } else {
+        try {
+          flow = await kratosService.initLoginFlow(false);
+        } catch (error: unknown) {
+          if (
+            !isKratosErrorId(error, KratosErrorIds.SESSION_ALREADY_AVAILABLE)
+          ) {
+            throw error;
+          }
+          if (await resolveExistingSession(email, returnTo)) return;
+          flow = await kratosService.initLoginFlow(false);
         }
-        if (await resolveExistingSession(email, returnTo)) return;
-        flow = await kratosService.initLoginFlow(false);
       }
 
       const csrfNode = flow.ui.nodes.find(
@@ -218,22 +237,31 @@ export const useKratosAuth = () => {
    */
   async function signInWithProvider(
     provider: string,
-    returnTo?: string
+    returnTo?: string,
+    existingFlow?: KratosFlow | null
   ): Promise<void> {
     try {
       userStore.setIsLoading(true);
 
       let flow: KratosFlow;
-      try {
-        flow = await kratosService.initLoginFlow(false, returnTo);
-      } catch (error: unknown) {
-        if (!isKratosErrorId(error, KratosErrorIds.SESSION_ALREADY_AVAILABLE)) {
-          throw error;
+      if (existingFlow) {
+        // Same reasoning as signMeIn: a Kratos-supplied flow carries state we
+        // would discard by starting over.
+        flow = existingFlow;
+      } else {
+        try {
+          flow = await kratosService.initLoginFlow(false, returnTo);
+        } catch (error: unknown) {
+          if (
+            !isKratosErrorId(error, KratosErrorIds.SESSION_ALREADY_AVAILABLE)
+          ) {
+            throw error;
+          }
+          // A live session blocks a new login flow. The user asked to sign in
+          // with a provider, so honour that: drop the session and retry once.
+          await clearSession();
+          flow = await kratosService.initLoginFlow(false, returnTo);
         }
-        // A live session blocks a new login flow. The user asked to sign in
-        // with a provider, so honour that: drop the session and retry once.
-        await clearSession();
-        flow = await kratosService.initLoginFlow(false, returnTo);
       }
 
       const csrfNode = flow.ui.nodes.find(

@@ -25,6 +25,15 @@ export default {
     toastTitle: "Already signed in",
     toastDescription: "We've taken you back to where you left off.",
   },
+  // Kratos redirects here (selfservice.flows.error.ui_url) when a flow
+  // dies before it can render — expired, interrupted, or traits rejected.
+  flowError: {
+    title: "Sign-in could not be completed",
+    subtitle: "Nothing was changed on your account.",
+    generic: "The sign-in attempt expired or was interrupted. Starting again usually resolves it.",
+    reference: "Reference",
+    retry: "Back to sign-in",
+  },
   signIn: {
     title: "Sign In",
     subtitle: "Sign in to access your account",
