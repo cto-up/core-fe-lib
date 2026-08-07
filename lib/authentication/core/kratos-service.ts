@@ -93,6 +93,31 @@ export interface KratosFlow {
   };
 }
 
+/** A social sign-in button Kratos advertises on a login/registration flow. */
+export interface KratosOidcProvider {
+  /** The provider id from kratos.yml — submitted back as the `provider` field. */
+  value: string;
+  /** Kratos's own label for the button, e.g. "Google". */
+  label: string;
+}
+
+/**
+ * The social providers a flow offers, derived from the flow itself rather than
+ * from app config: a provider that is not configured in kratos.yml produces no
+ * node, so no button appears and nothing has to be kept in sync.
+ */
+export function getOidcProviders(flow: KratosFlow): KratosOidcProvider[] {
+  return flow.ui.nodes
+    .filter(
+      (node) => node.group === "oidc" && node.attributes?.name === "provider"
+    )
+    .map((node) => ({
+      value: String(node.attributes?.value ?? ""),
+      label: node.meta?.label?.text || String(node.attributes?.value ?? ""),
+    }))
+    .filter((provider) => provider.value !== "");
+}
+
 export interface KratosIdentity {
   id: string;
   schema_id: string;
@@ -360,6 +385,23 @@ class KratosService {
       console.error("❌ Error getting session:", error);
       throw error;
     }
+  }
+
+  /**
+   * Rewrite a flow's `ui.action` onto the origin this app actually reaches
+   * Kratos through.
+   *
+   * Kratos builds `ui.action` from its own `serve.public.base_url`
+   * (`https://auth.<domain>/…`), but the browser never talks to that host — it
+   * goes through the `/kratos` proxy on this app's API origin, which is what
+   * `configureKratos({ publicUrl })` names. That mismatch is invisible for
+   * every XHR-submitted flow, because those post to a path we build ourselves.
+   * It only bites the one flow that must be submitted as a REAL form
+   * navigation — social sign-in, which has to leave the SPA for the provider.
+   */
+  buildFlowSubmitUrl(action: string): string {
+    const target = new URL(action, globalThis.location.origin);
+    return `${getKratosConfig().publicUrl}${target.pathname}${target.search}`;
   }
 
   /**

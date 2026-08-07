@@ -23,6 +23,25 @@ import {
 } from "../core/kratos-error-processor";
 import type { AxiosError } from "axios";
 
+/** POST a set of fields as a top-level navigation, the way a `<form>` would. */
+function submitFormNavigation(
+  action: string,
+  fields: Record<string, string>
+): void {
+  const form = document.createElement("form");
+  form.method = "POST";
+  form.action = action;
+  for (const [name, value] of Object.entries(fields)) {
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = value;
+    form.append(input);
+  }
+  document.body.append(form);
+  form.submit();
+}
+
 /** Kratos identifiers are case-insensitive; compare them that way. */
 function sameIdentifier(a?: string | null, b?: string | null): boolean {
   if (!a || !b) return false;
@@ -182,6 +201,71 @@ export const useKratosAuth = () => {
     }
   }
 
+  /**
+   * Hand the browser over to a social provider (ADR 039).
+   *
+   * This must be a real form navigation, not an XHR: the flow ends at Google's
+   * consent screen, and Kratos answers the submission with a 303 the browser
+   * has to follow at top level. Submitting it through axios would either
+   * surface as an opaque CORS failure or, with `Accept: application/json`, as a
+   * 422 whose body we would then have to redirect on by hand — the same
+   * navigation, one indirection later, with the CSRF cookie no longer
+   * guaranteed to be first-party.
+   *
+   * `returnTo` is registered with Kratos at flow-init time and MUST be listed
+   * in `selfservice.allowed_return_urls`, or Kratos silently substitutes the
+   * default return URL and the user lands on the wrong host.
+   */
+  async function signInWithProvider(
+    provider: string,
+    returnTo?: string
+  ): Promise<void> {
+    try {
+      userStore.setIsLoading(true);
+
+      let flow: KratosFlow;
+      try {
+        flow = await kratosService.initLoginFlow(false, returnTo);
+      } catch (error: unknown) {
+        if (!isKratosErrorId(error, KratosErrorIds.SESSION_ALREADY_AVAILABLE)) {
+          throw error;
+        }
+        // A live session blocks a new login flow. The user asked to sign in
+        // with a provider, so honour that: drop the session and retry once.
+        await clearSession();
+        flow = await kratosService.initLoginFlow(false, returnTo);
+      }
+
+      const csrfNode = flow.ui.nodes.find(
+        (node: KratosFlowNode) => node.attributes?.name === "csrf_token"
+      );
+      const csrfToken = String(csrfNode?.attributes?.value || "");
+      if (!csrfToken) {
+        throw new Error("CSRF token not found in login flow");
+      }
+
+      submitFormNavigation(kratosService.buildFlowSubmitUrl(flow.ui.action), {
+        csrf_token: csrfToken,
+        provider,
+      });
+    } catch (error: unknown) {
+      userStore.setIsLoading(false);
+      const axiosError = error as AxiosError<{
+        ui?: { messages?: Array<{ text: string }> };
+        error?: { message?: string };
+      }>;
+      notifications.error(
+        t("auth.error"),
+        axiosError.response?.data?.ui?.messages?.[0]?.text ||
+          axiosError.message ||
+          t("auth.loginError")
+      );
+      throw error;
+    }
+    // No `finally`: on the success path the browser is already navigating away,
+    // and clearing the loading flag would flash the form back into view.
+  }
+
   async function signMeUp(
     email: string,
     password: string,
@@ -338,6 +422,7 @@ export const useKratosAuth = () => {
     isLoading,
     getCurrentSession,
     signMeIn,
+    signInWithProvider,
     signMeUp,
     signMeOut,
     clearSession,

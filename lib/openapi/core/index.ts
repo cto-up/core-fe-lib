@@ -30,6 +30,7 @@ export type { NewUser } from './models/NewUser';
 export type { PublicTenantSchema } from './models/PublicTenantSchema';
 export { Role } from './models/Role';
 export type { SettingsFlow } from './models/SettingsFlow';
+export type { SocialSignInResult } from './models/SocialSignInResult';
 export type { Tenant } from './models/Tenant';
 export type { TenantFeatureLicenses } from './models/TenantFeatureLicenses';
 export type { TenantFeatures } from './models/TenantFeatures';

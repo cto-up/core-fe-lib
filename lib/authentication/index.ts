@@ -7,11 +7,12 @@ export { configureKratos } from "./core/kratos-config";
 export type { KratosConfig } from "./core/kratos-config";
 
 // Kratos service
-export { kratosService } from "./core/kratos-service";
+export { kratosService, getOidcProviders } from "./core/kratos-service";
 export type {
   KratosSession,
   KratosFlow,
   KratosFlowNode,
+  KratosOidcProvider,
   KratosIdentity,
   KratosFlowResponse,
   PasswordLoginFlowData,
