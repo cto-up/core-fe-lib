@@ -34,6 +34,14 @@ export default {
     reference: "Référence",
     retry: "Retour à la connexion",
   },
+  // Where a social sign-in round-trip lands: the identity exists, the
+  // tenant membership is being attached. See ADR 039 in the lms repo.
+  socialCallback: {
+    working: { title: "Finalisation de la connexion", body: "Configuration de votre compte…" },
+    denied: { title: "Cet espace est sur invitation", body: "Votre compte est bien connecté, mais cet espace n'accepte pas les inscriptions libres. Demandez une invitation à un administrateur." },
+    failed: { title: "Connexion impossible à finaliser", body: "Votre compte a été créé, mais nous n'avons pas pu le rattacher à cet espace. Réessayez dans un instant." },
+    backToSignIn: "Retour à la connexion",
+  },
   signIn: {
     title: "Connexion",
     subtitle: "Connectez-vous pour accéder à votre compte",

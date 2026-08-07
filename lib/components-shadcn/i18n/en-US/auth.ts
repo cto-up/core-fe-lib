@@ -34,6 +34,14 @@ export default {
     reference: "Reference",
     retry: "Back to sign-in",
   },
+  // Where a social sign-in round-trip lands: the identity exists, the
+  // tenant membership is being attached. See ADR 039 in the lms repo.
+  socialCallback: {
+    working: { title: "Finishing sign-in", body: "Setting up your account…" },
+    denied: { title: "This space is invite-only", body: "Your account signed in, but this space doesn't accept self-service sign-ups. Ask an administrator for an invitation." },
+    failed: { title: "We couldn't finish signing you in", body: "Your account was created, but we couldn't connect it to this space. Please try again in a moment." },
+    backToSignIn: "Back to sign-in",
+  },
   signIn: {
     title: "Sign In",
     subtitle: "Sign in to access your account",
