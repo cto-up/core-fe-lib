@@ -227,12 +227,20 @@ const props = withDefaults(
      * Kratos silently falls back to its default return URL.
      */
     socialReturnPath?: string;
+    /**
+     * OAuth `prompt` forwarded to the provider. `select_account` makes it show
+     * its account chooser on every sign-in, so signing out of this app no
+     * longer looks like it did nothing — at the cost of one click. Empty
+     * string sends nothing and lets the provider decide (straight back in).
+     */
+    socialPrompt?: string;
   }>(),
   {
     recoveryPath: "/user/me/password-reset-request",
     signupPath: "/signup",
     continuePath: "/",
     socialReturnPath: "/",
+    socialPrompt: "select_account",
   }
 );
 
@@ -349,7 +357,11 @@ async function handleProviderSignIn(provider: string): Promise<void> {
     returnTo.searchParams.set("from", from);
   }
   try {
-    await signInWithProvider(provider, returnTo.toString(), pendingFlow.value);
+    await signInWithProvider(provider, {
+      returnTo: returnTo.toString(),
+      flow: pendingFlow.value,
+      prompt: props.socialPrompt || undefined,
+    });
   } catch {
     socialPending.value = "";
   }

@@ -225,8 +225,14 @@ const props = withDefaults(
      * the new identity to this host's tenant.
      */
     socialReturnPath?: string;
+    /** See SigninPage's prop of the same name. */
+    socialPrompt?: string;
   }>(),
-  { signinPath: "/signin", socialReturnPath: "/" }
+  {
+    signinPath: "/signin",
+    socialReturnPath: "/",
+    socialPrompt: "select_account",
+  }
 );
 
 const { t, te } = useI18n();
@@ -284,7 +290,10 @@ async function handleProviderSignUp(provider: string): Promise<void> {
     returnTo.searchParams.set("from", from);
   }
   try {
-    await signInWithProvider(provider, returnTo.toString());
+    await signInWithProvider(provider, {
+      returnTo: returnTo.toString(),
+      prompt: props.socialPrompt || undefined,
+    });
   } catch {
     socialPending.value = "";
   }
