@@ -78,7 +78,7 @@
           "
         >
           <Info class="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{{ message.text }}</span>
+          <span>{{ messageText(message) }}</span>
         </div>
 
         <!-- Social sign-in. Rendered from the login flow itself, so a provider
@@ -188,9 +188,12 @@ import {
   getFlowOrigin,
   getOidcProviders,
   kratosService,
+  providerDisplayName,
   KratosFlowType,
+  KratosMessageIds,
   type KratosFlow,
   type KratosOidcProvider,
+  type KratosUiMessage,
 } from "../../authentication/core/kratos-service";
 import { useUserStore } from "core-fe-lib/stores/user-store";
 import {
@@ -256,6 +259,34 @@ const tf = (key: string, fallback: string): string => {
 /** Same guarantee as `tf`, for keys outside the `alreadySignedIn` group. */
 const tOr = (key: string, fallback: string): string =>
   te(key) ? t(key) : fallback;
+/**
+ * What to actually show for a message Kratos attached to the flow.
+ *
+ * Only the account-linking prompt is reworded. Kratos's own text is accurate
+ * but written for developers — it repeats the email, says "at google", and
+ * never states the reassuring part: nothing is broken, you already have an
+ * account, this is a one-time step. That sentence is the difference between a
+ * user typing their password and filing a ticket.
+ *
+ * Anything we do not recognise falls through to Kratos's text verbatim, so a
+ * new or changed message still reaches the user instead of vanishing.
+ */
+function messageText(message: KratosUiMessage): string {
+  if (message.id === KratosMessageIds.LOGIN_LINK_ACCOUNT) {
+    const ctx = message.context ?? {};
+    const email = String(
+      ctx.duplicateIdentifier ?? ctx.duplicate_identifier ?? ""
+    );
+    const provider = providerDisplayName(String(ctx.provider ?? ""));
+    if (email && provider) {
+      return te("auth.signIn.linkAccount")
+        ? t("auth.signIn.linkAccount", { email, provider })
+        : `You already have an account with ${email}. Enter your password once and we'll connect ${provider} to it — next time, one click is enough.`;
+    }
+  }
+  return message.text;
+}
+
 /** Kept separate from `tOr`: this one needs a runtime interpolation argument. */
 const continueWithLabel = (provider: string): string =>
   te("auth.signIn.continueWith")
