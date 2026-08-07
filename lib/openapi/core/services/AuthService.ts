@@ -80,4 +80,48 @@ export class AuthService {
             },
         });
     }
+    /**
+     * Accept the invitation to the tenant of the current host
+     * Turns a pending membership into an active one and writes the tenant into the identity's `metadata_public.tenant_memberships` — without that claim the membership row exists and every request is still rejected.
+     *
+     * Deliberately outside the auth middleware, for the reason /public-api/v1/auth/social/complete is: authorization is evaluated against the host's tenant, and an invitee has no membership claim for the tenant inviting them, so the middleware would 401 them before any handler runs. The endpoint verifies the Kratos session itself and resolves the tenant from Origin (falling back to Host) — the invitation email links to the tenant's own host, so Origin names it.
+     *
+     * The seat guard is re-checked here, not only at invite time: seats can be taken by someone else in between, and this is the moment one is consumed.
+     *
+     * @returns void
+     * @throws ApiError
+     */
+    public static acceptInvitation(): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/public-api/v1/invitations/accept',
+            errors: {
+                401: `No valid session`,
+                403: `The tenant has no seat left for this member`,
+                404: `No pending invitation for this caller and tenant`,
+                410: `The invitation expired`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Decline the invitation to the tenant of the current host
+     * The membership row is kept as `rejected` rather than deleted, so re-inviting somebody who already said no is a visible act rather than a silent retry. No claim is written — declining grants nothing.
+     *
+     * Outside the auth middleware for the same reason as the accept endpoint: the invitee has no membership claim for the inviting tenant, so a call on that host is rejected before any handler runs. The session is verified here and the tenant comes from Origin.
+     *
+     * @returns void
+     * @throws ApiError
+     */
+    public static rejectInvitation(): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/public-api/v1/invitations/reject',
+            errors: {
+                401: `No valid session`,
+                404: `No pending invitation for this caller and tenant`,
+                500: `Internal server error`,
+            },
+        });
+    }
 }
