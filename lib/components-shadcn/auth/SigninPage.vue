@@ -185,6 +185,7 @@ import { useVuelidate } from "@vuelidate/core";
 import { required, email as emailRule } from "@vuelidate/validators";
 import { useKratosAuth, useTenant } from "../../authentication/vue";
 import {
+  getFlowOrigin,
   getOidcProviders,
   kratosService,
   KratosFlowType,
@@ -298,6 +299,22 @@ onMounted(async () => {
   if (flowId) {
     try {
       const flow = await kratosService.getFlow(KratosFlowType.Login, flowId);
+
+      // Kratos takes a single `login.ui_url`, so a flow it diverts to the UI —
+      // account linking, an expired flow — lands every tenant on that one host.
+      // Send the user back to the host they started on, carrying the flow: it
+      // is the same flow either way (the Kratos cookies span the parent
+      // domain), and finishing a sign-in on someone else's branding reads as a
+      // bug. Guarded to same-registrable-domain, so this cannot become an open
+      // redirect.
+      const origin = getFlowOrigin(flow);
+      if (origin) {
+        globalThis.location.replace(
+          `${origin}${route.path}?flow=${encodeURIComponent(flowId)}`
+        );
+        return;
+      }
+
       pendingFlow.value = flow;
       oidcProviders.value = socialSignInEnabled.value
         ? getOidcProviders(flow)
