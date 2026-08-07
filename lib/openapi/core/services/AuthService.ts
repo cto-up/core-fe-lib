@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Identify } from '../models/Identify';
+import type { SocialSignInResult } from '../models/SocialSignInResult';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -56,6 +57,25 @@ export class AuthService {
             mediaType: 'application/json',
             errors: {
                 400: `Invalid request`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * Attach a social sign-in identity to the tenant of the current host
+     * Completes a social (OIDC) sign-in. The identity provider creates the identity inside Kratos, which serves every tenant from one host and therefore cannot know which tenant the user signed in to. Until the membership exists, the session is real but every authenticated call is rejected. The SPA calls this once, right after the OIDC redirect lands back on the tenant host; the tenant is read from the request Host, and the caller is identified from their Kratos session (this endpoint deliberately accepts a session the normal auth middleware would reject, since the missing membership is the point). Idempotent: an identity that is already a member is answered with provisioned=false. Subject to the tenant's self-service signup setting, the same gate /public-api/v1/auth/identify applies.
+     *
+     * @returns SocialSignInResult The identity is a member of this tenant
+     * @throws ApiError
+     */
+    public static completeSocialSignIn(): CancelablePromise<SocialSignInResult> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/public-api/v1/auth/social/complete',
+            errors: {
+                400: `The host resolves to no tenant`,
+                401: `No valid session`,
+                403: `This tenant does not allow self-service signup`,
                 500: `Internal server error`,
             },
         });

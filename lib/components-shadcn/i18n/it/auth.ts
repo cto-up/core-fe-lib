@@ -33,6 +33,10 @@ export default {
     forgotPassword: "Password dimenticata?",
     noAccount: "Non hai ancora un account?",
     signUpLink: "Registrati",
+    // Social sign-in buttons are rendered from the Kratos login flow; the
+    // provider name is substituted at runtime.
+    continueWith: "Continua con {provider}",
+    orContinueWith: "oppure",
   },
   signUp: {
     title: "Registrazione",

@@ -62,6 +62,40 @@
         </CardDescription>
       </CardHeader>
       <CardContent class="grid gap-4">
+        <!-- Social sign-in. Rendered from the login flow itself, so a provider
+             that is not configured in kratos.yml simply produces no button. -->
+        <template v-if="oidcProviders.length">
+          <Button
+            v-for="provider in oidcProviders"
+            :key="provider.value"
+            variant="outline"
+            class="w-full"
+            :disabled="socialPending !== ''"
+            @click="handleProviderSignIn(provider.value)"
+          >
+            <Loader2
+              v-if="socialPending === provider.value"
+              class="mr-2 h-4 w-4 animate-spin"
+            />
+            <GoogleMark
+              v-else-if="provider.value === 'google'"
+              class="mr-2 h-4 w-4"
+            />
+            <KeyRound v-else class="mr-2 h-4 w-4" />
+            {{ continueWithLabel(provider.label) }}
+          </Button>
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <span class="w-full border-t" />
+            </div>
+            <div class="relative flex justify-center text-xs uppercase">
+              <span class="bg-card px-2 text-muted-foreground">
+                {{ tOr("auth.signIn.orContinueWith", "or") }}
+              </span>
+            </div>
+          </div>
+        </template>
+
         <div class="grid gap-2">
           <Label for="email">{{ $t("auth.signIn.emailLabel") }}</Label>
           <div class="relative">
@@ -131,6 +165,11 @@ import { useRoute, useRouter } from "vue-router";
 import { useVuelidate } from "@vuelidate/core";
 import { required, email as emailRule } from "@vuelidate/validators";
 import { useKratosAuth, useTenant } from "../../authentication/vue";
+import {
+  getOidcProviders,
+  kratosService,
+  type KratosOidcProvider,
+} from "../../authentication/core/kratos-service";
 import { useUserStore } from "core-fe-lib/stores/user-store";
 import {
   Card,
@@ -143,9 +182,10 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
-import { Loader2, Mail, UserRound } from "lucide-vue-next";
+import { KeyRound, Loader2, Mail, UserRound } from "lucide-vue-next";
 import PasswordInput from "../primitives/PasswordInput.vue";
 import AppBackground from "../primitives/AppBackground.vue";
+import GoogleMark from "../primitives/GoogleMark.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -153,11 +193,25 @@ const props = withDefaults(
     signupPath?: string;
     /** Where "Continue" goes when there is no `?from=` on the URL. */
     continuePath?: string;
+    /**
+     * In-app path the browser returns to after a social sign-in round-trip.
+     *
+     * Multi-tenant consumers point this at a page that attaches the freshly
+     * created identity to the tenant of the current host — Kratos creates the
+     * identity but knows nothing about tenants, so without that step the user
+     * gets a session the API then rejects. Defaults to "/" for single-tenant
+     * apps, where the identity already carries everything it needs.
+     *
+     * MUST be reachable at a `selfservice.allowed_return_urls` origin, or
+     * Kratos silently falls back to its default return URL.
+     */
+    socialReturnPath?: string;
   }>(),
   {
     recoveryPath: "/user/me/password-reset-request",
     signupPath: "/signup",
     continuePath: "/",
+    socialReturnPath: "/",
   }
 );
 
@@ -169,6 +223,14 @@ const tf = (key: string, fallback: string): string => {
   const full = `auth.alreadySignedIn.${key}`;
   return te(full) ? t(full) : fallback;
 };
+/** Same guarantee as `tf`, for keys outside the `alreadySignedIn` group. */
+const tOr = (key: string, fallback: string): string =>
+  te(key) ? t(key) : fallback;
+/** Kept separate from `tOr`: this one needs a runtime interpolation argument. */
+const continueWithLabel = (provider: string): string =>
+  te("auth.signIn.continueWith")
+    ? t("auth.signIn.continueWith", { provider })
+    : `Continue with ${provider}`;
 
 const email = ref("");
 const password = ref("");
@@ -177,7 +239,11 @@ const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const { canSignUp } = useTenant();
-const { signMeIn, getCurrentSession, clearSession } = useKratosAuth();
+const { signMeIn, signInWithProvider, getCurrentSession, clearSession } =
+  useKratosAuth();
+
+const oidcProviders = ref<KratosOidcProvider[]>([]);
+const socialPending = ref("");
 
 const activeSession = computed(() =>
   userStore.session?.active ? userStore.session : null
@@ -190,8 +256,44 @@ const sessionEmail = computed(
 // mount. This covers the cases it cannot: a consumer with no such guard, and a
 // session that only becomes observable after the page has rendered.
 onMounted(() => {
-  if (!activeSession.value) void getCurrentSession();
+  if (!activeSession.value) {
+    void getCurrentSession();
+    void loadOidcProviders();
+  }
 });
+
+/**
+ * Ask Kratos which social providers this deployment offers.
+ *
+ * Deliberately a throwaway flow: the flow the user eventually submits is minted
+ * fresh at click time, because this one may well have expired by then. All we
+ * want here is the list of buttons to draw — a deployment with no `oidc` method
+ * configured returns no such nodes and the section disappears on its own.
+ */
+async function loadOidcProviders(): Promise<void> {
+  try {
+    const flow = await kratosService.initLoginFlow(false);
+    oidcProviders.value = getOidcProviders(flow);
+  } catch {
+    // Social sign-in is additive: if the probe fails (offline, an already-live
+    // session, Kratos unhappy), the password form must still work.
+    oidcProviders.value = [];
+  }
+}
+
+async function handleProviderSignIn(provider: string): Promise<void> {
+  socialPending.value = provider;
+  const from = typeof route.query.from === "string" ? route.query.from : "";
+  const returnTo = new URL(props.socialReturnPath, globalThis.location.origin);
+  if (from.startsWith("/") && !from.startsWith("//")) {
+    returnTo.searchParams.set("from", from);
+  }
+  try {
+    await signInWithProvider(provider, returnTo.toString());
+  } catch {
+    socialPending.value = "";
+  }
+}
 
 function continueToApp() {
   const from = typeof route.query.from === "string" ? route.query.from : "";
