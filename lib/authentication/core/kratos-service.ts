@@ -71,11 +71,31 @@ export interface KratosSession {
   };
 }
 
+/**
+ * A message Kratos attaches to a flow or node.
+ *
+ * `context` carries the substitutions behind `text` (the duplicate email, the
+ * provider, …). Keeping it is what lets the UI replace Kratos's wording with
+ * its own rather than printing a sentence written for developers.
+ */
+export interface KratosUiMessage {
+  id: number;
+  text: string;
+  type: string;
+  context?: Record<string, unknown>;
+}
+
+/** Kratos message IDs the UI deliberately rewords. */
+export const KratosMessageIds = {
+  /** "…that email is already used by another account" — the linking prompt. */
+  LOGIN_LINK_ACCOUNT: 1010016,
+} as const;
+
 export interface KratosFlowNode {
   type: string;
   group: string;
   attributes: FlowNodeAttributes;
-  messages?: Array<{ id: number; text: string; type: string }>;
+  messages?: KratosUiMessage[];
   meta?: { label?: { text: string } };
 }
 
@@ -91,7 +111,7 @@ export interface KratosFlow {
     action: string;
     method: string;
     nodes: KratosFlowNode[];
-    messages?: Array<{ id: number; text: string; type: string }>;
+    messages?: KratosUiMessage[];
   };
 }
 
@@ -179,7 +199,7 @@ const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
  * "Continue with {provider}" button yields "Continue with Sign in with google".
  * The id is the stable thing; the wording is ours.
  */
-function providerDisplayName(id: string): string {
+export function providerDisplayName(id: string): string {
   return PROVIDER_DISPLAY_NAMES[id.toLowerCase()] ?? id.charAt(0).toUpperCase() + id.slice(1);
 }
 

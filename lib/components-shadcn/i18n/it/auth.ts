@@ -46,6 +46,9 @@ export default {
     // provider name is substituted at runtime.
     continueWith: "Continua con {provider}",
     orContinueWith: "oppure",
+    // Replaces Kratos's own wording for message 1010016 — an email that
+    // already belongs to a password account. Reassure, don't report.
+    linkAccount: "Hai già un account con {email}. Inserisci la password una volta e collegheremo {provider} — la prossima volta basterà un clic.",
   },
   signUp: {
     title: "Registrazione",
