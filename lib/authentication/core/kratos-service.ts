@@ -93,12 +93,48 @@ export interface KratosFlow {
   };
 }
 
+/** What `GET /self-service/errors?id=…` returns. */
+export interface KratosFlowError {
+  id: string;
+  error?: {
+    code?: number;
+    status?: string;
+    reason?: string;
+    message?: string;
+  };
+}
+
 /** A social sign-in button Kratos advertises on a login/registration flow. */
 export interface KratosOidcProvider {
   /** The provider id from kratos.yml — submitted back as the `provider` field. */
   value: string;
   /** Kratos's own label for the button, e.g. "Google". */
   label: string;
+}
+
+/**
+ * Brand spellings a plain capitalisation would get wrong.
+ */
+const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
+  google: "Google",
+  github: "GitHub",
+  gitlab: "GitLab",
+  microsoft: "Microsoft",
+  linkedin: "LinkedIn",
+  apple: "Apple",
+  facebook: "Facebook",
+};
+
+/**
+ * A human display name for a provider id.
+ *
+ * Deliberately NOT Kratos's own `meta.label.text`: that is a whole sentence
+ * ("Sign in with google", lowercased provider and all), so dropping it into a
+ * "Continue with {provider}" button yields "Continue with Sign in with google".
+ * The id is the stable thing; the wording is ours.
+ */
+function providerDisplayName(id: string): string {
+  return PROVIDER_DISPLAY_NAMES[id.toLowerCase()] ?? id.charAt(0).toUpperCase() + id.slice(1);
 }
 
 /**
@@ -111,10 +147,10 @@ export function getOidcProviders(flow: KratosFlow): KratosOidcProvider[] {
     .filter(
       (node) => node.group === "oidc" && node.attributes?.name === "provider"
     )
-    .map((node) => ({
-      value: String(node.attributes?.value ?? ""),
-      label: node.meta?.label?.text || String(node.attributes?.value ?? ""),
-    }))
+    .map((node) => {
+      const value = String(node.attributes?.value ?? "");
+      return { value, label: providerDisplayName(value) };
+    })
     .filter((provider) => provider.value !== "");
 }
 
@@ -692,6 +728,19 @@ class KratosService {
     const response = await this.client.get(
       `/self-service/${flowType}/flows?id=${flowId}`
     );
+    return response.data;
+  }
+
+  /**
+   * Resolve the error behind a `?id=` on the error UI URL.
+   *
+   * Kratos does not put the reason in the redirect — it stores the error and
+   * sends only its id, so the page it lands on has to ask for the detail. A
+   * flow that dies before it can render (expired, provider refused, identity
+   * schema rejected the mapped traits) ends up here and nowhere else.
+   */
+  async getFlowError(id: string): Promise<KratosFlowError> {
+    const response = await this.client.get(`/self-service/errors?id=${id}`);
     return response.data;
   }
 

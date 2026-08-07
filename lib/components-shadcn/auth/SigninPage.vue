@@ -62,6 +62,25 @@
         </CardDescription>
       </CardHeader>
       <CardContent class="grid gap-4">
+        <!-- Messages Kratos attached to a flow it redirected us to. This is how
+             account linking speaks: "that email is already used by another
+             account — sign in below to add Google as another way in". Dropping
+             them leaves the user staring at a bare form after a failed social
+             sign-in, with no idea why. -->
+        <div
+          v-for="message in flowMessages"
+          :key="message.id"
+          class="flex gap-2 rounded-md border p-3 text-sm"
+          :class="
+            message.type === 'error'
+              ? 'border-destructive/40 bg-destructive/10 text-destructive'
+              : 'border-primary/30 bg-primary/5 text-foreground'
+          "
+        >
+          <Info class="mt-0.5 h-4 w-4 shrink-0" />
+          <span>{{ message.text }}</span>
+        </div>
+
         <!-- Social sign-in. Rendered from the login flow itself, so a provider
              that is not configured in kratos.yml simply produces no button. -->
         <template v-if="oidcProviders.length">
@@ -159,7 +178,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
 import { useVuelidate } from "@vuelidate/core";
@@ -168,6 +187,8 @@ import { useKratosAuth, useTenant } from "../../authentication/vue";
 import {
   getOidcProviders,
   kratosService,
+  KratosFlowType,
+  type KratosFlow,
   type KratosOidcProvider,
 } from "../../authentication/core/kratos-service";
 import { useUserStore } from "core-fe-lib/stores/user-store";
@@ -182,7 +203,7 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
-import { KeyRound, Loader2, Mail, UserRound } from "lucide-vue-next";
+import { Info, KeyRound, Loader2, Mail, UserRound } from "lucide-vue-next";
 import PasswordInput from "../primitives/PasswordInput.vue";
 import AppBackground from "../primitives/AppBackground.vue";
 import GoogleMark from "../primitives/GoogleMark.vue";
@@ -238,12 +259,18 @@ const switching = ref(false);
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
-const { canSignUp } = useTenant();
+const { canSignUp, socialSignInEnabled } = useTenant();
 const { signMeIn, signInWithProvider, getCurrentSession, clearSession } =
   useKratosAuth();
 
 const oidcProviders = ref<KratosOidcProvider[]>([]);
 const socialPending = ref("");
+
+// A flow Kratos redirected us to (`/auth/login?flow=…`) rather than one we
+// minted. Held so both submit paths reuse it — see signMeIn's note on why
+// replacing it silently breaks account linking.
+const pendingFlow = ref<KratosFlow | null>(null);
+const flowMessages = computed(() => pendingFlow.value?.ui?.messages ?? []);
 
 const activeSession = computed(() =>
   userStore.session?.active ? userStore.session : null
@@ -255,9 +282,36 @@ const sessionEmail = computed(
 // The host app's router guard normally redirects a signed-in visitor before we
 // mount. This covers the cases it cannot: a consumer with no such guard, and a
 // session that only becomes observable after the page has rendered.
-onMounted(() => {
+onMounted(async () => {
+  // Kratos sends the browser here with `?flow=` when it needs the UI to finish
+  // something it started — account linking above all. Adopt that flow instead
+  // of starting a fresh one.
+  const flowId = typeof route.query.flow === "string" ? route.query.flow : "";
+  if (flowId) {
+    try {
+      const flow = await kratosService.getFlow(KratosFlowType.Login, flowId);
+      pendingFlow.value = flow;
+      oidcProviders.value = socialSignInEnabled.value
+        ? getOidcProviders(flow)
+        : [];
+      return;
+    } catch {
+      // Expired or already consumed — fall through and behave as a plain visit
+      // rather than stranding the user on a dead form.
+    }
+  }
+
   if (!activeSession.value) {
     void getCurrentSession();
+    void loadOidcProviders();
+  }
+});
+
+// Re-probe if the tenant payload lands after mount and permits social sign-in.
+// It is fetched asynchronously at startup, so on a cold load the first mount can
+// see an empty tenant; without this the buttons would simply never appear.
+watch(socialSignInEnabled, (enabled) => {
+  if (enabled && !activeSession.value && !oidcProviders.value.length) {
     void loadOidcProviders();
   }
 });
@@ -271,6 +325,12 @@ onMounted(() => {
  * configured returns no such nodes and the section disappears on its own.
  */
 async function loadOidcProviders(): Promise<void> {
+  // Per-tenant kill switch. Checked before the probe rather than in the
+  // template so a tenant that turned social sign-in off pays no round trip.
+  if (!socialSignInEnabled.value) {
+    oidcProviders.value = [];
+    return;
+  }
   try {
     const flow = await kratosService.initLoginFlow(false);
     oidcProviders.value = getOidcProviders(flow);
@@ -289,7 +349,7 @@ async function handleProviderSignIn(provider: string): Promise<void> {
     returnTo.searchParams.set("from", from);
   }
   try {
-    await signInWithProvider(provider, returnTo.toString());
+    await signInWithProvider(provider, returnTo.toString(), pendingFlow.value);
   } catch {
     socialPending.value = "";
   }
@@ -327,7 +387,7 @@ const v$ = useVuelidate(rules, { email, password });
 const handleSignIn = async () => {
   const isFormCorrect = await v$.value.$validate();
   if (isFormCorrect) {
-    signMeIn(email.value, password.value);
+    signMeIn(email.value, password.value, pendingFlow.value);
   }
 };
 </script>

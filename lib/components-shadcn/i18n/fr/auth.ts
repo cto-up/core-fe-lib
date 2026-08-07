@@ -25,6 +25,15 @@ export default {
     toastTitle: "Déjà connecté",
     toastDescription: "Nous vous ramenons là où vous en étiez.",
   },
+  // Kratos redirects here (selfservice.flows.error.ui_url) when a flow
+  // dies before it can render — expired, interrupted, or traits rejected.
+  flowError: {
+    title: "Connexion impossible à finaliser",
+    subtitle: "Aucune modification n'a été apportée à votre compte.",
+    generic: "La tentative de connexion a expiré ou a été interrompue. Recommencer suffit généralement.",
+    reference: "Référence",
+    retry: "Retour à la connexion",
+  },
   signIn: {
     title: "Connexion",
     subtitle: "Connectez-vous pour accéder à votre compte",

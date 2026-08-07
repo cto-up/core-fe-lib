@@ -24,6 +24,15 @@ export default {
     toastTitle: "Ya has iniciado sesión",
     toastDescription: "Te llevamos de vuelta a donde lo dejaste.",
   },
+  // Kratos redirects here (selfservice.flows.error.ui_url) when a flow
+  // dies before it can render — expired, interrupted, or traits rejected.
+  flowError: {
+    title: "No se pudo completar el inicio de sesión",
+    subtitle: "No se ha cambiado nada en tu cuenta.",
+    generic: "El intento de inicio de sesión expiró o se interrumpió. Volver a empezar suele resolverlo.",
+    reference: "Referencia",
+    retry: "Volver al inicio de sesión",
+  },
   signIn: {
     title: "Iniciar sesión",
     subtitle: "Inicia sesión para acceder a tu cuenta",

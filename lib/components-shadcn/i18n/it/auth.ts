@@ -24,6 +24,15 @@ export default {
     toastTitle: "Accesso già effettuato",
     toastDescription: "Ti riportiamo dove eri rimasto.",
   },
+  // Kratos redirects here (selfservice.flows.error.ui_url) when a flow
+  // dies before it can render — expired, interrupted, or traits rejected.
+  flowError: {
+    title: "Non è stato possibile completare l'accesso",
+    subtitle: "Non è stato modificato nulla nel tuo account.",
+    generic: "Il tentativo di accesso è scaduto o è stato interrotto. Ricominciare di solito risolve.",
+    reference: "Riferimento",
+    retry: "Torna all'accesso",
+  },
   signIn: {
     title: "Accesso",
     subtitle: "Accedi per accedere al tuo account",

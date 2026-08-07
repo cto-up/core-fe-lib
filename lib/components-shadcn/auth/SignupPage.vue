@@ -71,6 +71,47 @@
       </CardHeader>
 
       <CardContent class="space-y-4">
+        <!-- Above the email field on purpose. The form below is a magic-link
+             round trip — leave the app, find the mail, come back — where this
+             is a few seconds. Put first, it is the highest-value control on
+             the page; put below, people start typing before they see it.
+             Same control and same wording as the sign-in page: the provider
+             flow signs up and signs in with one click, so labelling it
+             "Sign up with Google" here would promise a distinction that does
+             not exist. -->
+        <template v-if="oidcProviders.length">
+          <Button
+            v-for="provider in oidcProviders"
+            :key="provider.value"
+            variant="outline"
+            size="lg"
+            class="w-full"
+            :disabled="loading || socialPending !== ''"
+            @click="handleProviderSignUp(provider.value)"
+          >
+            <Loader2
+              v-if="socialPending === provider.value"
+              class="mr-2 h-4 w-4 animate-spin"
+            />
+            <GoogleMark
+              v-else-if="provider.value === 'google'"
+              class="mr-2 h-4 w-4"
+            />
+            <KeyRound v-else class="mr-2 h-4 w-4" />
+            {{ continueWithLabel(provider.label) }}
+          </Button>
+          <div class="relative py-1">
+            <div class="absolute inset-0 flex items-center">
+              <span class="w-full border-t" />
+            </div>
+            <div class="relative flex justify-center text-xs uppercase">
+              <span class="bg-card px-2 text-muted-foreground">
+                {{ tOr("auth.signIn.orContinueWith", "or") }}
+              </span>
+            </div>
+          </div>
+        </template>
+
         <div class="space-y-2">
           <Label for="email">{{ $t("auth.signUp.emailLabel") }}</Label>
           <div class="relative">
@@ -138,7 +179,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import { useToast } from "../ui/toast/use-toast";
 import { AuthService } from "../../openapi/core";
 import {
@@ -147,7 +189,16 @@ import {
   maxLength,
 } from "@vuelidate/validators";
 import useVuelidate from "@vuelidate/core";
-import { getUserFriendlyMessage, useTenant } from "../../authentication/vue";
+import {
+  getUserFriendlyMessage,
+  useTenant,
+  useKratosAuth,
+} from "../../authentication/vue";
+import {
+  getOidcProviders,
+  kratosService,
+  type KratosOidcProvider,
+} from "../../authentication/core/kratos-service";
 import { useI18n } from "vue-i18n";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -160,24 +211,84 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { Mail, Loader2 } from "lucide-vue-next";
+import { KeyRound, Mail, Loader2 } from "lucide-vue-next";
 import { RouterLink } from "vue-router";
 import AppBackground from "../primitives/AppBackground.vue";
+import GoogleMark from "../primitives/GoogleMark.vue";
 
-withDefaults(
+const props = withDefaults(
   defineProps<{
     signinPath?: string;
+    /**
+     * Where a social sign-up returns to. Same contract as SigninPage's prop of
+     * the same name — multi-tenant consumers point it at the page that attaches
+     * the new identity to this host's tenant.
+     */
+    socialReturnPath?: string;
   }>(),
-  { signinPath: "/signin" }
+  { signinPath: "/signin", socialReturnPath: "/" }
 );
 
-const { t } = useI18n();
+const { t, te } = useI18n();
+const tOr = (key: string, fallback: string): string =>
+  te(key) ? t(key) : fallback;
+const continueWithLabel = (provider: string): string =>
+  te("auth.signIn.continueWith")
+    ? t("auth.signIn.continueWith", { provider })
+    : `Continue with ${provider}`;
 const { toast } = useToast();
-const { canSignUp } = useTenant();
+const { canSignUp, socialSignInEnabled } = useTenant();
 
 const email = ref("");
 const loading = ref(false);
 const emailSent = ref(false);
+
+const route = useRoute();
+const { signInWithProvider } = useKratosAuth();
+const oidcProviders = ref<KratosOidcProvider[]>([]);
+const socialPending = ref("");
+
+// Signing up with a provider goes through the LOGIN flow, not the registration
+// flow: Kratos escalates an unknown subject into a registration by itself, and
+// with the mapper supplying every required trait it completes without a form.
+// One code path for both pages, and one less flow to keep configured.
+async function loadOidcProviders(): Promise<void> {
+  // Per-tenant kill switch, checked before the probe so a tenant that turned
+  // social sign-in off pays no round trip.
+  if (!canSignUp.value || !socialSignInEnabled.value) {
+    oidcProviders.value = [];
+    return;
+  }
+  try {
+    const flow = await kratosService.initLoginFlow(false);
+    oidcProviders.value = getOidcProviders(flow);
+  } catch {
+    // Additive: the email form must still work if the probe fails.
+    oidcProviders.value = [];
+  }
+}
+
+onMounted(loadOidcProviders);
+
+// The public tenant payload is fetched asynchronously at startup, so a cold
+// load can mount before it lands. Re-probe once it does.
+watch(socialSignInEnabled, (enabled) => {
+  if (enabled && !oidcProviders.value.length) void loadOidcProviders();
+});
+
+async function handleProviderSignUp(provider: string): Promise<void> {
+  socialPending.value = provider;
+  const from = typeof route.query.from === "string" ? route.query.from : "";
+  const returnTo = new URL(props.socialReturnPath, globalThis.location.origin);
+  if (from.startsWith("/") && !from.startsWith("//")) {
+    returnTo.searchParams.set("from", from);
+  }
+  try {
+    await signInWithProvider(provider, returnTo.toString());
+  } catch {
+    socialPending.value = "";
+  }
+}
 
 const rules = computed(() => ({
   email: { required, emailVerif, $autoDirty: true, maxLength: maxLength(100) },
