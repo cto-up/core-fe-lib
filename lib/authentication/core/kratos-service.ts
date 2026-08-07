@@ -85,12 +85,58 @@ export interface KratosFlow {
   expires_at: string;
   issued_at: string;
   request_url: string;
+  /** Present when the flow was started with `?return_to=`. */
+  return_to?: string;
   ui: {
     action: string;
     method: string;
     nodes: KratosFlowNode[];
     messages?: Array<{ id: number; text: string; type: string }>;
   };
+}
+
+/**
+ * The origin the flow was STARTED from, when that differs from where we are now.
+ *
+ * Kratos allows exactly one `login.ui_url`, so a flow it diverts to the UI —
+ * account linking above all — lands every tenant on that single host. A user who
+ * began on `learn.<domain>` should not find themselves on the apex mid-sign-in:
+ * different branding, different tenant, reads as a bug. The flow knows where it
+ * came from, so the page it lands on can hand it back.
+ *
+ * Returns null when the flow started here, when there is nothing to read, or —
+ * deliberately — when the recorded origin is not under the same registrable
+ * domain. Redirecting anywhere else on the strength of a URL found in a flow
+ * would be an open redirect.
+ */
+export function getFlowOrigin(flow: KratosFlow): string | null {
+  const raw =
+    flow.return_to ||
+    (() => {
+      try {
+        return new URL(flow.request_url).searchParams.get("return_to") ?? "";
+      } catch {
+        return "";
+      }
+    })();
+  if (!raw) return null;
+
+  let target: URL;
+  try {
+    target = new URL(raw);
+  } catch {
+    return null;
+  }
+
+  const here = new URL(globalThis.location.href);
+  if (target.host === here.host) return null;
+
+  // eTLD+1 by label count is crude, but these are our own hosts and the check
+  // only needs to refuse everything that is not one of them.
+  const base = (host: string) => host.split(".").slice(-2).join(".");
+  if (base(target.host) !== base(here.host)) return null;
+
+  return target.origin;
 }
 
 /** What `GET /self-service/errors?id=…` returns. */
