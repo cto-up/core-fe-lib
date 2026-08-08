@@ -273,6 +273,8 @@ export default {
     dangerZone: "Danger zone",
     closeHint: "Closing your account removes you from every organization and deletes your account after 30 days.",
     closeAction: "Close my account",
+    deletionBlocksNavigation:
+      "Your account is scheduled for deletion on {date}. Keep your account to carry on using it.",
     deletionScheduled: "Your account is scheduled for deletion on {date}.",
     keepAccount: "Keep my account",
     deletionCancelled: "Your account will be kept.",

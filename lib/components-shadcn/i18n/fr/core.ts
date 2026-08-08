@@ -276,6 +276,8 @@ export default {
     dangerZone: "Zone sensible",
     closeHint: "Fermer votre compte vous retire de toutes les organisations et supprime votre compte au bout de 30 jours.",
     closeAction: "Fermer mon compte",
+    deletionBlocksNavigation:
+      "La suppression de votre compte est prévue le {date}. Conservez votre compte pour continuer à l'utiliser.",
     deletionScheduled: "La suppression de votre compte est prévue le {date}.",
     keepAccount: "Conserver mon compte",
     deletionCancelled: "Votre compte est conservé.",
