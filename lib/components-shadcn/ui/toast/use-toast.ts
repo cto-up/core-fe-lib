@@ -1,6 +1,9 @@
 import { ref } from "vue";
 
-export type ToastVariant = "default" | "destructive";
+// "warning" is for a state the user can act on — a refusal that is expected and
+// reversible. Reserving "destructive" for things that actually went wrong keeps
+// red meaningful; a red toast for every guard trains people to ignore red.
+export type ToastVariant = "default" | "destructive" | "warning";
 
 export interface Toast {
   id: string;

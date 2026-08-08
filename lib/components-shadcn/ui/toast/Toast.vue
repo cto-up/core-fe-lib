@@ -12,6 +12,11 @@ const variantStyles = computed(() => {
   switch (props.variant) {
     case "destructive":
       return "border-destructive bg-destructive text-destructive-foreground";
+    case "warning":
+      // Amber rather than a semantic token: the palette defines no warning
+      // colour, and both halves are written explicitly so the toast is legible
+      // in either theme.
+      return "border-amber-500/40 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-100";
     default:
       return "border bg-background text-foreground";
   }
