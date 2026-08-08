@@ -269,6 +269,8 @@ export default {
     loading: "Chargement de vos organisations…",
     empty: "Vous ne faites partie d'aucune organisation.",
     joined: "membre depuis le {date}",
+    onlyOrganization:
+      "Votre seule organisation — fermez votre compte ci-dessous pour la quitter.",
     leaveAction: "Quitter",
     leftToast: "Vous avez quitté l'organisation.",
     dangerZone: "Zone sensible",
@@ -281,6 +283,10 @@ export default {
       lms_enrollments: "Vous perdez l'accès à {count} cours dans cette organisation",
       lms_certificates: "{count} certificat(s) restent valides et vérifiables",
       lms_authoredPublishedCourses: "{count} cours publié(s) dont vous êtes l'auteur demandent une décision",
+      lms_authoredDraftCourses:
+        "{count} cours en brouillon dont vous êtes propriétaire demandent une décision",
+      lms_decks: "{count} paquet(s) de révision que vous avez créés",
+      lms_clonedVoices: "{count} voix clonée(s) vous appartenant",
       lms_activeSubscription: "{count} abonnement(s) actif(s) dans cette organisation",
     },
     leave: {

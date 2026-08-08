@@ -61,6 +61,10 @@ export default {
       title: "Ich",
       caption: "Profil",
     },
+    organizations: {
+      title: "Organisationen",
+      caption: "Organisationen, denen Sie angehören",
+    },
     security: {
       title: "Sicherheit",
       caption: "Multi-Faktor-Authentifizierung",

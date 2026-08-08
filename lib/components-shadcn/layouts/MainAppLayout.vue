@@ -111,7 +111,14 @@
 import { ref, computed, onMounted, onUnmounted, type Component } from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { User, Shield, Settings, Database, ShieldCheck } from "lucide-vue-next";
+import {
+  User,
+  Shield,
+  Settings,
+  Database,
+  ShieldCheck,
+  Building2,
+} from "lucide-vue-next";
 import { useUserStore } from "../../stores/user-store";
 import { useKratosAuth } from "../../authentication/vue";
 import { useUrl } from "../../composables/useUrl";
@@ -139,9 +146,10 @@ import type { UserMenuItem } from "../primitives/AppUserMenu.vue";
  * The complete SaaS app layout — `AppMainSidebar` + `AppMainNavbar` +
  * `RouterView`. Ships with sensible defaults for every wire-up:
  *
- *   - User dropdown points at `/user/me/profile` and `/user/me/security`
- *     (where `me/MeProfilePage` and `me/SecuritySettingsPage` are mounted
- *     by the conventional routes).
+ *   - User dropdown points at `/user/me/profile`, `/user/me/organizations`
+ *     and `/user/me/security` (where `me/MeProfilePage`,
+ *     `me/OrganizationsPage` and `me/SecuritySettingsPage` are mounted by the
+ *     conventional routes).
  *   - Super-admin top section appears on the root domain for super admins,
  *     pointing at `/super-admin/tenants` and `/global-configs`.
  *   - Admin trailing section appears for CUSTOMER_ADMIN+ users, with
@@ -164,6 +172,7 @@ const props = withDefaults(
     signinPath?: string;
     profilePath?: string;
     securityPath?: string;
+    organizationsPath?: string;
     version?: string;
     /** Optional override: factory for the super-admin top section. */
     topSectionFactory?: () => SidebarTopSection | undefined;
@@ -191,6 +200,7 @@ const props = withDefaults(
     signinPath: "/signin",
     profilePath: "/user/me/profile",
     securityPath: "/user/me/security",
+    organizationsPath: "/user/me/organizations",
     version: "",
     topSectionFactory: undefined,
     trailingSectionsFactory: undefined,
@@ -222,6 +232,11 @@ const defaultUserMenuItems = (): UserMenuItem[] => [
     icon: User,
     label: t("layout.navigation.account.title"),
     action: () => router.push(props.profilePath),
+  },
+  {
+    icon: Building2,
+    label: t("layout.navigation.organizations.title"),
+    action: () => router.push(props.organizationsPath),
   },
   {
     icon: Shield,
