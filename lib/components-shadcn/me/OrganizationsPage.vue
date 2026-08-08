@@ -64,9 +64,17 @@
                 </template>
               </p>
             </div>
-            <Button variant="outline" size="sm" @click="startLeave(m)">
+            <Button
+              v-if="canLeave"
+              variant="outline"
+              size="sm"
+              @click="startLeave(m)"
+            >
               {{ t("core.organizations.leaveAction") }}
             </Button>
+            <p v-else class="text-sm text-muted-foreground">
+              {{ t("core.organizations.onlyOrganization") }}
+            </p>
           </li>
         </ul>
 
@@ -98,13 +106,13 @@
     <CloseAccountDialog
       v-model:open="closeOpen"
       :tenant-count="memberships.length"
-      @scheduled="load"
+      @scheduled="onDeletionScheduled"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { Loader2 } from "lucide-vue-next";
 
@@ -120,11 +128,14 @@ import { useToast } from "../ui/toast";
 import LeaveOrganizationDialog from "./LeaveOrganizationDialog.vue";
 import CloseAccountDialog from "./CloseAccountDialog.vue";
 import { MeService } from "../../openapi/core/services/MeService";
+import { useUrl } from "../../composables/useUrl";
+import { kratosService } from "../../authentication/vue";
 import type { TenantMembership } from "../../openapi/core/models/TenantMembership";
 import type { AccountDeletion } from "../../openapi/core/models/AccountDeletion";
 
 const { t, locale } = useI18n();
 const { toast } = useToast();
+const { getDomain } = useUrl();
 
 const memberships = ref<TenantMembership[]>([]);
 const deletion = ref<AccountDeletion | null>(null);
@@ -133,6 +144,13 @@ const leaveOpen = ref(false);
 const closeOpen = ref(false);
 const loading = ref(true);
 const busy = ref(false);
+
+// Leaving your ONLY organization strands the account: this app is addressed by
+// subdomain, so a member of nothing has nowhere to sign in to and no way back
+// to this page — including no way to reach Close my account. When there is one
+// membership, closing the account IS leaving it, and that is the only door
+// offered.
+const canLeave = computed(() => memberships.value.length > 1);
 
 // The host names the tenant on every call, so leaving an organization other than
 // the current one means going there first. One redirect buys a single addressing
@@ -156,23 +174,43 @@ function formatDate(value?: string): string {
 
 function startLeave(m: TenantMembership) {
   if (!isCurrentTenant(m)) {
-    window.location.href = `${window.location.protocol}//${m.subdomain}.${rootDomain()}/user/me/organizations?leave=1`;
+    // useUrl owns host parsing (multi-part subdomains, localhost), so the
+    // target origin is never re-derived by splitting on dots.
+    const { protocol, port } = window.location;
+    window.location.href = `${protocol}//${m.subdomain}.${getDomain()}${
+      port ? `:${port}` : ""
+    }/user/me/organizations?leave=1`;
     return;
   }
   leaving.value = m;
   leaveOpen.value = true;
 }
 
-function rootDomain(): string {
-  const parts = currentHost.split(".");
-  return parts.length > 2 ? parts.slice(1).join(".") : currentHost;
-}
-
 function onLeft() {
   toast({ title: t("core.organizations.leftToast") });
-  // Access to this tenant is already gone — the claim was rewritten and it is
-  // re-read on the next request — so there is nothing useful left on this host.
+
+  // The host stays; only the path resets. Every AUTHENTICATED route here now
+  // 401s — the claim was rewritten and it is re-read on the next request — but
+  // the tenant's front page is public, and this host is the one that still
+  // resolves a tenant. The apex does not: its sign-in and password-reset pages
+  // cannot resolve one at all, which is the dead end this replaces.
   window.location.href = "/";
+}
+
+// Closing an account keeps this host too, deliberately.
+//
+// The account still works for the whole grace period, and the documented way to
+// change your mind is to sign in again — which needs a host that carries a
+// tenant. The apex answers "Tenant not found" on exactly the pages somebody in
+// this position reaches for (sign in, reset password), which is the opposite of
+// a recovery path. Signing out first stops the tenant redirect from bouncing
+// the session straight back into the app.
+async function onDeletionScheduled() {
+  try {
+    await kratosService.logout();
+  } finally {
+    window.location.href = "/";
+  }
 }
 
 async function cancelDeletion() {

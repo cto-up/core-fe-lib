@@ -267,6 +267,7 @@ export default {
     loading: "Loading your organizations…",
     empty: "You do not belong to any organization yet.",
     joined: "joined {date}",
+    onlyOrganization: "Your only organization — close your account below to leave it.",
     leaveAction: "Leave",
     leftToast: "You have left the organization.",
     dangerZone: "Danger zone",
@@ -279,6 +280,10 @@ export default {
       lms_enrollments: "You lose access to {count} course(s) in this organization",
       lms_certificates: "{count} certificate(s) stay valid and verifiable",
       lms_authoredPublishedCourses: "{count} published course(s) you authored need a decision",
+      lms_authoredDraftCourses:
+        "{count} draft course(s) you own need a decision",
+      lms_decks: "{count} study deck(s) you created",
+      lms_clonedVoices: "{count} cloned voice(s) of yours",
       lms_activeSubscription: "{count} active subscription(s) in this organization",
     },
     leave: {
