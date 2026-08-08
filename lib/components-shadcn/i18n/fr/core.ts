@@ -265,7 +265,8 @@ export default {
   },
   organizations: {
     title: "Organisations",
-    subtitle: "Les organisations dont vous faites partie. En quitter une conserve votre compte et toutes vos autres adhésions.",
+    subtitle:
+      "Les organisations dont vous faites partie. En quitter une conserve votre compte et toutes vos autres adhésions.",
     loading: "Chargement de vos organisations…",
     empty: "Vous ne faites partie d'aucune organisation.",
     joined: "membre depuis le {date}",
@@ -274,7 +275,8 @@ export default {
     leaveAction: "Quitter",
     leftToast: "Vous avez quitté l'organisation.",
     dangerZone: "Zone sensible",
-    closeHint: "Fermer votre compte vous retire de toutes les organisations et supprime votre compte au bout de 30 jours.",
+    closeHint:
+      "Fermer votre compte vous retire de toutes les organisations et supprime votre compte au bout de 30 jours.",
     closeAction: "Fermer mon compte",
     deletionBlocksNavigation:
       "La suppression de votre compte est prévue le {date}. Conservez votre compte pour continuer à l'utiliser.",
@@ -282,20 +284,25 @@ export default {
     keepAccount: "Conserver mon compte",
     deletionCancelled: "Votre compte est conservé.",
     impacts: {
-      lms_enrollments: "Vous perdez l'accès à {count} cours dans cette organisation",
+      lms_enrollments:
+        "Vous perdez l'accès à {count} cours dans cette organisation",
       lms_certificates: "{count} certificat(s) restent valides et vérifiables",
-      lms_authoredPublishedCourses: "{count} cours publié(s) dont vous êtes l'auteur demandent une décision",
+      lms_authoredPublishedCourses:
+        "{count} cours publié(s) dont vous êtes l'auteur demandent une décision",
       lms_authoredDraftCourses:
         "{count} cours en brouillon dont vous êtes propriétaire demandent une décision",
       lms_decks: "{count} paquet(s) de révision que vous avez créés",
       lms_clonedVoices: "{count} voix clonée(s) vous appartenant",
-      lms_activeSubscription: "{count} abonnement(s) actif(s) dans cette organisation",
+      lms_activeSubscription:
+        "{count} abonnement(s) actif(s) dans cette organisation",
     },
     leave: {
       title: "Quitter {name} ?",
-      subtitle: "Votre progression est conservée un temps : revenir la restaure.",
+      subtitle:
+        "Votre progression est conservée un temps : revenir la restaure.",
       loading: "Vérification de ce que vous perdez…",
-      dormancy: "Si vous ne revenez pas avant le {date}, vos données d'apprentissage ici seront supprimées.",
+      dormancy:
+        "Si vous ne revenez pas avant le {date}, vos données d'apprentissage ici seront supprimées.",
       confirm: "Quitter l'organisation",
       transferTarget: "Identifiant du membre destinataire",
       decisionsOutstanding: "Répondez aux points ci-dessus avant de partir.",
@@ -310,8 +317,13 @@ export default {
     },
     close: {
       title: "Fermer votre compte",
-      subtitle: "Cela vous retire de {count} organisation(s) et supprime votre compte.",
-      grace: "Rien n'est supprimé aujourd'hui. Vous avez 30 jours pour changer d'avis : vous connecter annule la suppression.",
+      subtitle:
+        "Cela vous retire de {count} organisation(s) et supprime votre compte.",
+      grace:
+        "Rien n'est supprimé aujourd'hui. Vous avez 30 jours pour changer d'avis : vous connecter annule la suppression.",
+      checking: "Vérification de ce que vous possédez…",
+      defaultPolicy:
+        "Sans réponse, le contenu sera transféré à un administrateur de cette organisation.",
       export: "Télécharger mes données",
       exportFailed: "Impossible de préparer l'export de vos données.",
       confirmLabel: "Saisissez votre adresse e-mail pour confirmer",

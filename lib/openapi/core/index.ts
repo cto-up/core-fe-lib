@@ -7,6 +7,7 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { AccountClosurePreview } from './models/AccountClosurePreview';
 export { AccountDeletion } from './models/AccountDeletion';
 export type { AccountDeletionRequest } from './models/AccountDeletionRequest';
 export { APIToken } from './models/APIToken';
@@ -39,8 +40,10 @@ export { Role } from './models/Role';
 export type { SettingsFlow } from './models/SettingsFlow';
 export type { SocialSignInResult } from './models/SocialSignInResult';
 export type { Tenant } from './models/Tenant';
+export type { TenantClosureImpact } from './models/TenantClosureImpact';
 export type { TenantFeatureLicenses } from './models/TenantFeatureLicenses';
 export type { TenantFeatures } from './models/TenantFeatures';
+export { TenantLeaveDecision } from './models/TenantLeaveDecision';
 export { TenantMembership } from './models/TenantMembership';
 export type { TenantProfile } from './models/TenantProfile';
 export type { Translation } from './models/Translation';

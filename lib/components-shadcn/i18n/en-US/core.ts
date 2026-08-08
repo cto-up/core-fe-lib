@@ -263,15 +263,18 @@ export default {
   },
   organizations: {
     title: "Organizations",
-    subtitle: "The organizations you belong to. Leaving one keeps your account and every other membership.",
+    subtitle:
+      "The organizations you belong to. Leaving one keeps your account and every other membership.",
     loading: "Loading your organizations…",
     empty: "You do not belong to any organization yet.",
     joined: "joined {date}",
-    onlyOrganization: "Your only organization — close your account below to leave it.",
+    onlyOrganization:
+      "Your only organization — close your account below to leave it.",
     leaveAction: "Leave",
     leftToast: "You have left the organization.",
     dangerZone: "Danger zone",
-    closeHint: "Closing your account removes you from every organization and deletes your account after 30 days.",
+    closeHint:
+      "Closing your account removes you from every organization and deletes your account after 30 days.",
     closeAction: "Close my account",
     deletionBlocksNavigation:
       "Your account is scheduled for deletion on {date}. Keep your account to carry on using it.",
@@ -279,20 +282,24 @@ export default {
     keepAccount: "Keep my account",
     deletionCancelled: "Your account will be kept.",
     impacts: {
-      lms_enrollments: "You lose access to {count} course(s) in this organization",
+      lms_enrollments:
+        "You lose access to {count} course(s) in this organization",
       lms_certificates: "{count} certificate(s) stay valid and verifiable",
-      lms_authoredPublishedCourses: "{count} published course(s) you authored need a decision",
+      lms_authoredPublishedCourses:
+        "{count} published course(s) you authored need a decision",
       lms_authoredDraftCourses:
         "{count} draft course(s) you own need a decision",
       lms_decks: "{count} study deck(s) you created",
       lms_clonedVoices: "{count} cloned voice(s) of yours",
-      lms_activeSubscription: "{count} active subscription(s) in this organization",
+      lms_activeSubscription:
+        "{count} active subscription(s) in this organization",
     },
     leave: {
       title: "Leave {name}?",
       subtitle: "Your progress is kept for a while, so returning restores it.",
       loading: "Checking what leaving costs…",
-      dormancy: "If you do not return before {date}, your learning data here is deleted.",
+      dormancy:
+        "If you do not return before {date}, your learning data here is deleted.",
       confirm: "Leave organization",
       transferTarget: "User ID of the member to transfer to",
       decisionsOutstanding: "Answer the items above before leaving.",
@@ -307,8 +314,13 @@ export default {
     },
     close: {
       title: "Close your account",
-      subtitle: "This removes you from {count} organization(s) and deletes your account.",
-      grace: "Nothing is deleted today. You have 30 days to change your mind — signing in cancels it.",
+      subtitle:
+        "This removes you from {count} organization(s) and deletes your account.",
+      grace:
+        "Nothing is deleted today. You have 30 days to change your mind — signing in cancels it.",
+      checking: "Checking what you own…",
+      defaultPolicy:
+        "Leave unanswered and we transfer it to an administrator of that organization.",
       export: "Download my data",
       exportFailed: "Could not prepare your data export.",
       confirmLabel: "Type your email address to confirm",
