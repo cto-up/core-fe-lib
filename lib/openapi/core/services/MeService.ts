@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AccountClosurePreview } from '../models/AccountClosurePreview';
 import type { AccountDeletion } from '../models/AccountDeletion';
 import type { AccountDeletionRequest } from '../models/AccountDeletionRequest';
 import type { LeaveTenantPreview } from '../models/LeaveTenantPreview';
@@ -92,6 +93,25 @@ export class MeService {
                 401: `Unauthorized`,
                 409: `An impact of severity \`decision\` is unresolved`,
                 429: `Rate limited — leave/rejoin is capped per tenant per day`,
+                500: `Internal server error`,
+            },
+        });
+    }
+    /**
+     * What closing the account would cost, tenant by tenant
+     * Closing an account ends every membership at once, so the questions leaving one organization asks are asked here for all of them — what is lost, and what the caller wants done with the content they own in each.
+     *
+     * Tenants appear in the RESPONSE because the answer is inherently per-tenant; the request still names none. Any decision left unanswered falls back to the module's policy at execution time, 30 days later, when there is nobody left to prompt.
+     *
+     * @returns AccountClosurePreview Per-tenant closure preview
+     * @throws ApiError
+     */
+    public static getMyAccountClosurePreview(): CancelablePromise<AccountClosurePreview> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/users/me/closure-preview',
+            errors: {
+                401: `Unauthorized`,
                 500: `Internal server error`,
             },
         });
