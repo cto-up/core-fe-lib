@@ -18,17 +18,28 @@ export interface TenantHost {
  * app in `src/router/tenant-host.ts` so the marketing CTAs, the landing top bar
  * and the router guard all resolve the same host.
  */
-export function createTenantHost(defaultTenantSubdomain: string): TenantHost {
-  /**
-   * True on a host that carries no tenant (apex, `www`, `admin`). Session-free
-   * and synchronous, so callers can rule the whole redirect out before paying
-   * for auth hydration.
-   */
-  function isTenantLessHost(): boolean {
-    const { isTenantSubdomain, getDomain } = useUrl();
-    return !isTenantSubdomain() && hasRegistrableDomain(getDomain());
-  }
+/**
+ * True on a host that carries no tenant (apex, `www`, `admin`). Session-free
+ * and synchronous, so callers can rule the whole redirect out before paying for
+ * auth hydration.
+ *
+ * Standalone rather than a member of {@link TenantHost} because it is the one
+ * host rule that owes nothing to the brand: a feature module asking "is there a
+ * tenant here at all?" would otherwise have to be handed a
+ * `defaultTenantSubdomain` it never uses, and modules that ship to hub, care and
+ * lms alike have no business knowing one. `createTenantHost` re-exposes it on
+ * the returned object so existing callers are unaffected.
+ *
+ * Returns false on a host with no registrable domain (`localhost`, an IP) —
+ * there is nowhere to put a tenant subdomain, so local dev is treated as
+ * tenanted, matching what the backend resolves there.
+ */
+export function isTenantLessHost(): boolean {
+  const { isTenantSubdomain, getDomain } = useUrl();
+  return !isTenantSubdomain() && hasRegistrableDomain(getDomain());
+}
 
+export function createTenantHost(defaultTenantSubdomain: string): TenantHost {
   /**
    * True on the brand's front door — the apex and `www`, the only hosts with no
    * subdomain of their own to keep. A CTA into the app has to name a tenant host
