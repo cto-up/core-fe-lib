@@ -3,7 +3,7 @@
 // =============================================================================
 // Self-contained mixins for the component library
 
-// Theme mixins - compatible with Quasar's theme system
+// Theme mixins
 @mixin lib-light-theme {
   :root &,
   .body--light & {
