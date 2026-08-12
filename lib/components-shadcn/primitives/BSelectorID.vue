@@ -371,7 +371,14 @@ const removeItem = (index: number) => {
   emit("update:label", labels);
 
   if (props.optionExtra) {
-    loadExtra(values);
+    // Emptying the list used to reach loadOne's clear branch via the watch,
+    // which the id guard now short-circuits; loadExtra([]) returns without
+    // emitting, so clear it here.
+    if (values.length > 0) {
+      loadExtra(values);
+    } else {
+      emit("update:extra", "");
+    }
   }
 };
 
@@ -390,11 +397,34 @@ loadOne(props.modelValue).catch((err) => {
   handleError(err);
 });
 
+const toIdArray = (value: unknown): string[] => {
+  if (value === undefined || value === null || value === "") {
+    return [];
+  }
+  const list = Array.isArray(value) ? value : [value];
+  return list.map((item: any) =>
+    item && typeof item === "object" ? String(item[props.optionValue]) : String(item)
+  );
+};
+
+// internalModel holds option objects while modelValue holds ids, so they can
+// never be compared by identity. Comparing the resolved ids is what stops an id
+// emitted by selectOption/removeItem from bouncing back in and re-triggering the
+// one-request-per-id loadOne fan-out on every click.
+const matchesInternalModel = (value: string | string[] | undefined) => {
+  const incoming = toIdArray(value);
+  const current = toIdArray(internalModel.value);
+  return (
+    incoming.length === current.length &&
+    incoming.every((id, index) => id === current[index])
+  );
+};
+
 // Watch for modelValue changes
 watch(
   () => props.modelValue,
   async (newValue) => {
-    if (props.modelValue === internalModel.value) {
+    if (matchesInternalModel(newValue)) {
       return;
     }
     loadOne(newValue);
