@@ -1,7 +1,7 @@
 import { type AxiosProgressEvent } from "axios";
 
 // ---------------------------------------------------------------------------
-// Two SSE helpers live in this file, covering two distinct transports.
+// Three SSE helpers live in this file, covering three distinct transports.
 // Keep them side-by-side so the "which one do I use?" decision is visible
 // in one place:
 //
@@ -14,8 +14,11 @@ import { type AxiosProgressEvent } from "axios";
 //     `data` for each event name. Used anywhere the producer emits a
 //     custom event-name vocabulary (e.g. `chunk` / `done` / `error`).
 //
-// EventSource (browser built-in) covers the third transport: GET-only,
-// no shared helper needed — instantiate it directly.
+//   - `openLiveStream`     →  `EventSource` GET, for a stream that stays
+//     open across the life of a view. This file used to say EventSource
+//     needed no helper — "instantiate it directly". It does need one: a
+//     bare EventSource stops retrying for good after one fatal close, and
+//     a long-lived surface then looks connected while receiving nothing.
 // ---------------------------------------------------------------------------
 
 export interface SSEEvent {
@@ -263,4 +266,89 @@ function parseSSEBlock(block: string): SSEMessage | null {
   return id !== undefined
     ? { event, data: dataLines.join("\n"), id }
     : { event, data: dataLines.join("\n") };
+}
+
+// ---------------------------------------------------------------------------
+// openLiveStream — EventSource with app-level reconnection
+// ---------------------------------------------------------------------------
+
+/**
+ * Open a long-lived `EventSource` that keeps reconnecting, and tell the caller
+ * when it had to.
+ *
+ * Native `EventSource` only auto-retries a *network* drop (readyState →
+ * CONNECTING). On a *fatal* close — a transient non-200 on a reconnect attempt,
+ * or a response that isn't `text/event-stream` (e.g. a proxy hiccup) — it goes
+ * to CLOSED and NEVER retries again. A live stream that silently dies for good
+ * after one blip is worse than no live stream at all: the surface goes on
+ * looking connected while it has stopped receiving anything. This wrapper
+ * re-creates the connection with capped backoff and re-runs `wire` on the fresh
+ * one.
+ *
+ * `onReconnect` fires on every successful open EXCEPT the first, covering both
+ * the browser's own retry and this wrapper's. Nothing is replayed across a gap,
+ * so a caller whose server only emits deltas MUST use this to re-read its state
+ * — the interesting change is precisely the one that happened while it was not
+ * listening. Callers whose server re-emits a snapshot on connect can ignore it.
+ *
+ * `wire` registers the listeners; it is called once per connection, so register
+ * them there rather than on the returned handle.
+ *
+ * Usage:
+ * ```ts
+ * const dispose = openLiveStream(
+ *   `${import.meta.env.VITE_HTTP_API ?? ""}/api/v1/thing/${id}/events`,
+ *   (es) => {
+ *     es.addEventListener("tally", (e) => onTally(JSON.parse(e.data)));
+ *   },
+ *   () => void refetch()
+ * );
+ * onUnmounted(dispose);
+ * ```
+ *
+ * @returns a disposer that permanently closes the stream (no further retries).
+ */
+export function openLiveStream(
+  url: string,
+  wire: (es: EventSource) => void,
+  onReconnect?: () => void
+): () => void {
+  let es: EventSource | null = null;
+  let disposed = false;
+  let opened = false;
+  let backoff = 1000;
+  let retryTimer: ReturnType<typeof setTimeout> | null = null;
+
+  const connect = () => {
+    if (disposed) return;
+    es = new EventSource(url, { withCredentials: true });
+
+    es.addEventListener("open", () => {
+      // A healthy open resets the backoff so the next blip retries quickly.
+      backoff = 1000;
+      if (opened) onReconnect?.();
+      opened = true;
+    });
+
+    es.addEventListener("error", () => {
+      // CONNECTING → the browser will retry itself; leave it alone. Only step
+      // in once it has permanently given up (CLOSED).
+      if (!es || es.readyState !== EventSource.CLOSED) return;
+      es.close();
+      es = null;
+      if (disposed) return;
+      retryTimer = setTimeout(connect, backoff);
+      backoff = Math.min(backoff * 2, 15000);
+    });
+
+    wire(es);
+  };
+  connect();
+
+  return () => {
+    disposed = true;
+    if (retryTimer) clearTimeout(retryTimer);
+    es?.close();
+    es = null;
+  };
 }
