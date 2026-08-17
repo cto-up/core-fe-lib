@@ -200,7 +200,10 @@ const PROVIDER_DISPLAY_NAMES: Record<string, string> = {
  * The id is the stable thing; the wording is ours.
  */
 export function providerDisplayName(id: string): string {
-  return PROVIDER_DISPLAY_NAMES[id.toLowerCase()] ?? id.charAt(0).toUpperCase() + id.slice(1);
+  return (
+    PROVIDER_DISPLAY_NAMES[id.toLowerCase()] ??
+    id.charAt(0).toUpperCase() + id.slice(1)
+  );
 }
 
 /**

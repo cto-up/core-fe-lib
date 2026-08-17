@@ -403,7 +403,9 @@ const toIdArray = (value: unknown): string[] => {
   }
   const list = Array.isArray(value) ? value : [value];
   return list.map((item: any) =>
-    item && typeof item === "object" ? String(item[props.optionValue]) : String(item)
+    item && typeof item === "object"
+      ? String(item[props.optionValue])
+      : String(item)
   );
 };
 

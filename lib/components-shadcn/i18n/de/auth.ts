@@ -30,16 +30,26 @@ export default {
   flowError: {
     title: "Anmeldung konnte nicht abgeschlossen werden",
     subtitle: "An Ihrem Konto wurde nichts geändert.",
-    generic: "Der Anmeldeversuch ist abgelaufen oder wurde unterbrochen. Ein neuer Versuch behebt das meist.",
+    generic:
+      "Der Anmeldeversuch ist abgelaufen oder wurde unterbrochen. Ein neuer Versuch behebt das meist.",
     reference: "Referenz",
     retry: "Zurück zur Anmeldung",
   },
   // Where a social sign-in round-trip lands: the identity exists, the
   // tenant membership is being attached. See ADR 039 in the lms repo.
   socialCallback: {
-    working: { title: "Anmeldung wird abgeschlossen", body: "Ihr Konto wird eingerichtet…" },
-    denied: { title: "Dieser Bereich ist nur auf Einladung", body: "Ihr Konto ist angemeldet, aber dieser Bereich erlaubt keine Selbstregistrierung. Bitten Sie eine Administratorin oder einen Administrator um eine Einladung." },
-    failed: { title: "Anmeldung konnte nicht abgeschlossen werden", body: "Ihr Konto wurde erstellt, konnte diesem Bereich aber nicht zugeordnet werden. Bitte versuchen Sie es gleich noch einmal." },
+    working: {
+      title: "Anmeldung wird abgeschlossen",
+      body: "Ihr Konto wird eingerichtet…",
+    },
+    denied: {
+      title: "Dieser Bereich ist nur auf Einladung",
+      body: "Ihr Konto ist angemeldet, aber dieser Bereich erlaubt keine Selbstregistrierung. Bitten Sie eine Administratorin oder einen Administrator um eine Einladung.",
+    },
+    failed: {
+      title: "Anmeldung konnte nicht abgeschlossen werden",
+      body: "Ihr Konto wurde erstellt, konnte diesem Bereich aber nicht zugeordnet werden. Bitte versuchen Sie es gleich noch einmal.",
+    },
     backToSignIn: "Zurück zur Anmeldung",
   },
   signIn: {
@@ -57,7 +67,8 @@ export default {
     orContinueWith: "oder",
     // Replaces Kratos's own wording for message 1010016 — an email that
     // already belongs to a password account. Reassure, don't report.
-    linkAccount: "Sie haben bereits ein Konto mit {email}. Geben Sie einmal Ihr Passwort ein, dann verknüpfen wir {provider} damit — beim nächsten Mal genügt ein Klick.",
+    linkAccount:
+      "Sie haben bereits ein Konto mit {email}. Geben Sie einmal Ihr Passwort ein, dann verknüpfen wir {provider} damit — beim nächsten Mal genügt ein Klick.",
   },
   signUp: {
     title: "Registrieren",

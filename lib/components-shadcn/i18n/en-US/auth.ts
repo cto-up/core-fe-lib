@@ -30,7 +30,8 @@ export default {
   flowError: {
     title: "Sign-in could not be completed",
     subtitle: "Nothing was changed on your account.",
-    generic: "The sign-in attempt expired or was interrupted. Starting again usually resolves it.",
+    generic:
+      "The sign-in attempt expired or was interrupted. Starting again usually resolves it.",
     reference: "Reference",
     retry: "Back to sign-in",
   },
@@ -38,8 +39,14 @@ export default {
   // tenant membership is being attached. See ADR 039 in the lms repo.
   socialCallback: {
     working: { title: "Finishing sign-in", body: "Setting up your account…" },
-    denied: { title: "This space is invite-only", body: "Your account signed in, but this space doesn't accept self-service sign-ups. Ask an administrator for an invitation." },
-    failed: { title: "We couldn't finish signing you in", body: "Your account was created, but we couldn't connect it to this space. Please try again in a moment." },
+    denied: {
+      title: "This space is invite-only",
+      body: "Your account signed in, but this space doesn't accept self-service sign-ups. Ask an administrator for an invitation.",
+    },
+    failed: {
+      title: "We couldn't finish signing you in",
+      body: "Your account was created, but we couldn't connect it to this space. Please try again in a moment.",
+    },
     backToSignIn: "Back to sign-in",
   },
   signIn: {
@@ -57,7 +64,8 @@ export default {
     orContinueWith: "or",
     // Replaces Kratos's own wording for message 1010016 — an email that
     // already belongs to a password account. Reassure, don't report.
-    linkAccount: "You already have an account with {email}. Enter your password once and we'll connect {provider} to it — next time, one click is enough.",
+    linkAccount:
+      "You already have an account with {email}. Enter your password once and we'll connect {provider} to it — next time, one click is enough.",
   },
   signUp: {
     title: "Sign Up",

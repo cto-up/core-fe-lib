@@ -29,16 +29,26 @@ export default {
   flowError: {
     title: "Não foi possível concluir o início de sessão",
     subtitle: "Nada foi alterado na sua conta.",
-    generic: "A tentativa de início de sessão expirou ou foi interrompida. Recomeçar costuma resolver.",
+    generic:
+      "A tentativa de início de sessão expirou ou foi interrompida. Recomeçar costuma resolver.",
     reference: "Referência",
     retry: "Voltar ao início de sessão",
   },
   // Where a social sign-in round-trip lands: the identity exists, the
   // tenant membership is being attached. See ADR 039 in the lms repo.
   socialCallback: {
-    working: { title: "A concluir a sessão", body: "A configurar a sua conta…" },
-    denied: { title: "Este espaço é apenas por convite", body: "A sua conta iniciou sessão, mas este espaço não aceita registos livres. Peça um convite a um administrador." },
-    failed: { title: "Não foi possível concluir o início de sessão", body: "A sua conta foi criada, mas não conseguimos ligá-la a este espaço. Tente novamente dentro de momentos." },
+    working: {
+      title: "A concluir a sessão",
+      body: "A configurar a sua conta…",
+    },
+    denied: {
+      title: "Este espaço é apenas por convite",
+      body: "A sua conta iniciou sessão, mas este espaço não aceita registos livres. Peça um convite a um administrador.",
+    },
+    failed: {
+      title: "Não foi possível concluir o início de sessão",
+      body: "A sua conta foi criada, mas não conseguimos ligá-la a este espaço. Tente novamente dentro de momentos.",
+    },
     backToSignIn: "Voltar ao início de sessão",
   },
   signIn: {
@@ -56,7 +66,8 @@ export default {
     orContinueWith: "ou",
     // Replaces Kratos's own wording for message 1010016 — an email that
     // already belongs to a password account. Reassure, don't report.
-    linkAccount: "Já tem uma conta com {email}. Introduza a sua palavra-passe uma vez e ligaremos o {provider} — da próxima vez basta um clique.",
+    linkAccount:
+      "Já tem uma conta com {email}. Introduza a sua palavra-passe uma vez e ligaremos o {provider} — da próxima vez basta um clique.",
   },
   signUp: {
     title: "Registar-se",

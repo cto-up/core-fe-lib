@@ -29,16 +29,26 @@ export default {
   flowError: {
     title: "Non è stato possibile completare l'accesso",
     subtitle: "Non è stato modificato nulla nel tuo account.",
-    generic: "Il tentativo di accesso è scaduto o è stato interrotto. Ricominciare di solito risolve.",
+    generic:
+      "Il tentativo di accesso è scaduto o è stato interrotto. Ricominciare di solito risolve.",
     reference: "Riferimento",
     retry: "Torna all'accesso",
   },
   // Where a social sign-in round-trip lands: the identity exists, the
   // tenant membership is being attached. See ADR 039 in the lms repo.
   socialCallback: {
-    working: { title: "Completamento dell'accesso", body: "Configurazione del tuo account…" },
-    denied: { title: "Questo spazio è solo su invito", body: "Il tuo account ha effettuato l'accesso, ma questo spazio non accetta iscrizioni libere. Chiedi un invito a un amministratore." },
-    failed: { title: "Non siamo riusciti a completare l'accesso", body: "Il tuo account è stato creato, ma non siamo riusciti a collegarlo a questo spazio. Riprova tra poco." },
+    working: {
+      title: "Completamento dell'accesso",
+      body: "Configurazione del tuo account…",
+    },
+    denied: {
+      title: "Questo spazio è solo su invito",
+      body: "Il tuo account ha effettuato l'accesso, ma questo spazio non accetta iscrizioni libere. Chiedi un invito a un amministratore.",
+    },
+    failed: {
+      title: "Non siamo riusciti a completare l'accesso",
+      body: "Il tuo account è stato creato, ma non siamo riusciti a collegarlo a questo spazio. Riprova tra poco.",
+    },
     backToSignIn: "Torna all'accesso",
   },
   signIn: {
@@ -56,7 +66,8 @@ export default {
     orContinueWith: "oppure",
     // Replaces Kratos's own wording for message 1010016 — an email that
     // already belongs to a password account. Reassure, don't report.
-    linkAccount: "Hai già un account con {email}. Inserisci la password una volta e collegheremo {provider} — la prossima volta basterà un clic.",
+    linkAccount:
+      "Hai già un account con {email}. Inserisci la password una volta e collegheremo {provider} — la prossima volta basterà un clic.",
   },
   signUp: {
     title: "Registrazione",

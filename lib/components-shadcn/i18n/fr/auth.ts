@@ -30,16 +30,26 @@ export default {
   flowError: {
     title: "Connexion impossible à finaliser",
     subtitle: "Aucune modification n'a été apportée à votre compte.",
-    generic: "La tentative de connexion a expiré ou a été interrompue. Recommencer suffit généralement.",
+    generic:
+      "La tentative de connexion a expiré ou a été interrompue. Recommencer suffit généralement.",
     reference: "Référence",
     retry: "Retour à la connexion",
   },
   // Where a social sign-in round-trip lands: the identity exists, the
   // tenant membership is being attached. See ADR 039 in the lms repo.
   socialCallback: {
-    working: { title: "Finalisation de la connexion", body: "Configuration de votre compte…" },
-    denied: { title: "Cet espace est sur invitation", body: "Votre compte est bien connecté, mais cet espace n'accepte pas les inscriptions libres. Demandez une invitation à un administrateur." },
-    failed: { title: "Connexion impossible à finaliser", body: "Votre compte a été créé, mais nous n'avons pas pu le rattacher à cet espace. Réessayez dans un instant." },
+    working: {
+      title: "Finalisation de la connexion",
+      body: "Configuration de votre compte…",
+    },
+    denied: {
+      title: "Cet espace est sur invitation",
+      body: "Votre compte est bien connecté, mais cet espace n'accepte pas les inscriptions libres. Demandez une invitation à un administrateur.",
+    },
+    failed: {
+      title: "Connexion impossible à finaliser",
+      body: "Votre compte a été créé, mais nous n'avons pas pu le rattacher à cet espace. Réessayez dans un instant.",
+    },
     backToSignIn: "Retour à la connexion",
   },
   signIn: {
@@ -57,7 +67,8 @@ export default {
     orContinueWith: "ou",
     // Replaces Kratos's own wording for message 1010016 — an email that
     // already belongs to a password account. Reassure, don't report.
-    linkAccount: "Vous avez déjà un compte avec {email}. Saisissez votre mot de passe une fois et nous y rattacherons {provider} — la prochaine fois, un clic suffira.",
+    linkAccount:
+      "Vous avez déjà un compte avec {email}. Saisissez votre mot de passe une fois et nous y rattacherons {provider} — la prochaine fois, un clic suffira.",
   },
   signUp: {
     title: "Inscription",

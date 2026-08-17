@@ -72,8 +72,14 @@ const message = computed(() =>
   state.value === "working"
     ? tf("working.body", "Setting up your account…")
     : state.value === "denied"
-      ? tf("denied.body", "Your account signed in, but this space doesn't accept self-service sign-ups. Ask an administrator for an invitation.")
-      : tf("failed.body", "Your account was created, but we couldn't connect it to this space. Please try again in a moment.")
+      ? tf(
+          "denied.body",
+          "Your account signed in, but this space doesn't accept self-service sign-ups. Ask an administrator for an invitation."
+        )
+      : tf(
+          "failed.body",
+          "Your account was created, but we couldn't connect it to this space. Please try again in a moment."
+        )
 );
 
 function safeDestination(): string {

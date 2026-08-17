@@ -29,16 +29,26 @@ export default {
   flowError: {
     title: "No se pudo completar el inicio de sesión",
     subtitle: "No se ha cambiado nada en tu cuenta.",
-    generic: "El intento de inicio de sesión expiró o se interrumpió. Volver a empezar suele resolverlo.",
+    generic:
+      "El intento de inicio de sesión expiró o se interrumpió. Volver a empezar suele resolverlo.",
     reference: "Referencia",
     retry: "Volver al inicio de sesión",
   },
   // Where a social sign-in round-trip lands: the identity exists, the
   // tenant membership is being attached. See ADR 039 in the lms repo.
   socialCallback: {
-    working: { title: "Finalizando el inicio de sesión", body: "Configurando tu cuenta…" },
-    denied: { title: "Este espacio es solo por invitación", body: "Tu cuenta inició sesión, pero este espacio no acepta registros libres. Pide una invitación a un administrador." },
-    failed: { title: "No pudimos completar el inicio de sesión", body: "Tu cuenta se creó, pero no pudimos vincularla a este espacio. Inténtalo de nuevo en un momento." },
+    working: {
+      title: "Finalizando el inicio de sesión",
+      body: "Configurando tu cuenta…",
+    },
+    denied: {
+      title: "Este espacio es solo por invitación",
+      body: "Tu cuenta inició sesión, pero este espacio no acepta registros libres. Pide una invitación a un administrador.",
+    },
+    failed: {
+      title: "No pudimos completar el inicio de sesión",
+      body: "Tu cuenta se creó, pero no pudimos vincularla a este espacio. Inténtalo de nuevo en un momento.",
+    },
     backToSignIn: "Volver al inicio de sesión",
   },
   signIn: {
@@ -56,7 +66,8 @@ export default {
     orContinueWith: "o",
     // Replaces Kratos's own wording for message 1010016 — an email that
     // already belongs to a password account. Reassure, don't report.
-    linkAccount: "Ya tienes una cuenta con {email}. Introduce tu contraseña una vez y conectaremos {provider} a ella: la próxima vez bastará con un clic.",
+    linkAccount:
+      "Ya tienes una cuenta con {email}. Introduce tu contraseña una vez y conectaremos {provider} a ella: la próxima vez bastará con un clic.",
   },
   signUp: {
     title: "Registro",
