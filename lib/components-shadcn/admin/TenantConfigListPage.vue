@@ -121,8 +121,10 @@
 
       <!-- Suggested / unset schema entries -->
       <Collapsible v-model:open="suggestionsOpen">
-        <div class="flex items-center justify-between">
-          <h3
+        <CollapsibleTrigger
+          class="flex w-full items-center justify-between gap-2 -mx-2 px-2 py-2 rounded-md text-left hover:bg-muted/50 transition-colors"
+        >
+          <span
             class="text-sm font-medium text-muted-foreground flex items-center gap-2"
           >
             <Lightbulb class="h-4 w-4" />
@@ -130,13 +132,9 @@
             <Badge variant="outline" class="text-xs">
               {{ unsetSchemaEntries.length }} unset
             </Badge>
-          </h3>
-          <CollapsibleTrigger as-child>
-            <Button variant="ghost" size="sm">
-              <ChevronsUpDown class="h-4 w-4" />
-            </Button>
-          </CollapsibleTrigger>
-        </div>
+          </span>
+          <ChevronsUpDown class="h-4 w-4 shrink-0 text-muted-foreground" />
+        </CollapsibleTrigger>
 
         <CollapsibleContent>
           <div class="mt-3 space-y-4">
