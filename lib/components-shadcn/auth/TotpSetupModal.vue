@@ -1,25 +1,27 @@
 <template>
   <div
     v-if="show"
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
     @click.self="emit('cancel')"
   >
-    <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+    <div
+      class="bg-background text-foreground border border-border rounded-lg p-8 max-w-md w-full mx-4 shadow-lg"
+    >
       <h3 class="text-xl font-bold mb-4">
         {{ t("mfa.setup.totp.title") }}
       </h3>
 
       <!-- Step 1: QR Code -->
       <div v-if="setupStep === 'qr'" class="space-y-4">
-        <p class="text-sm text-gray-600">
+        <p class="text-sm text-muted-foreground">
           {{ t("mfa.setup.totp.scanQR") }}
         </p>
         <div class="qr-code flex justify-center" v-html="qrCode" />
         <div class="text-center">
-          <p class="text-xs text-gray-500 mb-2">
+          <p class="text-xs text-muted-foreground mb-2">
             {{ t("mfa.setup.totp.manualEntry") }}
           </p>
-          <code class="bg-gray-100 px-3 py-2 rounded text-sm">{{
+          <code class="bg-muted text-foreground px-3 py-2 rounded text-sm">{{
             secretKey
           }}</code>
         </div>
@@ -27,7 +29,7 @@
 
       <!-- Step 2: Verify Code -->
       <div v-if="setupStep === 'verify'" class="space-y-4">
-        <p class="text-sm text-gray-600">
+        <p class="text-sm text-muted-foreground">
           {{ t("mfa.setup.totp.enterCode") }}
         </p>
         <input
@@ -35,7 +37,7 @@
           type="text"
           maxlength="6"
           :placeholder="t('mfa.setup.totp.codePlaceholder')"
-          class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-4 py-2 rounded border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           @input="
             $emit(
               'update:modelValue',
@@ -43,7 +45,7 @@
             )
           "
         />
-        <p v-if="error" class="text-red-600 text-sm">
+        <p v-if="error" class="text-destructive text-sm">
           {{ error }}
         </p>
       </div>
@@ -61,21 +63,18 @@
       <div class="flex gap-3 mt-6">
         <Button
           v-if="setupStep !== 'recovery'"
-          class="flex-1 px-4 py-2 border rounded hover:bg-gray-50"
+          variant="outline"
+          class="flex-1"
           @click="emit('cancel')"
         >
           {{ t("mfa.setup.totp.cancel") }}
         </Button>
-        <Button
-          v-if="setupStep === 'qr'"
-          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          @click="emit('next')"
-        >
+        <Button v-if="setupStep === 'qr'" class="flex-1" @click="emit('next')">
           {{ t("mfa.setup.totp.next") }}
         </Button>
         <Button
           v-if="setupStep === 'verify'"
-          class="flex-1 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+          class="flex-1"
           :disabled="!modelValue || modelValue.length !== 6"
           @click="emit('verify')"
         >
@@ -83,7 +82,7 @@
         </Button>
         <Button
           v-if="setupStep === 'recovery'"
-          class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+          class="w-full font-semibold"
           :disabled="!recoveryCodesInteracted"
           @click="emit('confirm-recovery')"
         >
