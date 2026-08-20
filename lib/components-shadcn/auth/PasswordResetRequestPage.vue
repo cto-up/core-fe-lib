@@ -4,8 +4,8 @@
     <Card v-if="emailSent" class="w-full max-w-md">
       <CardHeader class="text-center">
         <div class="flex justify-center mb-4">
-          <div class="rounded-full bg-green-100 p-3">
-            <Mail class="h-8 w-8 text-green-600" />
+          <div class="rounded-full bg-success/15 p-3">
+            <Mail class="h-8 w-8 text-success" />
           </div>
         </div>
         <CardTitle>{{ t("auth.passwordReset.checkEmailTitle") }}</CardTitle>

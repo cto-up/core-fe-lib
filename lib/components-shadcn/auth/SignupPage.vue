@@ -10,8 +10,8 @@
     >
       <CardHeader class="text-center">
         <div class="flex justify-center mb-4">
-          <div class="rounded-full bg-green-100 p-3">
-            <Mail class="h-8 w-8 text-green-600" />
+          <div class="rounded-full bg-success/15 p-3">
+            <Mail class="h-8 w-8 text-success" />
           </div>
         </div>
         <CardTitle class="text-2xl font-bold">
@@ -30,11 +30,11 @@
             {{ email }}
           </p>
         </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-md p-4 text-sm">
-          <p class="font-medium text-blue-800 mb-2">
+        <div class="bg-info/10 border border-info/30 rounded-md p-4 text-sm">
+          <p class="font-medium text-foreground mb-2">
             {{ $t("auth.signUp.nextSteps") }}
           </p>
-          <ol class="list-decimal list-inside space-y-1 text-blue-700">
+          <ol class="list-decimal list-inside space-y-1 text-foreground">
             <li>{{ $t("auth.signUp.step1") }}</li>
             <li>{{ $t("auth.signUp.step2") }}</li>
             <li>{{ $t("auth.signUp.step3") }}</li>

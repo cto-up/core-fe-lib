@@ -129,7 +129,7 @@
               @blur="v$.email.$touch()"
             />
           </div>
-          <div v-if="v$.email.$errors.length" class="text-sm text-red-600">
+          <div v-if="v$.email.$errors.length" class="text-sm text-destructive">
             <span v-for="error of v$.email.$errors" :key="error.$uid">
               {{ error.$message }}
             </span>
@@ -147,7 +147,7 @@
           />
           <div
             v-if="v$.password.$errors.length"
-            class="text-sm text-red-600 mt-1"
+            class="text-sm text-destructive mt-1"
           >
             <span v-for="error of v$.password.$errors" :key="error.$uid">
               {{ error.$message }}

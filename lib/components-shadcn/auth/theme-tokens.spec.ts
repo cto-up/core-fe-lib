@@ -42,27 +42,16 @@ const RAW_COLOUR = new RegExp(
 const RAW_BW = /\b(?:bg|text|border)-(?:white|black)\b(?!\/)/g;
 
 /**
- * Pre-existing offenders, left alone deliberately.
+ * Files exempt from the check. Empty, and worth keeping that way.
  *
- * These paint self-consistent colour chips — a green tick on a green-100
- * badge, a red error line — which look wrong against a dark page but stay
- * READABLE, because the text colour and the surface under it were chosen
- * together. That is a different problem from the MFA dialogs, where themed
- * text sat on an opaque white panel and disappeared.
- *
- * The list is here rather than absent so the guard still protects everything
- * else, and so these stay visible as work rather than passing unnoticed.
- * Shrinking it is always an improvement; growing it needs a reason.
+ * It held seven entries when this guard was written — components painting
+ * self-consistent colour chips, which look wrong against a dark page but stay
+ * readable, unlike the MFA panels where themed text vanished into an opaque
+ * white surface. They are now on the semantic tokens (success / destructive /
+ * warning / info) that the Button variants already define, so a chip's tint and
+ * its icon come from one pair and cannot drift apart.
  */
-const KNOWN_EXCEPTIONS = new Set<string>([
-  "Aal2VerificationDialog.vue",
-  "EmailVerification.vue",
-  "PasswordResetRequestPage.vue",
-  "RecoveryPage.vue",
-  "RegisterWebauthnPage.vue",
-  "SigninPage.vue",
-  "SignupPage.vue",
-]);
+const KNOWN_EXCEPTIONS = new Set<string>([]);
 
 function componentFiles(): string[] {
   return readdirSync(AUTH_DIR)

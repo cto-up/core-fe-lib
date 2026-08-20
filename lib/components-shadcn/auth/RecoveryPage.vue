@@ -13,15 +13,15 @@
         </p>
       </div>
 
-      <div v-if="error" class="rounded-md bg-red-50 dark:bg-red-900/20 p-4">
+      <div v-if="error" class="rounded-md bg-destructive/10 p-4">
         <div class="flex">
           <div class="ml-3">
-            <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+            <h3 class="text-sm font-medium text-foreground">
               {{ error }}
             </h3>
             <p
               v-if="!report || report.reason !== 'cookies_blocked'"
-              class="mt-2 text-sm text-red-700 dark:text-red-300"
+              class="mt-2 text-sm text-muted-foreground"
             >
               {{ t("auth.recovery.requestNewLink") }}
             </p>
@@ -41,7 +41,7 @@
             <div v-if="report" class="mt-4">
               <button
                 type="button"
-                class="inline-flex items-center gap-1 text-xs text-red-700/70 underline-offset-2 hover:underline dark:text-red-300/70"
+                class="inline-flex items-center gap-1 text-xs text-muted-foreground underline-offset-2 hover:underline"
                 :aria-expanded="detailsOpen"
                 @click="detailsOpen = !detailsOpen"
               >
@@ -52,7 +52,7 @@
 
               <div v-if="detailsOpen">
                 <dl
-                  class="mt-2 space-y-1 font-mono text-[11px] text-red-800/80 dark:text-red-200/80"
+                  class="mt-2 space-y-1 font-mono text-[11px] text-muted-foreground"
                 >
                   <div
                     v-for="row in diagnosticRows"
@@ -83,13 +83,10 @@
         </div>
       </div>
 
-      <div
-        v-if="success"
-        class="rounded-md bg-green-50 dark:bg-green-900/20 p-4"
-      >
+      <div v-if="success" class="rounded-md bg-success/10 p-4">
         <div class="flex">
           <div class="ml-3">
-            <h3 class="text-sm font-medium text-green-800 dark:text-green-200">
+            <h3 class="text-sm font-medium text-foreground">
               {{ t("auth.recovery.passwordSetSuccess") }}
             </h3>
           </div>
@@ -99,7 +96,7 @@
       <!-- Loading State -->
       <div v-if="loading && !showPasswordForm" class="text-center">
         <div
-          class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"
+          class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
         />
         <p class="mt-2 text-muted-foreground">
           {{ statusMessage }}
@@ -133,7 +130,7 @@
         </div>
         <div
           v-if="passwordError"
-          class="text-sm text-red-600 dark:text-red-400"
+          class="text-sm text-destructive dark:text-destructive"
         >
           {{ passwordError }}
         </div>
@@ -144,7 +141,7 @@
             :disabled="
               submitting || !password || !confirmPassword || !passwordsMatch
             "
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {{
               submitting

@@ -26,7 +26,7 @@
     >
       <CardHeader class="text-center">
         <div
-          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"
+          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-success/15 text-success"
         >
           <CheckCircle2 class="h-6 w-6" />
         </div>
@@ -54,14 +54,14 @@
     >
       <CardHeader class="text-center">
         <div
-          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600"
+          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/15 text-destructive"
         >
           <XCircle class="h-6 w-6" />
         </div>
         <CardTitle class="text-2xl font-bold">
           {{ $t("auth.emailVerification.error.title") }}
         </CardTitle>
-        <CardDescription class="text-red-500">
+        <CardDescription class="text-destructive">
           {{ errorMessage }}
         </CardDescription>
       </CardHeader>
@@ -108,7 +108,7 @@
     >
       <CardHeader class="text-center">
         <div
-          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600"
+          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-warning/15 text-warning"
         >
           <AlertTriangle class="h-6 w-6" />
         </div>
