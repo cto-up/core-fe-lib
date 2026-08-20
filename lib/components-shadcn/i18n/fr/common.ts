@@ -103,11 +103,17 @@ export default {
     freq: {
       minutes: "Toutes les N minutes",
       hourly: "Toutes les heures",
+      hours: "Toutes les N heures",
       daily: "Quotidien",
+      days: "Tous les N jours",
       weekly: "Hebdomadaire",
       monthly: "Mensuel",
     },
     everyNMinutes: "Toutes les N minutes",
+    everyNHours: "Toutes les N heures (0–23)",
+    everyNDays: "Tous les N jours (1–31)",
+    dayStepHint:
+      "Le pas de jours repart le 1er de chaque mois : l'écart au changement de mois peut donc être plus court.",
     atMinute: "À la minute (0–59)",
     atTime: "À l'heure",
     onDays: "Ces jours",

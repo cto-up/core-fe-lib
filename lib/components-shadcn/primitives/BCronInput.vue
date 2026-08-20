@@ -45,8 +45,14 @@
                 <SelectItem value="hourly">
                   {{ t("common.cron.freq.hourly") }}
                 </SelectItem>
+                <SelectItem value="hours">
+                  {{ t("common.cron.freq.hours") }}
+                </SelectItem>
                 <SelectItem value="daily">
                   {{ t("common.cron.freq.daily") }}
+                </SelectItem>
+                <SelectItem value="days">
+                  {{ t("common.cron.freq.days") }}
                 </SelectItem>
                 <SelectItem value="weekly">
                   {{ t("common.cron.freq.weekly") }}
@@ -70,8 +76,23 @@
             />
           </div>
 
-          <!-- Hourly at minute M -->
-          <div v-if="frequency === 'hourly'" class="space-y-1">
+          <!-- Every N hours -->
+          <div v-if="frequency === 'hours'" class="space-y-1">
+            <Label>{{ t("common.cron.everyNHours") }}</Label>
+            <Input
+              v-model.number="everyNHours"
+              type="number"
+              min="1"
+              max="23"
+              class="w-32"
+            />
+          </div>
+
+          <!-- Hourly / every N hours both fire at minute M -->
+          <div
+            v-if="frequency === 'hourly' || frequency === 'hours'"
+            class="space-y-1"
+          >
             <Label>{{ t("common.cron.atMinute") }}</Label>
             <Input
               v-model.number="minuteOfHour"
@@ -82,10 +103,26 @@
             />
           </div>
 
+          <!-- Every N days -->
+          <div v-if="frequency === 'days'" class="space-y-1">
+            <Label>{{ t("common.cron.everyNDays") }}</Label>
+            <Input
+              v-model.number="everyNDays"
+              type="number"
+              min="1"
+              max="31"
+              class="w-32"
+            />
+            <p class="text-xs text-muted-foreground">
+              {{ t("common.cron.dayStepHint") }}
+            </p>
+          </div>
+
           <!-- Daily / Weekly / Monthly all need a time -->
           <div
             v-if="
               frequency === 'daily' ||
+              frequency === 'days' ||
               frequency === 'weekly' ||
               frequency === 'monthly'
             "
@@ -434,7 +471,14 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 
-type Frequency = "minutes" | "hourly" | "daily" | "weekly" | "monthly";
+type Frequency =
+  | "minutes"
+  | "hourly"
+  | "hours"
+  | "daily"
+  | "days"
+  | "weekly"
+  | "monthly";
 
 const mode = ref<"friendly" | "simple" | "advanced">("friendly");
 const cronExpression = ref(props.modelValue);
@@ -442,6 +486,8 @@ const cronExpression = ref(props.modelValue);
 // Friendly mode state
 const frequency = ref<Frequency>("daily");
 const everyNMinutes = ref(5);
+const everyNHours = ref(2);
+const everyNDays = ref(2);
 const minuteOfHour = ref(0);
 const timeHour = ref(8);
 const timeMinute = ref(0);
@@ -620,8 +666,20 @@ function buildFriendlyCron(): string {
     }
     case "hourly":
       return `0 ${minuteOfHour.value} * * * *`;
+    case "hours": {
+      const n = Math.max(1, Math.min(23, everyNHours.value || 1));
+      return n === 1
+        ? `0 ${minuteOfHour.value} * * * *`
+        : `0 ${minuteOfHour.value} */${n} * * *`;
+    }
     case "daily":
       return `0 ${timeMinute.value} ${timeHour.value} * * *`;
+    case "days": {
+      const n = Math.max(1, Math.min(31, everyNDays.value || 1));
+      return n === 1
+        ? `0 ${timeMinute.value} ${timeHour.value} * * *`
+        : `0 ${timeMinute.value} ${timeHour.value} */${n} * *`;
+    }
     case "weekly": {
       const days = selectedWeekdays.value.length
         ? [...selectedWeekdays.value].sort((a, b) => a - b).join(",")
@@ -665,8 +723,34 @@ function tryParseToFriendly(expr: string): boolean {
   }
 
   const minNum = /^\d+$/.test(min) ? parseInt(min, 10) : null;
+
+  // Every N hours — "0 M */N * * *"
+  const hourStep = hour.match(/^\*\/(\d+)$/);
+  if (
+    hourStep &&
+    minNum !== null &&
+    dom === "*" &&
+    mon === "*" &&
+    dow === "*"
+  ) {
+    frequency.value = "hours";
+    everyNHours.value = parseInt(hourStep[1], 10);
+    minuteOfHour.value = minNum;
+    return true;
+  }
+
   const hourNum = /^\d+$/.test(hour) ? parseInt(hour, 10) : null;
   if (minNum === null || hourNum === null) return false;
+
+  // Every N days — "0 m h */N * *"
+  const domStep = dom.match(/^\*\/(\d+)$/);
+  if (domStep && mon === "*" && dow === "*") {
+    frequency.value = "days";
+    everyNDays.value = parseInt(domStep[1], 10);
+    timeMinute.value = minNum;
+    timeHour.value = hourNum;
+    return true;
+  }
 
   // Daily
   if (dom === "*" && mon === "*" && dow === "*") {
@@ -753,8 +837,16 @@ const friendlyPreview = computed(() => {
         : `Runs every ${everyNMinutes.value} minutes`;
     case "hourly":
       return `Runs every hour at :${pad2(minuteOfHour.value)}`;
+    case "hours":
+      return everyNHours.value <= 1
+        ? `Runs every hour at :${pad2(minuteOfHour.value)}`
+        : `Runs every ${everyNHours.value} hours at :${pad2(minuteOfHour.value)}`;
     case "daily":
       return `Runs every day at ${time}`;
+    case "days":
+      return everyNDays.value <= 1
+        ? `Runs every day at ${time}`
+        : `Runs every ${everyNDays.value} days at ${time}`;
     case "weekly": {
       if (!selectedWeekdays.value.length) return "No day selected";
       const sorted = [...selectedWeekdays.value].sort((a, b) => a - b);
@@ -780,6 +872,8 @@ function resetFriendly() {
   selectedWeekdays.value = [1];
   dayOfMonth.value = 1;
   everyNMinutes.value = 5;
+  everyNHours.value = 2;
+  everyNDays.value = 2;
   minuteOfHour.value = 0;
   friendlyCompatible.value = true;
   emitCron(buildFriendlyCron());
@@ -800,9 +894,11 @@ function updateFromFields() {
     !weekdayError.value
   ) {
     const newExpression = `${seconds.value} ${minutes.value} ${hours.value} ${day.value} ${month.value} ${weekday.value}`;
-    previewExpression.value = newExpression;
-    emitCron(newExpression);
     cronExpression.value = newExpression;
+    emitCron(newExpression);
+    // Re-derive the friendly state, or the Friendly tab keeps describing the
+    // expression the user just replaced.
+    syncFromExpression(newExpression);
   }
 }
 
@@ -847,6 +943,8 @@ watch(
   [
     frequency,
     everyNMinutes,
+    everyNHours,
+    everyNDays,
     minuteOfHour,
     timeHour,
     timeMinute,

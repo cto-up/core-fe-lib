@@ -102,11 +102,17 @@ export default {
     freq: {
       minutes: "Every N minutes",
       hourly: "Hourly",
+      hours: "Every N hours",
       daily: "Daily",
+      days: "Every N days",
       weekly: "Weekly",
       monthly: "Monthly",
     },
     everyNMinutes: "Every N minutes",
+    everyNHours: "Every N hours (0–23)",
+    everyNDays: "Every N days (1–31)",
+    dayStepHint:
+      "Day steps restart on the 1st of each month, so the gap across a month boundary can be shorter.",
     atMinute: "At minute (0–59)",
     atTime: "At time",
     onDays: "On these days",

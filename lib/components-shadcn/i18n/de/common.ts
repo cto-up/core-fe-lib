@@ -102,11 +102,17 @@ export default {
     freq: {
       minutes: "Alle N Minuten",
       hourly: "Stündlich",
+      hours: "Alle N Stunden",
       daily: "Täglich",
+      days: "Alle N Tage",
       weekly: "Wöchentlich",
       monthly: "Monatlich",
     },
     everyNMinutes: "Alle N Minuten",
+    everyNHours: "Alle N Stunden (0–23)",
+    everyNDays: "Alle N Tage (1–31)",
+    dayStepHint:
+      "Der Tagesschritt beginnt am 1. jedes Monats neu — der Abstand über einen Monatswechsel hinweg kann daher kürzer sein.",
     atMinute: "Zur Minute (0–59)",
     atTime: "Zur Uhrzeit",
     onDays: "An diesen Tagen",
