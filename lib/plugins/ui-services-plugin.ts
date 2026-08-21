@@ -26,7 +26,7 @@ import type {
   DialogService,
   ToastOptions,
   ConfirmDialogOptions,
-} from "../authentication/types/ui-services";
+} from "../authentication/core/types/ui-services";
 
 /**
  * Configuration for UI services plugin

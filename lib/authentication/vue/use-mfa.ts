@@ -71,8 +71,12 @@ function base64urlToArrayBuffer(base64url: string): ArrayBuffer {
 
 export function useMfa() {
   const { t } = useI18n();
-  const notifications = inject(notificationServiceKey);
-  const dialog = inject(dialogServiceKey);
+  // Non-null by contract: createUiServicesPlugin provides both services at
+  // app setup, and injection-keys.ts documents this exact usage. Without the
+  // assertion every call below needs a guard for a case that cannot occur in
+  // a booted app.
+  const notifications = inject(notificationServiceKey)!;
+  const dialog = inject(dialogServiceKey)!;
 
   if (!notifications) {
     throw new Error(

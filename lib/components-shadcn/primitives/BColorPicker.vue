@@ -503,7 +503,10 @@ function rgbToHsv(r: number, g: number, b: number) {
   ((r /= 255), (g /= 255), (b /= 255));
   const max = Math.max(r, g, b),
     min = Math.min(r, g, b);
-  let h,
+  // h and s are assigned in every branch below, but the switch has no default
+  // so the compiler cannot prove it. Seeding them costs nothing and is the
+  // achromatic case anyway (max === min).
+  let h = 0,
     s,
     v = max;
   const d = max - min;
@@ -529,7 +532,9 @@ function rgbToHsv(r: number, g: number, b: number) {
 
 function hsvToRgb(h: number, s: number, v: number) {
   ((h /= 360), (s /= 100), (v /= 100));
-  let r, g, b;
+  let r = 0,
+    g = 0,
+    b = 0;
   const i = Math.floor(h * 6);
   const f = h * 6 - i;
   const p = v * (1 - s);

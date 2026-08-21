@@ -168,7 +168,7 @@ export function useUrl() {
   /**
    * Checks if a string is an IP address (IPv4 or IPv6)
    */
-  const isIPAddress = (hostname) => {
+  const isIPAddress = (hostname: string) => {
     // IPv4 pattern
     const ipv4Pattern = /^(\d{1,3}\.){3}\d{1,3}$/;
     // Simple IPv6 pattern (basic check)
@@ -182,7 +182,7 @@ export function useUrl() {
    * @param {string} hostname - The hostname to parse
    * @returns {object} Object containing subdomain, domain, tld, and fullHost
    */
-  const extractDomainParts = (hostname) => {
+  const extractDomainParts = (hostname: string) => {
     if (!hostname || typeof hostname !== "string") {
       return { subdomain: "", domain: "", tld: "", fullHost: hostname || "" };
     }

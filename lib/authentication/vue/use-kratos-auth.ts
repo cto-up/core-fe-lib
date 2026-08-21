@@ -70,7 +70,11 @@ export const useKratosAuth = () => {
   const router = useRouter();
   const route = useRoute();
   const { t, te } = useI18n();
-  const notifications = inject(notificationServiceKey);
+  // Non-null by contract: createUiServicesPlugin provides both services at
+  // app setup, and injection-keys.ts documents this exact usage. Without the
+  // assertion every call below needs a guard for a case that cannot occur in
+  // a booted app.
+  const notifications = inject(notificationServiceKey)!;
 
   // Consumer apps may ship their own `auth.*` dictionary rather than
   // core-fe-lib's. Keys added after they forked would render as a raw key path,

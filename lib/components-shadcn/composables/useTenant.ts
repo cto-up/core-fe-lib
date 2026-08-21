@@ -25,7 +25,6 @@ export function useTenant() {
     tenant_id: "",
     name: "",
     subdomain: "",
-    enable_email_link_sign_in: true,
     allow_password_sign_up: true,
     allow_sign_up: false,
   });

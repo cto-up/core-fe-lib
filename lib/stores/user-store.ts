@@ -7,7 +7,7 @@ import {
 } from "pinia";
 import { Role } from "../openapi/core/models/Role";
 
-import type { KratosSession } from "../authentication/services/kratos.service";
+import type { KratosSession } from "../authentication/core/kratos-service";
 
 export interface RoleDefinition {
   key: Role;

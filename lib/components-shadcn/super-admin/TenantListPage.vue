@@ -37,7 +37,6 @@
                 <TableHead>{{ t("core.tenant.fields.tenantId") }}</TableHead>
                 <TableHead>{{ t("core.tenant.fields.name") }}</TableHead>
                 <TableHead>{{ t("core.tenant.fields.subdomain") }}</TableHead>
-                <TableHead>Email Link Sign In</TableHead>
                 <TableHead>Password Sign Up</TableHead>
                 <TableHead class="text-right"> Actions </TableHead>
               </TableRow>
@@ -54,15 +53,6 @@
                 </TableCell>
                 <TableCell>{{ row.name }}</TableCell>
                 <TableCell>{{ row.subdomain }}</TableCell>
-                <TableCell>
-                  <Badge
-                    :variant="
-                      row.enable_email_link_sign_in ? 'default' : 'secondary'
-                    "
-                  >
-                    {{ row.enable_email_link_sign_in ? "Yes" : "No" }}
-                  </Badge>
-                </TableCell>
                 <TableCell>
                   <Badge
                     :variant="

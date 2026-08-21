@@ -8,7 +8,7 @@ import type {
   NotificationService,
   DialogService,
   UIServices,
-} from "../authentication/types/ui-services";
+} from "../authentication/core/types/ui-services";
 
 /**
  * Injection key for NotificationService

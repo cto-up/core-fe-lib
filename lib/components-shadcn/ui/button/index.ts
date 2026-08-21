@@ -26,6 +26,10 @@ export const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
+        // xs was in use at three call sites before it existed here, so those
+        // buttons silently got no size class at all and relied on whatever the
+        // caller passed in `class`.
+        xs: "h-7 rounded-md px-2 text-xs",
         default: "h-10 px-4 py-2",
         sm: "h-9 rounded-md px-3",
         lg: "h-11 rounded-md px-8",
