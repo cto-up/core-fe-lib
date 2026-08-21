@@ -1,5 +1,7 @@
 <template>
-  <div>{{ theModel[optionLabel] }}</div>
+  <div :class="missing ? 'italic text-muted-foreground' : undefined">
+    {{ missing ? fallback : theModel[optionLabel] }}
+  </div>
 </template>
 
 <script lang="ts">
@@ -27,10 +29,17 @@ export default defineComponent({
       type: String,
       required: true,
     },
+    /** Shown in place of the label when the id resolves to nothing. */
+    fallback: {
+      type: String,
+      required: false,
+      default: "—",
+    },
   },
 
   setup(props) {
     const { handleError } = useErrors();
+    const missing = ref(false);
     const theModel = ref({
       [props.optionValue]: props.modelValue,
       [props.optionLabel]: "",
@@ -46,7 +55,19 @@ export default defineComponent({
           [props.optionValue]: fetchedData[props.optionValue],
           [props.optionLabel]: fetchedData[props.optionLabel],
         };
+        missing.value = false;
       } catch (err) {
+        // This is a display-only id -> label lookup. A reference the caller
+        // can no longer resolve is a blank label, not an error the user can
+        // act on — so 404/403 degrade to `fallback` instead of a toast.
+        const status =
+          (err as { status?: number; response?: { status?: number } })
+            ?.status ??
+          (err as { response?: { status?: number } })?.response?.status;
+        if (status === 404 || status === 403) {
+          missing.value = true;
+          return;
+        }
         handleError(err);
       }
     };
@@ -61,6 +82,7 @@ export default defineComponent({
 
     return {
       theModel,
+      missing,
     };
   },
 });
