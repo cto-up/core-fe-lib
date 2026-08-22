@@ -22,6 +22,10 @@ export type User = {
      */
     auth_state?: string | null;
     /**
+     * When the user was last active — stamped by us on the request path, accurate to within a few minutes. Distinct from last_authenticated_at, which is the last time credentials were entered and can be weeks earlier on a long-lived session. Null means no activity recorded since the column was introduced.
+     */
+    last_seen_at?: string | null;
+    /**
      * When the user most recently authenticated, taken from the newest session the auth provider still holds. Null means no session on record — which after session pruning is not the same as "never signed in".
      */
     last_authenticated_at?: string | null;

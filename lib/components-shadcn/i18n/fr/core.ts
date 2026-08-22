@@ -225,6 +225,7 @@ export default {
       tenantRoles: "Rôles du Tenant",
       globalRoles: "Rôles Globaux",
       status: "Statut",
+      lastActive: "Dernière activité",
       lastSignIn: "Dernière connexion",
     },
     status: {
@@ -246,6 +247,10 @@ export default {
       missingHint:
         "Aucune identité ne correspond à cet utilisateur chez le fournisseur d'authentification — un enregistrement laissé par un fournisseur précédent. Personne ne peut s'y connecter.",
       never: "Jamais",
+      notRecorded: "—",
+      notRecordedHint:
+        "Aucune activité enregistrée. Le suivi ne commence qu'à partir de son ajout : un utilisateur existant n'apparaîtra qu'à sa prochaine visite.",
+      lastActiveAt: "Dernière activité {at}, à quelques minutes près.",
       signedInAt:
         "Connexion le {at}. Les sessions durent 30 jours : c'est la dernière saisie d'identifiants, pas la dernière utilisation du compte.",
       noSessionOnRecord:

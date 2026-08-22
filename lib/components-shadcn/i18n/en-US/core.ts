@@ -223,6 +223,7 @@ export default {
       tenantRoles: "Tenant Roles",
       globalRoles: "Global Roles",
       status: "Status",
+      lastActive: "Last active",
       lastSignIn: "Last sign-in",
     },
     status: {
@@ -244,6 +245,10 @@ export default {
       missingHint:
         "No identity exists for this user at the sign-in provider — a record left behind by an earlier provider. Nobody can sign in as it.",
       never: "Never",
+      notRecorded: "—",
+      notRecordedHint:
+        "No activity recorded yet. Activity has only been tracked since this was added, so an existing user shows nothing until their next visit.",
+      lastActiveAt: "Last active {at}, accurate to within a few minutes.",
       signedInAt:
         "Signed in {at}. Sessions last 30 days, so this is when credentials were last entered — not the last time the account was used.",
       noSessionOnRecord:

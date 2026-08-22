@@ -40,6 +40,7 @@
                 <TableHead>{{ t("core.user.fields.email") }}</TableHead>
                 <TableHead>{{ t("core.user.fields.roles") }}</TableHead>
                 <TableHead>{{ t("core.user.fields.status") }}</TableHead>
+                <TableHead>{{ t("core.user.fields.lastActive") }}</TableHead>
                 <TableHead>{{ t("core.user.fields.lastSignIn") }}</TableHead>
                 <TableHead class="text-right"> Actions </TableHead>
               </TableRow>
@@ -85,6 +86,12 @@
                 </TableCell>
                 <TableCell
                   class="font-mono text-xs text-muted-foreground/70"
+                  :title="lastActiveTitle(row)"
+                >
+                  {{ lastActiveLabel(row) }}
+                </TableCell>
+                <TableCell
+                  class="font-mono text-xs text-muted-foreground/70"
                   :title="lastConnectedTitle(row)"
                 >
                   {{ lastConnectedLabel(row) }}
@@ -115,7 +122,7 @@
             </TableBody>
             <TableBody v-else-if="loading">
               <TableRow>
-                <TableCell :colspan="6" class="text-center py-8">
+                <TableCell :colspan="7" class="text-center py-8">
                   <Loader2 class="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
@@ -123,7 +130,7 @@
             <TableBody v-else>
               <TableRow>
                 <TableCell
-                  :colspan="6"
+                  :colspan="7"
                   class="text-center py-8 text-muted-foreground"
                 >
                   No data available
@@ -308,10 +315,10 @@ const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
 // signed-in user routinely shows a date weeks old, which is why this column is
 // "Last sign-in" and not "Last connected". Real last-activity would have to be
 // stamped on our side, on every request.
-const lastConnectedLabel = (user: User): string => {
-  if (!user.last_authenticated_at) return t("core.user.status.never");
-  const then = new Date(user.last_authenticated_at).getTime();
-  if (Number.isNaN(then)) return t("core.user.status.never");
+const relative = (iso: string | null | undefined): string | null => {
+  if (!iso) return null;
+  const then = new Date(iso).getTime();
+  if (Number.isNaN(then)) return null;
 
   const elapsed = then - Date.now();
   const rtf = new Intl.RelativeTimeFormat(locale.value, { numeric: "auto" });
@@ -322,6 +329,22 @@ const lastConnectedLabel = (user: User): string => {
   }
   return rtf.format(Math.round(elapsed / 1000), "second");
 };
+
+const lastConnectedLabel = (user: User): string =>
+  relative(user.last_authenticated_at) ?? t("core.user.status.never");
+
+// Last activity, stamped by us on the request path. Only populated from the
+// moment the column shipped, so an established user reads "Never" until their
+// next visit — say so rather than implying they have been away for years.
+const lastActiveLabel = (user: User): string =>
+  relative(user.last_seen_at) ?? t("core.user.status.notRecorded");
+
+const lastActiveTitle = (user: User): string =>
+  user.last_seen_at
+    ? t("core.user.status.lastActiveAt", {
+        at: new Date(user.last_seen_at).toLocaleString(locale.value),
+      })
+    : t("core.user.status.notRecordedHint");
 
 const lastConnectedTitle = (user: User): string =>
   user.last_authenticated_at
