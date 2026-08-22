@@ -225,7 +225,7 @@ export default {
       tenantRoles: "Rôles du Tenant",
       globalRoles: "Rôles Globaux",
       status: "Statut",
-      lastConnected: "Dernière connexion",
+      lastSignIn: "Dernière connexion",
     },
     status: {
       emailVerified: "Email vérifié",
@@ -236,9 +236,13 @@ export default {
       pending: "En attente",
       suspended: "Suspendu",
       removed: "Retiré",
-      unverified: "Non vérifié",
+      unverified: "Adresse email non vérifiée",
+      emailUnverified:
+        "Cette adresse n'a jamais été vérifiée. La vérification n'est pas requise pour se connecter, mais les emails envoyés à cette adresse n'arrivent peut-être à personne.",
       unknown: "Inconnu",
       never: "Jamais",
+      signedInAt:
+        "Connexion le {at}. Les sessions durent 30 jours : c'est la dernière saisie d'identifiants, pas la dernière utilisation du compte.",
       noSessionOnRecord:
         "Aucune session enregistrée. Les sessions expirées sont purgées : une connexion plus ancienne peut ne plus être visible.",
     },

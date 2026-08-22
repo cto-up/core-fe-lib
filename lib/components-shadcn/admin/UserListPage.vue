@@ -40,7 +40,7 @@
                 <TableHead>{{ t("core.user.fields.email") }}</TableHead>
                 <TableHead>{{ t("core.user.fields.roles") }}</TableHead>
                 <TableHead>{{ t("core.user.fields.status") }}</TableHead>
-                <TableHead>{{ t("core.user.fields.lastConnected") }}</TableHead>
+                <TableHead>{{ t("core.user.fields.lastSignIn") }}</TableHead>
                 <TableHead class="text-right"> Actions </TableHead>
               </TableRow>
             </TableHeader>
@@ -54,7 +54,17 @@
                 <TableCell class="font-medium">
                   {{ row.name }}
                 </TableCell>
-                <TableCell>{{ row.email }}</TableCell>
+                <TableCell>
+                  <span class="inline-flex items-center gap-1.5">
+                    {{ row.email }}
+                    <MailWarning
+                      v-if="row.email_verified === false"
+                      class="h-3.5 w-3.5 shrink-0 text-muted-foreground/60"
+                      :aria-label="t('core.user.status.unverified')"
+                      :title="t('core.user.status.emailUnverified')"
+                    />
+                  </span>
+                </TableCell>
                 <TableCell>
                   <Badge
                     v-for="role in row.roles"
@@ -159,7 +169,14 @@ import {
   TableRow,
 } from "../ui/table";
 import BPagination from "../primitives/BPagination.vue";
-import { Search, Plus, Trash2, UserMinus, Loader2 } from "lucide-vue-next";
+import {
+  Search,
+  Plus,
+  Trash2,
+  UserMinus,
+  Loader2,
+  MailWarning,
+} from "lucide-vue-next";
 import { useUrl } from "../../composables/useUrl";
 
 const { isTenantSubdomain } = useUrl();
@@ -232,10 +249,16 @@ onMounted(() => {
 
 type StatusVariant = "default" | "secondary" | "outline" | "destructive";
 
-// One badge for two independent facts: whether the membership is live in this
-// tenant, and whether the identity itself is usable at the auth provider. The
-// membership answer wins — a suspended member cannot get in regardless of what
-// Kratos thinks of their identity.
+// Status answers one question: can this person use the account. Two
+// independent facts feed it — whether the membership is live in this tenant,
+// and whether the identity itself is usable at the auth provider — and the
+// membership answer wins, since a suspended member cannot get in regardless of
+// what Kratos thinks of their identity.
+//
+// Email verification is deliberately NOT in this chain. It gates nothing here:
+// unverified users sign in normally, and most never complete the flow, so
+// folding it in outranked "suspended" and painted every row the same word. It
+// rides beside the email instead.
 const statusOf = (user: User): { label: string; variant: StatusVariant } => {
   const membership = user.membership_status ?? "active";
   if (membership !== "active") {
@@ -246,9 +269,6 @@ const statusOf = (user: User): { label: string; variant: StatusVariant } => {
   }
   if (user.auth_state === "inactive") {
     return { label: t("core.user.status.inactive"), variant: "destructive" };
-  }
-  if (user.email_verified === false) {
-    return { label: t("core.user.status.unverified"), variant: "secondary" };
   }
   if (!user.auth_state) {
     return { label: t("core.user.status.unknown"), variant: "outline" };
@@ -265,6 +285,11 @@ const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["minute", 60_000],
 ];
 
+// Kratos records authenticated_at — when credentials were last entered — and
+// nothing that moves when a page is loaded. With a 30-day session lifespan a
+// signed-in user routinely shows a date weeks old, which is why this column is
+// "Last sign-in" and not "Last connected". Real last-activity would have to be
+// stamped on our side, on every request.
 const lastConnectedLabel = (user: User): string => {
   if (!user.last_authenticated_at) return t("core.user.status.never");
   const then = new Date(user.last_authenticated_at).getTime();
@@ -282,7 +307,9 @@ const lastConnectedLabel = (user: User): string => {
 
 const lastConnectedTitle = (user: User): string =>
   user.last_authenticated_at
-    ? new Date(user.last_authenticated_at).toLocaleString(locale.value)
+    ? t("core.user.status.signedInAt", {
+        at: new Date(user.last_authenticated_at).toLocaleString(locale.value),
+      })
     : t("core.user.status.noSessionOnRecord");
 
 const onRowSelect = async (userID: string) => {
