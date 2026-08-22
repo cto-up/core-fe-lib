@@ -1,4 +1,21 @@
 export default {
+  // Toast copy for useErrors(). Hardcoded English until a browser was
+  // caught machine-translating it for a French learner.
+  errors: {
+    network: "Connection problem",
+    networkDesc:
+      "The request did not reach the server. Check your connection and try again.",
+    badRequest: "Bad Request",
+    badRequestDesc: "Your request is malformed",
+    unauthorized: "Unauthorized",
+    unauthorizedDesc: "You don't have the right permissions",
+    notFound: "Not Found",
+    notFoundDesc: "The requested resource was not found",
+    serverError: "Server Error",
+    serverErrorDesc: "An internal server error occurred",
+    unexpected: "Error",
+    unexpectedDesc: "An unexpected error occurred",
+  },
   multimedia: {
     upload: {
       dragDrop: "Drag and drop files here",

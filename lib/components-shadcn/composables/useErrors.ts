@@ -12,8 +12,35 @@ export function useErrors() {
     t = null;
   }
 
+  // Titles used to be hardcoded English, so a French user got an English toast —
+  // or, worse, the browser machine-translated the page to produce one, which is
+  // how "Network Error" reached a French learner as "Erreur réseau". `t` is null
+  // when handleError is called outside an i18n context, hence the fallback.
+  const tr = (key: string, fallback: string): string => (t ? t(key) : fallback);
+
   const handleError = (error: any, skip404 = false) => {
     if (error?.name === "CancelError" || error?.isCancelled === true) return;
+
+    // A request that never got a response: no HTTP status, and axios' own
+    // English `message` ("Network Error") would otherwise become the toast body.
+    // Deploys are one real source — an in-flight request dropped when the server
+    // force-closes connections — so say something a user can act on.
+    if (
+      error?.status === undefined &&
+      (error?.code === "ERR_NETWORK" ||
+        error?.code === "ECONNABORTED" ||
+        error?.message === "Network Error")
+    ) {
+      toast({
+        title: tr("common.errors.network", "Connection problem"),
+        description: tr(
+          "common.errors.networkDesc",
+          "The request did not reach the server. Check your connection and try again."
+        ),
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (
       error &&
@@ -63,57 +90,85 @@ export function useErrors() {
       switch (error.status) {
         case 400:
           toast({
-            title: "Bad Request",
-            description: msg || "Your request is malformed",
+            title: tr("common.errors.badRequest", "Bad Request"),
+            description:
+              msg ||
+              tr("common.errors.badRequestDesc", "Your request is malformed"),
             variant: "destructive",
           });
           break;
         case 401:
           toast({
-            title: "Unauthorized",
-            description: msg || "You don't have the right permissions",
+            title: tr("common.errors.unauthorized", "Unauthorized"),
+            description:
+              msg ||
+              tr(
+                "common.errors.unauthorizedDesc",
+                "You don't have the right permissions"
+              ),
             variant: "destructive",
           });
           break;
         case 404:
           if (skip404) return;
           toast({
-            title: "Not Found",
-            description: msg || "The requested resource was not found",
+            title: tr("common.errors.notFound", "Not Found"),
+            description:
+              msg ||
+              tr(
+                "common.errors.notFoundDesc",
+                "The requested resource was not found"
+              ),
             variant: "destructive",
           });
           break;
         case 500:
           toast({
-            title: "Server Error",
-            description: msg || "An internal server error occurred",
+            title: tr("common.errors.serverError", "Server Error"),
+            description:
+              msg ||
+              tr(
+                "common.errors.serverErrorDesc",
+                "An internal server error occurred"
+              ),
             variant: "destructive",
           });
           break;
         default:
           toast({
-            title: "Error",
-            description: msg || "An unexpected error occurred: " + error.status,
+            title: tr("common.errors.unexpected", "Error"),
+            description:
+              msg ||
+              tr(
+                "common.errors.unexpectedDesc",
+                "An unexpected error occurred"
+              ) +
+                ": " +
+                error.status,
             variant: "destructive",
           });
           console.error("Error:", JSON.stringify(error));
       }
     } else if (error instanceof Error) {
       toast({
-        title: "Error",
-        description: msg || "An unexpected error occurred",
+        title: tr("common.errors.unexpected", "Error"),
+        description:
+          msg ||
+          tr("common.errors.unexpectedDesc", "An unexpected error occurred"),
         variant: "destructive",
       });
     } else if (typeof error === "string") {
       toast({
-        title: "Error",
+        title: tr("common.errors.unexpected", "Error"),
         description: error,
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Error",
-        description: msg || "An unexpected error occurred",
+        title: tr("common.errors.unexpected", "Error"),
+        description:
+          msg ||
+          tr("common.errors.unexpectedDesc", "An unexpected error occurred"),
         variant: "destructive",
       });
       console.error("Unknown error:", error);

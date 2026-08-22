@@ -1,4 +1,21 @@
 export default {
+  // Toast copy for useErrors(). Hardcoded English until a browser was
+  // caught machine-translating it for a French learner.
+  errors: {
+    network: "Problema de ligação",
+    networkDesc:
+      "O pedido não chegou ao servidor. Verifique a sua ligação e tente novamente.",
+    badRequest: "Pedido inválido",
+    badRequestDesc: "O seu pedido está mal formado",
+    unauthorized: "Não autorizado",
+    unauthorizedDesc: "Não tem as permissões necessárias",
+    notFound: "Não encontrado",
+    notFoundDesc: "O recurso pedido não foi encontrado",
+    serverError: "Erro do servidor",
+    serverErrorDesc: "Ocorreu um erro interno do servidor",
+    unexpected: "Erro",
+    unexpectedDesc: "Ocorreu um erro inesperado",
+  },
   multimedia: {
     upload: {
       dragDrop: "Arraste e largue ficheiros aqui",
