@@ -79,7 +79,16 @@
              flow signs up and signs in with one click, so labelling it
              "Sign up with Google" here would promise a distinction that does
              not exist. -->
-        <template v-if="oidcProviders.length">
+        <!-- An always-mounted wrapper, not a bare `<template v-if>`. The
+             providers arrive after mount, and a `v-if` here made Vue insert
+             them *before* an anchor captured at first render. On a public page
+             that anchor moves: Chrome's translator wraps runs of nodes (comments
+             included) in `<font>`, so the insert threw NotFoundError and killed
+             the render. Appending into an element we own has no anchor to
+             invalidate. Hidden by the `hidden` ATTRIBUTE, not `v-show`, so
+             Tailwind's `space-y-*` (`:not([hidden]) ~ :not([hidden])`) keeps
+             skipping it and the no-provider spacing is unchanged. -->
+        <div class="space-y-4" :hidden="!oidcProviders.length">
           <Button
             v-for="provider in oidcProviders"
             :key="provider.value"
@@ -110,7 +119,7 @@
               </span>
             </div>
           </div>
-        </template>
+        </div>
 
         <div class="space-y-2">
           <Label for="email">{{ $t("auth.signUp.emailLabel") }}</Label>

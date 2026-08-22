@@ -67,23 +67,29 @@
              account — sign in below to add Google as another way in". Dropping
              them leaves the user staring at a bare form after a failed social
              sign-in, with no idea why. -->
-        <div
-          v-for="message in flowMessages"
-          :key="message.id"
-          class="flex gap-2 rounded-md border p-3 text-sm"
-          :class="
-            message.type === 'error'
-              ? 'border-destructive/40 bg-destructive/10 text-destructive'
-              : 'border-primary/30 bg-primary/5 text-foreground'
-          "
-        >
-          <Info class="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{{ messageText(message) }}</span>
+        <div class="grid gap-4" :hidden="!flowMessages.length">
+          <div
+            v-for="message in flowMessages"
+            :key="message.id"
+            class="flex gap-2 rounded-md border p-3 text-sm"
+            :class="
+              message.type === 'error'
+                ? 'border-destructive/40 bg-destructive/10 text-destructive'
+                : 'border-primary/30 bg-primary/5 text-foreground'
+            "
+          >
+            <Info class="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{{ messageText(message) }}</span>
+          </div>
         </div>
 
         <!-- Social sign-in. Rendered from the login flow itself, so a provider
-             that is not configured in kratos.yml simply produces no button. -->
-        <template v-if="oidcProviders.length">
+             that is not configured in kratos.yml simply produces no button.
+             Wrapped in an always-mounted element rather than a `<template v-if>`
+             for the reason spelled out in SignupPage.vue: these arrive after
+             mount, and inserting them before an anchor captured at first render
+             crashes the renderer once anything else has touched the DOM. -->
+        <div class="grid gap-4" :hidden="!oidcProviders.length">
           <Button
             v-for="provider in oidcProviders"
             :key="provider.value"
@@ -113,7 +119,7 @@
               </span>
             </div>
           </div>
-        </template>
+        </div>
 
         <div class="grid gap-2">
           <Label for="email">{{ $t("auth.signIn.emailLabel") }}</Label>
