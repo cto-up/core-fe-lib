@@ -76,7 +76,10 @@
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge :variant="statusOf(row).variant">
+                  <Badge
+                    :variant="statusOf(row).variant"
+                    :title="statusOf(row).hint"
+                  >
                     {{ statusOf(row).label }}
                   </Badge>
                 </TableCell>
@@ -259,7 +262,9 @@ type StatusVariant = "default" | "secondary" | "outline" | "destructive";
 // unverified users sign in normally, and most never complete the flow, so
 // folding it in outranked "suspended" and painted every row the same word. It
 // rides beside the email instead.
-const statusOf = (user: User): { label: string; variant: StatusVariant } => {
+const statusOf = (
+  user: User
+): { label: string; variant: StatusVariant; hint?: string } => {
   const membership = user.membership_status ?? "active";
   if (membership !== "active") {
     return {
@@ -270,8 +275,21 @@ const statusOf = (user: User): { label: string; variant: StatusVariant } => {
   if (user.auth_state === "inactive") {
     return { label: t("core.user.status.inactive"), variant: "destructive" };
   }
+  // The provider answered and has no identity for this row — a leftover from an
+  // earlier auth provider. Nobody can sign in as it, so it is not "unknown".
+  if (user.auth_state === "missing") {
+    return {
+      label: t("core.user.status.missing"),
+      variant: "destructive",
+      hint: t("core.user.status.missingHint"),
+    };
+  }
   if (!user.auth_state) {
-    return { label: t("core.user.status.unknown"), variant: "outline" };
+    return {
+      label: t("core.user.status.unknown"),
+      variant: "outline",
+      hint: t("core.user.status.unknownHint"),
+    };
   }
   return { label: t("core.user.status.active"), variant: "outline" };
 };

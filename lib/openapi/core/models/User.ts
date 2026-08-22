@@ -18,7 +18,7 @@ export type User = {
      */
     membership_status?: string | null;
     /**
-     * Identity state at the auth provider (active, inactive). Null when the provider could not be reached.
+     * Identity state at the auth provider — "active", "inactive", or "missing" when the provider answered and has no identity for this user (a row left behind by an earlier auth provider; nobody can sign in as it). Null means the provider could not be asked, which is not the same as "missing".
      */
     auth_state?: string | null;
     /**

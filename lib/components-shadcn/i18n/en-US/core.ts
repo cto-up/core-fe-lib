@@ -238,6 +238,11 @@ export default {
       emailUnverified:
         "This address has never been verified. Verification is not required to sign in, but mail to it may not be reaching anyone.",
       unknown: "Unknown",
+      unknownHint:
+        "The sign-in provider could not be reached, so this account's state is unknown.",
+      missing: "No sign-in account",
+      missingHint:
+        "No identity exists for this user at the sign-in provider — a record left behind by an earlier provider. Nobody can sign in as it.",
       never: "Never",
       signedInAt:
         "Signed in {at}. Sessions last 30 days, so this is when credentials were last entered — not the last time the account was used.",

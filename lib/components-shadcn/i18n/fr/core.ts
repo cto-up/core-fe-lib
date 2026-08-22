@@ -240,6 +240,11 @@ export default {
       emailUnverified:
         "Cette adresse n'a jamais été vérifiée. La vérification n'est pas requise pour se connecter, mais les emails envoyés à cette adresse n'arrivent peut-être à personne.",
       unknown: "Inconnu",
+      unknownHint:
+        "Le fournisseur d'authentification est injoignable : l'état de ce compte est inconnu.",
+      missing: "Aucun compte de connexion",
+      missingHint:
+        "Aucune identité ne correspond à cet utilisateur chez le fournisseur d'authentification — un enregistrement laissé par un fournisseur précédent. Personne ne peut s'y connecter.",
       never: "Jamais",
       signedInAt:
         "Connexion le {at}. Les sessions durent 30 jours : c'est la dernière saisie d'identifiants, pas la dernière utilisation du compte.",
