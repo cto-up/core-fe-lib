@@ -125,7 +125,9 @@ interface Option {
 
 const props = defineProps({
   modelValue: {
-    type: Array as () => string[],
+    // Nullable: API models declare optional list fields as Array<T> | null, and
+    // selectedValues below already falls back to [] for anything non-array.
+    type: Array as () => string[] | null,
     default: () => [],
   },
   options: {

@@ -1,5 +1,7 @@
 export { default as Calendar } from "./Calendar.vue";
-import type { CalendarSlotName } from "v-calendar/dist/types/@/components/Calendar/CalendarSlot.vue.d.ts";
+// v-calendar ships this type at dist/types/src/...; the "@/" in the old path was
+// its internal build alias, which never existed on disk in the published package.
+import type { CalendarSlotName } from "v-calendar/dist/types/src/components/Calendar/CalendarSlot.vue";
 
 export function isVCalendarSlot(
   slotName: string

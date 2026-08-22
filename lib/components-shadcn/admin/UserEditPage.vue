@@ -270,7 +270,7 @@ import { useUser } from "../composables/useUser";
 withDefaults(defineProps<{ editUserPathPrefix?: string }>(), {
   editUserPathPrefix: "/admin/users",
 });
-import { DefaultService } from "../../openapi/core";
+import { DefaultService, UserActionSchema } from "../../openapi/core";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -324,15 +324,19 @@ const {
 const { isTenantSubdomain } = useUrl();
 // Create a ref to track if all components are ready to save
 const componentsReadyToSave = ref(true);
-const saveCallbacks = ref([]);
+// Extension components register a callback here; it is invoked twice per submit,
+// once to validate and once to save. `ref([])` alone infers never[], which made
+// both the registration and the two calls below untyped.
+type SaveCallback = (phase: "validate" | "save") => void | Promise<void>;
+const saveCallbacks = ref<SaveCallback[]>([]);
 
 // Provide a method for child components to register their save callbacks
-provide("registerSaveCallback", (callback) => {
+provide("registerSaveCallback", (callback: SaveCallback) => {
   saveCallbacks.value.push(callback);
 });
 
 // Provide a method for child components to report save readiness
-provide("setComponentReadiness", (isReady) => {
+provide("setComponentReadiness", (isReady: boolean) => {
   if (!isReady) {
     componentsReadyToSave.value = false;
   }
@@ -371,7 +375,7 @@ const disabled = ref(false);
 const onEnabledChange = async (enabled: boolean) => {
   disabled.value = true;
   await DefaultService.updateUserStatus(user.id, {
-    name: "DISABLED",
+    name: UserActionSchema.name.DISABLED,
     value: !enabled,
   })
     .then(() => {

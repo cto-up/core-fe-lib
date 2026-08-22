@@ -67,7 +67,7 @@
                     }}
                   </Badge>
                 </TableCell>
-                <TableCell>{{ row.last_used }}</TableCell>
+                <TableCell>{{ row.lastUsedAt }}</TableCell>
                 <TableCell class="text-right">
                   <Button
                     variant="ghost"

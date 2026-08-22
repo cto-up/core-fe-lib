@@ -82,7 +82,7 @@
             <RegistryLLMSelect
               v-else-if="schemaEntry?.type === 'llm'"
               :id="`tenant-config-llm-${tenantConfig.name}`"
-              :model-value="tenantConfig.value"
+              :model-value="tenantConfig.value ?? ''"
               :capability="schemaEntry.requiresCapability ?? 'text'"
               :task-type="schemaEntry.taskType"
               :placeholder="schemaEntry.defaultValue ?? 'Select a model…'"

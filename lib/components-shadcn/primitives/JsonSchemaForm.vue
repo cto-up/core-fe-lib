@@ -206,8 +206,11 @@ const fields = computed<FieldDef[]>(() => {
   });
 });
 
-function configValue(name: string): unknown {
-  return props.modelValue?.config?.[name];
+// Narrowed to what an Input can actually render. config is a free-form
+// Record<string, unknown>; anything that is not a scalar has no input to show.
+function configValue(name: string): string | number | undefined {
+  const v = props.modelValue?.config?.[name];
+  return typeof v === "string" || typeof v === "number" ? v : undefined;
 }
 
 function secretRefValue(name: string): string | null {

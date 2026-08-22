@@ -16,7 +16,6 @@ export function useAPIToken(clientApplicationId: string) {
     description: "",
     expiresAt: "",
     clientApplicationId: clientApplicationId,
-    applicationName: "",
     tokenPrefix: "",
     scopes: [],
   });
