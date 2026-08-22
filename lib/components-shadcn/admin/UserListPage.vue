@@ -39,6 +39,8 @@
                 <TableHead>{{ t("core.user.fields.name") }}</TableHead>
                 <TableHead>{{ t("core.user.fields.email") }}</TableHead>
                 <TableHead>{{ t("core.user.fields.roles") }}</TableHead>
+                <TableHead>{{ t("core.user.fields.status") }}</TableHead>
+                <TableHead>{{ t("core.user.fields.lastConnected") }}</TableHead>
                 <TableHead class="text-right"> Actions </TableHead>
               </TableRow>
             </TableHeader>
@@ -62,6 +64,17 @@
                   >
                     {{ role }}
                   </Badge>
+                </TableCell>
+                <TableCell>
+                  <Badge :variant="statusOf(row).variant">
+                    {{ statusOf(row).label }}
+                  </Badge>
+                </TableCell>
+                <TableCell
+                  class="font-mono text-xs text-muted-foreground/70"
+                  :title="lastConnectedTitle(row)"
+                >
+                  {{ lastConnectedLabel(row) }}
                 </TableCell>
                 <TableCell class="text-right">
                   <div class="flex items-center justify-end gap-1">
@@ -89,7 +102,7 @@
             </TableBody>
             <TableBody v-else-if="loading">
               <TableRow>
-                <TableCell :colspan="4" class="text-center py-8">
+                <TableCell :colspan="6" class="text-center py-8">
                   <Loader2 class="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
@@ -97,7 +110,7 @@
             <TableBody v-else>
               <TableRow>
                 <TableCell
-                  :colspan="4"
+                  :colspan="6"
                   class="text-center py-8 text-muted-foreground"
                 >
                   No data available
@@ -151,7 +164,7 @@ import { useUrl } from "../../composables/useUrl";
 
 const { isTenantSubdomain } = useUrl();
 const { dialog } = useDialog();
-const { t } = useI18n();
+const { t, locale } = useI18n();
 const props = withDefaults(
   defineProps<{
     newUserPath?: string;
@@ -216,6 +229,61 @@ onMounted(() => {
     filter: filter.value,
   });
 });
+
+type StatusVariant = "default" | "secondary" | "outline" | "destructive";
+
+// One badge for two independent facts: whether the membership is live in this
+// tenant, and whether the identity itself is usable at the auth provider. The
+// membership answer wins — a suspended member cannot get in regardless of what
+// Kratos thinks of their identity.
+const statusOf = (user: User): { label: string; variant: StatusVariant } => {
+  const membership = user.membership_status ?? "active";
+  if (membership !== "active") {
+    return {
+      label: t(`core.user.status.${membership}`, membership),
+      variant: membership === "pending" ? "secondary" : "destructive",
+    };
+  }
+  if (user.auth_state === "inactive") {
+    return { label: t("core.user.status.inactive"), variant: "destructive" };
+  }
+  if (user.email_verified === false) {
+    return { label: t("core.user.status.unverified"), variant: "secondary" };
+  }
+  if (!user.auth_state) {
+    return { label: t("core.user.status.unknown"), variant: "outline" };
+  }
+  return { label: t("core.user.status.active"), variant: "outline" };
+};
+
+const RELATIVE_UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
+  ["year", 365 * 24 * 3600_000],
+  ["month", 30 * 24 * 3600_000],
+  ["week", 7 * 24 * 3600_000],
+  ["day", 24 * 3600_000],
+  ["hour", 3600_000],
+  ["minute", 60_000],
+];
+
+const lastConnectedLabel = (user: User): string => {
+  if (!user.last_authenticated_at) return t("core.user.status.never");
+  const then = new Date(user.last_authenticated_at).getTime();
+  if (Number.isNaN(then)) return t("core.user.status.never");
+
+  const elapsed = then - Date.now();
+  const rtf = new Intl.RelativeTimeFormat(locale.value, { numeric: "auto" });
+  for (const [unit, ms] of RELATIVE_UNITS) {
+    if (Math.abs(elapsed) >= ms) {
+      return rtf.format(Math.round(elapsed / ms), unit);
+    }
+  }
+  return rtf.format(Math.round(elapsed / 1000), "second");
+};
+
+const lastConnectedTitle = (user: User): string =>
+  user.last_authenticated_at
+    ? new Date(user.last_authenticated_at).toLocaleString(locale.value)
+    : t("core.user.status.noSessionOnRecord");
 
 const onRowSelect = async (userID: string) => {
   await router.push({

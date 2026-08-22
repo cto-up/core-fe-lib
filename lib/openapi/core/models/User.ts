@@ -17,5 +17,13 @@ export type User = {
      * Membership status (active, inactive, etc.)
      */
     membership_status?: string | null;
+    /**
+     * Identity state at the auth provider (active, inactive). Null when the provider could not be reached.
+     */
+    auth_state?: string | null;
+    /**
+     * When the user most recently authenticated, taken from the newest session the auth provider still holds. Null means no session on record — which after session pruning is not the same as "never signed in".
+     */
+    last_authenticated_at?: string | null;
 };
 

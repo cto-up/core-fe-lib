@@ -224,11 +224,23 @@ export default {
       commercialLevel: "Niveau Commercial",
       tenantRoles: "Rôles du Tenant",
       globalRoles: "Rôles Globaux",
+      status: "Statut",
+      lastConnected: "Dernière connexion",
     },
     status: {
       emailVerified: "Email vérifié",
       enabled: "Activé",
       updated: "Mis à jour",
+      active: "Actif",
+      inactive: "Inactif",
+      pending: "En attente",
+      suspended: "Suspendu",
+      removed: "Retiré",
+      unverified: "Non vérifié",
+      unknown: "Inconnu",
+      never: "Jamais",
+      noSessionOnRecord:
+        "Aucune session enregistrée. Les sessions expirées sont purgées : une connexion plus ancienne peut ne plus être visible.",
     },
     validation: {
       invalidEmail: "Email non valide",

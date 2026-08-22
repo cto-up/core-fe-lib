@@ -222,11 +222,23 @@ export default {
       commercialLevel: "Commercial Level",
       tenantRoles: "Tenant Roles",
       globalRoles: "Global Roles",
+      status: "Status",
+      lastConnected: "Last connected",
     },
     status: {
       emailVerified: "Email Verified",
       enabled: "Enabled",
       updated: "Updated",
+      active: "Active",
+      inactive: "Inactive",
+      pending: "Pending",
+      suspended: "Suspended",
+      removed: "Removed",
+      unverified: "Unverified",
+      unknown: "Unknown",
+      never: "Never",
+      noSessionOnRecord:
+        "No session on record. Sessions are pruned once they expire, so an older sign-in may no longer be visible.",
     },
     validation: {
       invalidEmail: "Not a valid email",
