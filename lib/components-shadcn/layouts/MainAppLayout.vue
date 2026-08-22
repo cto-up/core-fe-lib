@@ -88,9 +88,7 @@
       <!-- Page Content -->
       <main class="mt-16 mx-auto flex flex-col items-center">
         <RouterView v-slot="{ Component, route: viewRoute }">
-          <transition name="fade">
-            <component :is="Component" :key="viewRoute.path" />
-          </transition>
+          <component :is="Component" :key="viewRoute.path" />
         </RouterView>
       </main>
     </div>
