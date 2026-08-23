@@ -21,6 +21,13 @@ export default {
     profile: "Profil",
   },
   navigation: {
+    // Shared section: several modules contribute items to it via
+    // `sectionId: "settings"`, so the label is owned here rather than by
+    // whichever module happens to be registered first.
+    settings: {
+      title: "Paramètres",
+      caption: "Identifiants, journal d'audit et données de référence",
+    },
     moduleAdministration: {
       title: "Administration des Modules",
       caption: "Administration des Modules",

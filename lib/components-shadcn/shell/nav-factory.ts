@@ -29,6 +29,62 @@ export function visibleItems(
 }
 
 /**
+ * Folds every link carrying the same `sectionId` into a single section.
+ *
+ * Without this, a module can only put an item in a shared section by
+ * re-declaring the whole section, and the sidebar renders two sections with
+ * the same name — which is what "Settings" did once connections moved out of
+ * aiemployee-fe-lib (ADR 054).
+ *
+ * Two orderings, deliberately independent:
+ *   - the section sits where its FIRST contributor sits in registration order,
+ *     and takes its icon from that link, so adding a contributor never moves an
+ *     existing section;
+ *   - its items are concatenated by ascending `sectionOrder`, so a contributor
+ *     can lead the section without being registered first.
+ *
+ * The label is not taken from any contributor: it comes from
+ * `layout.navigation.<sectionId>`, because two modules cannot agree on one.
+ */
+export function mergeSharedSections(
+  links: MenuLink[],
+  t: (key: string) => string
+): MenuLink[] {
+  const contributions = new Map<string, MenuLink[]>();
+  for (const link of links) {
+    if (!link.sectionId) continue;
+    const bucket = contributions.get(link.sectionId);
+    if (bucket) bucket.push(link);
+    else contributions.set(link.sectionId, [link]);
+  }
+
+  const emitted = new Set<string>();
+  const out: MenuLink[] = [];
+
+  for (const link of links) {
+    const id = link.sectionId;
+    if (!id) {
+      out.push(link);
+      continue;
+    }
+    if (emitted.has(id)) continue;
+    emitted.add(id);
+
+    const parts = [...(contributions.get(id) ?? [])].sort(
+      (a, b) => (a.sectionOrder ?? 0) - (b.sectionOrder ?? 0)
+    );
+    out.push({
+      ...link,
+      title: t(`layout.navigation.${id}.title`),
+      caption: t(`layout.navigation.${id}.caption`),
+      items: parts.flatMap((p) => p.items ?? []),
+    });
+  }
+
+  return out;
+}
+
+/**
  * Reactive composable that aggregates nav links from all registered modules.
  * Replaces the old useMenuLinks() from @/router/links.
  */
@@ -48,7 +104,7 @@ export function useShellNav(): ComputedRef<MenuLink[]> {
 
     const hasPrivilege = (role: Role) => userStore.hasPrivilege(role);
 
-    return getModules()
+    const links = getModules()
       .filter((m) => isModuleEnabled(m, ctx))
       .flatMap((m) =>
         m.navLinks(ctx).map((link) => ({
@@ -56,7 +112,12 @@ export function useShellNav(): ComputedRef<MenuLink[]> {
           moduleId: m.id,
           items: visibleItems(link.items, hasPrivilege),
         }))
-      )
-      .filter((link) => link.link || link.items?.length);
+      );
+
+    // Merge before the empty-section filter: a contributor whose items are all
+    // privilege-filtered away must not take the shared section's label slot.
+    return mergeSharedSections(links, t).filter(
+      (link) => link.link || link.items?.length
+    );
   });
 }
