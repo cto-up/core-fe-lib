@@ -19,12 +19,16 @@ const props = defineProps<
      *  host layer that sits higher than the default z-50 (e.g. a full-screen
      *  landing takeover). Keep it in sync with the content's own z-index. */
     overlayClass?: HTMLAttributes["class"];
+    /** Suppress the built-in corner close, for a dialog whose header carries
+     *  its own. Without it such a dialog renders TWO close buttons on top of
+     *  each other, which is what it did before this prop existed. */
+    hideClose?: boolean;
   }
 >();
 const emits = defineEmits<DialogContentEmits>();
 
 const delegatedProps = computed(() => {
-  const { class: _, overlayClass: __, ...delegated } = props;
+  const { class: _, overlayClass: __, hideClose: ___, ...delegated } = props;
 
   return delegated;
 });
@@ -54,6 +58,7 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
       <slot />
 
       <DialogClose
+        v-if="!hideClose"
         class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
       >
         <X class="w-4 h-4" />
