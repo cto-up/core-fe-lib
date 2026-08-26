@@ -191,6 +191,14 @@ export default {
     diagnosticsTitle: "Dettagli tecnici",
     diagnosticsCopy: "Copia dettagli",
     diagnosticsCopied: "Copiato",
+    conflictTitle: "Hai già effettuato l'accesso",
+    conflictSignedInAs: "Accesso effettuato come",
+    conflictBody:
+      "Se questo link è stato inviato a un altro indirizzo, esci prima — altrimenti cambieresti la password dell'account qui sopra.",
+    conflictUseLink: "Esci e apri il link",
+    conflictContinue: "Continua con questo account",
+    conflictSignOutFailed:
+      "Non siamo riusciti a disconnetterti. Esci dal menu, poi riapri il link.",
   },
   securitySettings: {
     title: "Impostazioni di sicurezza",

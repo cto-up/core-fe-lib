@@ -197,6 +197,14 @@ export default {
     diagnosticsTitle: "Technische Details",
     diagnosticsCopy: "Details kopieren",
     diagnosticsCopied: "Kopiert",
+    conflictTitle: "Sie sind bereits angemeldet",
+    conflictSignedInAs: "Angemeldet als",
+    conflictBody:
+      "Wurde dieser Link an eine andere Adresse gesendet, melden Sie sich zuerst ab — sonst ändern Sie das Passwort des oben genannten Kontos.",
+    conflictUseLink: "Abmelden und Link öffnen",
+    conflictContinue: "Mit diesem Konto fortfahren",
+    conflictSignOutFailed:
+      "Wir konnten Sie nicht abmelden. Melden Sie sich über das Menü ab und öffnen Sie den Link erneut.",
   },
   securitySettings: {
     title: "Sicherheitseinstellungen",
