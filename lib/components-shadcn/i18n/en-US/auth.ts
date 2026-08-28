@@ -183,6 +183,14 @@ export default {
     diagnosticsTitle: "Technical details",
     diagnosticsCopy: "Copy details",
     diagnosticsCopied: "Copied",
+    conflictTitle: "You're already signed in",
+    conflictSignedInAs: "Signed in as",
+    conflictBody:
+      "If this link was sent to a different address, sign out first — otherwise you would be changing the password of the account above.",
+    conflictUseLink: "Sign out and open the link",
+    conflictContinue: "Continue with this account",
+    conflictSignOutFailed:
+      "We could not sign you out. Sign out from the menu, then open the link again.",
   },
   securitySettings: {
     title: "Security Settings",

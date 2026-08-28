@@ -192,6 +192,14 @@ export default {
     diagnosticsTitle: "Detalhes técnicos",
     diagnosticsCopy: "Copiar detalhes",
     diagnosticsCopied: "Copiado",
+    conflictTitle: "Já tem sessão iniciada",
+    conflictSignedInAs: "Sessão iniciada como",
+    conflictBody:
+      "Se esta ligação foi enviada para outro endereço, termine a sessão primeiro — caso contrário estaria a alterar a palavra-passe da conta acima.",
+    conflictUseLink: "Terminar sessão e abrir a ligação",
+    conflictContinue: "Continuar com esta conta",
+    conflictSignOutFailed:
+      "Não foi possível terminar a sua sessão. Termine-a a partir do menu e volte a abrir a ligação.",
   },
   securitySettings: {
     title: "Definições de segurança",

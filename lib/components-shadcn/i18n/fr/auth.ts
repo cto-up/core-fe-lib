@@ -196,6 +196,14 @@ export default {
     diagnosticsTitle: "Détails techniques",
     diagnosticsCopy: "Copier les détails",
     diagnosticsCopied: "Copié",
+    conflictTitle: "Vous êtes déjà connecté",
+    conflictSignedInAs: "Connecté en tant que",
+    conflictBody:
+      "Si ce lien a été envoyé à une autre adresse, déconnectez-vous d'abord — sinon vous changeriez le mot de passe du compte ci-dessus.",
+    conflictUseLink: "Se déconnecter et ouvrir le lien",
+    conflictContinue: "Continuer avec ce compte",
+    conflictSignOutFailed:
+      "Nous n'avons pas pu vous déconnecter. Déconnectez-vous depuis le menu, puis rouvrez le lien.",
   },
   securitySettings: {
     title: "Paramètres de Sécurité",

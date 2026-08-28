@@ -195,6 +195,14 @@ export default {
     diagnosticsTitle: "Detalles técnicos",
     diagnosticsCopy: "Copiar detalles",
     diagnosticsCopied: "Copiado",
+    conflictTitle: "Ya has iniciado sesión",
+    conflictSignedInAs: "Sesión iniciada como",
+    conflictBody:
+      "Si este enlace se envió a otra dirección, cierra sesión primero — de lo contrario cambiarías la contraseña de la cuenta anterior.",
+    conflictUseLink: "Cerrar sesión y abrir el enlace",
+    conflictContinue: "Continuar con esta cuenta",
+    conflictSignOutFailed:
+      "No hemos podido cerrar tu sesión. Ciérrala desde el menú y vuelve a abrir el enlace.",
   },
   securitySettings: {
     title: "Configuración de seguridad",

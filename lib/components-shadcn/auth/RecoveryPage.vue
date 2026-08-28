@@ -93,6 +93,63 @@
         </div>
       </div>
 
+      <!-- Kratos refused the token because a session cookie was present. It
+           rejects on that alone, BEFORE it looks at the token, so this says
+           nothing about whose session it is — and a recovery flow never names
+           the identity it was minted for. Assuming "same person" would set the
+           signed-in account's password from someone else's link and leave the
+           real token unspent, so the one party who knows which inbox this link
+           arrived in decides. -->
+      <div v-if="conflict" class="rounded-md border bg-card p-4 space-y-4">
+        <h3 class="text-sm font-medium text-foreground">
+          {{ tf("conflictTitle", "You're already signed in") }}
+        </h3>
+
+        <div
+          v-if="conflict.email"
+          class="flex items-center gap-3 rounded-xl bg-muted/50 p-3"
+        >
+          <UserRound class="h-5 w-5 shrink-0 text-muted-foreground" />
+          <div class="min-w-0">
+            <p class="text-xs text-muted-foreground/70">
+              {{ tf("conflictSignedInAs", "Signed in as") }}
+            </p>
+            <p class="truncate text-sm font-medium">{{ conflict.email }}</p>
+          </div>
+        </div>
+
+        <p class="text-sm text-muted-foreground">
+          {{
+            tf(
+              "conflictBody",
+              "If this link was sent to a different address, sign out first — otherwise you would be changing the password of the account above."
+            )
+          }}
+        </p>
+
+        <p v-if="conflictError" class="text-sm text-destructive">
+          {{ conflictError }}
+        </p>
+
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <Button
+            class="w-full"
+            :disabled="resolving"
+            @click="signOutAndUseLink"
+          >
+            {{ tf("conflictUseLink", "Sign out and open the link") }}
+          </Button>
+          <Button
+            variant="outline"
+            class="w-full"
+            :disabled="resolving"
+            @click="continueAsCurrentUser"
+          >
+            {{ tf("conflictContinue", "Continue with this account") }}
+          </Button>
+        </div>
+      </div>
+
       <!-- Loading State -->
       <div v-if="loading && !showPasswordForm" class="text-center">
         <div
@@ -159,7 +216,13 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
-import { Check, ChevronDown, ChevronRight, Copy } from "lucide-vue-next";
+import {
+  Check,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  UserRound,
+} from "lucide-vue-next";
 import {
   extractKratosError,
   extractValidationErrors,
@@ -215,7 +278,7 @@ const tf = (key: string, fallback: string): string => {
   const full = `auth.recovery.${key}`;
   return te(full) ? t(full) : fallback;
 };
-const { getCurrentSession } = useKratosAuth();
+const { getCurrentSession, clearSession } = useKratosAuth();
 const aal2Store = useAal2Store();
 
 const loading = ref(true);
@@ -228,6 +291,20 @@ const submitting = ref(false);
 const linkDead = ref(false);
 /** Reconstructed cause, shown to the user and forwarded to `reportFailure`. */
 const report = ref<RecoveryFailureReport | null>(null);
+/**
+ * A session was already live when the token was submitted, and nothing here can
+ * tell whether it belongs to the same person. Holds what is needed to resume
+ * either way once the user has said which account the link is for.
+ */
+const conflict = ref<{
+  flowId: string;
+  token: string;
+  returnTo?: string;
+  email: string;
+} | null>(null);
+const resolving = ref(false);
+/** Shown inside the conflict card, so the two choices stay on screen. */
+const conflictError = ref("");
 
 const password = ref("");
 const confirmPassword = ref("");
@@ -390,23 +467,28 @@ const copyDiagnostics = async () => {
   }
 };
 
-onMounted(async () => {
-  const flowId = route.query.flow as string;
-  const token = route.query.token as string;
-  const returnTo = route.query.return_to as string | undefined;
-
-  console.log("🎬 RecoveryPage mounted:", {
-    flowId,
-    token: token?.substring(0, 10) + "...",
-    currentUrl: globalThis.location.href,
-    origin: globalThis.location.origin,
-  });
-
-  if (!flowId) {
-    error.value = t("auth.recovery.invalidLink");
-    loading.value = false;
-    return;
-  }
+/**
+ * One end-to-end recovery attempt: redeem `token` if there is one, then open a
+ * settings flow so the user can set a password.
+ *
+ * Re-entrant on purpose — the session-conflict card calls it again once the
+ * user has said which account the link belongs to.
+ *
+ * `adoptedSession` marks the branch where the user kept the session already in
+ * the browser rather than redeeming the token. It only gates `return_to`: with
+ * no token spent, that redirect is warranted by the user's choice instead of by
+ * the cookie check below.
+ */
+const runRecovery = async (
+  flowId: string,
+  token: string,
+  returnTo?: string,
+  adoptedSession = false
+): Promise<void> => {
+  loading.value = true;
+  error.value = "";
+  linkDead.value = false;
+  report.value = null;
 
   try {
     // If a token is present, we need to submit it to activate the recovery
@@ -415,7 +497,6 @@ onMounted(async () => {
     // us nothing about whether that happened.
     if (token) {
       statusMessage.value = t("auth.recovery.activatingLink");
-      stripTokenFromUrl();
       try {
         await kratosService.submitRecoveryFlow(flowId, {
           method: "link",
@@ -423,12 +504,33 @@ onMounted(async () => {
         });
       } catch (err) {
         const kratosError = extractKratosError(err);
-        // Session already exists — the recovery link was already used but the session
-        // is still valid, so we can proceed directly to the settings flow.
         if (kratosError?.id !== KratosErrorIds.SESSION_ALREADY_AVAILABLE) {
           throw err;
         }
-        console.log("ℹ️  Session already active, proceeding to settings.");
+
+        // Kratos refuses a recovery submission whenever a session cookie is
+        // present, and it does so BEFORE reading the token — so this error
+        // proves a session exists, never that it is the one this link belongs
+        // to. The flow does not name the identity it was minted for either, so
+        // there is nothing here to compare. Treating it as "same person"
+        // silently sets the signed-in account's password from a stranger's
+        // link and leaves the real token unspent. Hand the choice to the only
+        // party that can make it.
+        const current = await kratosService
+          .getSession({ force: true })
+          .catch(() => null);
+        console.warn(
+          "⚠️  A session was already live; asking the user whose it is."
+        );
+        conflict.value = {
+          flowId,
+          token,
+          returnTo,
+          email: current?.identity?.traits?.email ?? "",
+        };
+        statusMessage.value = "";
+        loading.value = false;
+        return;
       }
 
       // The POST resolving proves NOTHING about the token. Kratos answers a
@@ -452,14 +554,14 @@ onMounted(async () => {
         await failAsDeadLink("activate", flowId, true);
         return;
       }
+    }
 
-      // When a return_to destination is present (invitation flow), skip the
-      // password-setting step and redirect directly. The user is now authenticated.
-      if (returnTo) {
-        await getCurrentSession();
-        void router.push(returnTo);
-        return;
-      }
+    // When a return_to destination is present (invitation flow), skip the
+    // password-setting step and redirect directly. The user is now authenticated.
+    if (returnTo && (token || adoptedSession)) {
+      await getCurrentSession();
+      void router.push(returnTo);
+      return;
     }
 
     const flow = await kratosService.initSettingsFlow().catch(async (err) => {
@@ -527,7 +629,87 @@ onMounted(async () => {
     }
     loading.value = false;
   }
+};
+
+onMounted(async () => {
+  const flowId = route.query.flow as string;
+  const token = route.query.token as string;
+  const returnTo = route.query.return_to as string | undefined;
+
+  console.log("🎬 RecoveryPage mounted:", {
+    flowId,
+    token: token?.substring(0, 10) + "...",
+    currentUrl: globalThis.location.href,
+    origin: globalThis.location.origin,
+  });
+
+  if (!flowId) {
+    error.value = t("auth.recovery.invalidLink");
+    loading.value = false;
+    return;
+  }
+
+  // Once, here rather than inside runRecovery: the conflict card may run the
+  // recovery a second time, and the token it replays is the one captured above.
+  if (token) stripTokenFromUrl();
+
+  await runRecovery(flowId, token, returnTo);
 });
+
+/**
+ * "This link is for another account." Drop the session so Kratos stops
+ * refusing, then redeem the token for whoever it actually belongs to.
+ *
+ * If the token turns out to be spent, the retry fails as a dead link and the
+ * user is offered a fresh one — the honest end to a link that was never proven
+ * good in the first place.
+ */
+const signOutAndUseLink = async () => {
+  const pending = conflict.value;
+  if (!pending || resolving.value) return;
+  resolving.value = true;
+  conflictError.value = "";
+  try {
+    await clearSession();
+
+    // clearSession swallows a failed logout by design. Re-running the recovery
+    // on a session that is still live would draw this very card again, forever,
+    // so check before retrying and say what actually went wrong instead.
+    const stillLive = await kratosService
+      .getSession({ force: true })
+      .catch(() => null);
+    if (stillLive?.active) {
+      conflictError.value = tf(
+        "conflictSignOutFailed",
+        "We could not sign you out. Sign out from the menu, then open the link again."
+      );
+      return;
+    }
+
+    conflict.value = null;
+    await runRecovery(pending.flowId, pending.token, pending.returnTo);
+  } finally {
+    resolving.value = false;
+  }
+};
+
+/**
+ * "That account is mine." Keep the live session and set ITS password — what
+ * this page used to do unconditionally, now only when the user says so. The
+ * token stays unspent: nothing ever established that it was valid.
+ */
+const continueAsCurrentUser = async () => {
+  const pending = conflict.value;
+  if (!pending || resolving.value) return;
+  resolving.value = true;
+  conflictError.value = "";
+  try {
+    conflict.value = null;
+    await runRecovery(pending.flowId, "", pending.returnTo, true);
+  } finally {
+    resolving.value = false;
+  }
+};
 
 const handlePasswordSubmit = async () => {
   passwordError.value = "";
