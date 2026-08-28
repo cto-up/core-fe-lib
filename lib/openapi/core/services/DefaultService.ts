@@ -1448,7 +1448,7 @@ export class DefaultService {
      * @param pageSize maximum number of results to return
      * @param sortBy field to sort by
      * @param order sort order
-     * @param q starts with
+     * @param q case-insensitive substring match on tenant name or subdomain
      * @param resellerId filter by reseller id
      * @param global When true, bypass the automatic reseller scoping that filters results
      * to the current reseller subdomain. Honored only for SUPER_ADMIN / ADMIN;
