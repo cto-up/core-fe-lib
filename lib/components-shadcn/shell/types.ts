@@ -12,10 +12,16 @@ export interface AppLayouts {
 export interface AppContext {
   t: (key: string, ...args: unknown[]) => string;
   userStore: {
-    isAdmin: boolean;
-    isCustomerAdmin: boolean;
-    isSuperAdmin: boolean;
-    hasPrivilege: (role: unknown) => boolean;
+    // Optional: these are Pinia getters reading a nullable user, so the store
+    // exposes them as `boolean | undefined`. Requiring `boolean` here made the
+    // real store unassignable to its own context type.
+    isAdmin?: boolean;
+    isCustomerAdmin?: boolean;
+    isSuperAdmin?: boolean;
+    // `Role`, not `unknown`: under strictFunctionTypes the store's own
+    // `(role: Role) => boolean` is not assignable to an `unknown` parameter,
+    // and every caller passes a Role anyway.
+    hasPrivilege: (role: Role) => boolean;
   };
   tenantStore: {
     tenant: { features?: Record<string, boolean> } | null;
