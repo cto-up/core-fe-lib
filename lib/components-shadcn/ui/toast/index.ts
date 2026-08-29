@@ -4,4 +4,8 @@ export { default as ToastDescription } from "./ToastDescription.vue";
 export { default as ToastClose } from "./ToastClose.vue";
 export { default as Toaster } from "./Toaster.vue";
 export { useToast } from "./use-toast";
-export type { Toast as ToastType, ToastVariant } from "./use-toast";
+export type {
+  Toast as ToastType,
+  ToastVariant,
+  ToastAction,
+} from "./use-toast";

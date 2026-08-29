@@ -16,7 +16,7 @@
       :can-access="nav.canAccess"
       :resolve-icon="resolveIcon"
       :version="version"
-      :show-help="!!support"
+      :show-help="!!supportConfig"
       :labels="{
         version: t('layout.version'),
         help: t('support.fab'),
@@ -96,17 +96,25 @@
     <!-- Help & contact — opened from the sidebar's utility entry. Opt-in: only
          apps that pass `support` get it. -->
     <SupportDialog
-      v-if="support"
+      v-if="supportConfig"
       v-model:open="supportOpen"
-      :config="support"
+      :config="supportConfig"
       :topics="supportTopics"
       :version="version"
+      :error-context="supportErrorContext"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, onUnmounted, type Component } from "vue";
+import {
+  ref,
+  computed,
+  watch,
+  onMounted,
+  onUnmounted,
+  type Component,
+} from "vue";
 import { useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
@@ -130,8 +138,15 @@ import AppMainNavbar from "../primitives/AppMainNavbar.vue";
 import AppMainSidebar from "../primitives/AppMainSidebar.vue";
 import AppBackground from "../primitives/AppBackground.vue";
 import SupportDialog from "../support/SupportDialog.vue";
-import type { SupportConfig, SupportTopic } from "../support/types";
+import { resolveSupportConfig } from "../support/resolveSupportConfig";
+import { setErrorReportHandler } from "../support/errorReport";
+import type {
+  SupportConfigInput,
+  SupportErrorContext,
+  SupportTopic,
+} from "../support/types";
 import { Avatar, AvatarImage, AvatarFallback } from "../ui/avatar";
+import { useToast } from "../ui/toast/use-toast";
 import type {
   SidebarTopSection,
   SidebarMenuSection,
@@ -186,9 +201,12 @@ const props = withDefaults(
     /** Optional transform applied to the assembled module nav links. Host
      *  apps use this to wrap several modules into a single grouped section. */
     menuLinksTransform?: (links: MenuLink[]) => MenuLink[];
-    /** Optional: mailboxes for the sidebar's "Help & contact" entry. Omit and
-     *  no entry is rendered — apps without a support desk stay unchanged. */
-    support?: SupportConfig;
+    /** The "Help & contact" desk. `true` derives both mailboxes from the
+     *  deployment's own domain (`contact@` / `support@`), so one app deployed
+     *  to several domains reaches the right desk on each. Pass an object to
+     *  override individual fields. Omit and no entry is rendered — apps
+     *  without a support desk stay unchanged. */
+    support?: SupportConfigInput;
     /** Optional: which desks the support dialog offers. */
     supportTopics?: SupportTopic[];
   }>(),
@@ -345,13 +363,42 @@ const nav = useAppNav({
 // ── Mobile/viewport ─────────────────────────────────────────────────────────
 const mobileSidebarOpen = ref(false);
 
-// Help & contact dialog, opened from the sidebar's utility entry. On mobile the
-// sidebar is a Sheet, so close it first or the dialog opens behind it.
+// Help & contact dialog, opened from the sidebar's utility entry or from the
+// Report action on an error toast. On mobile the sidebar is a Sheet, so close
+// it first or the dialog opens behind it.
 const supportOpen = ref(false);
+const supportErrorContext = ref<SupportErrorContext | null>(null);
+const supportConfig = computed(() =>
+  resolveSupportConfig(props.support ?? false)
+);
+
 function openSupport() {
   mobileSidebarOpen.value = false;
+  supportErrorContext.value = null;
   supportOpen.value = true;
 }
+
+// Let `useErrors` reach this dialog. Registered only when the app actually has
+// a desk, so no Report action is offered that could not be delivered.
+onMounted(() => {
+  if (!supportConfig.value) return;
+  setErrorReportHandler((ctx) => {
+    mobileSidebarOpen.value = false;
+    supportErrorContext.value = ctx;
+    supportOpen.value = true;
+  });
+});
+onUnmounted(() => setErrorReportHandler(null));
+
+// The originating toast deliberately outlives the click: it is still on screen
+// when the dialog captures the page, so support receives a screenshot showing
+// the error the user actually saw. Retire it once the dialog is done with it.
+const { dismiss: dismissToast } = useToast();
+watch(supportOpen, (open) => {
+  if (open) return;
+  const id = supportErrorContext.value?.toastId;
+  if (id) dismissToast(id);
+});
 const isMobile = ref(false);
 const checkMobile = () => {
   isMobile.value = window.innerWidth < 1024;

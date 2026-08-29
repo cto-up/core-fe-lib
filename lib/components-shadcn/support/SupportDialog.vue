@@ -13,6 +13,23 @@
       </DialogHeader>
 
       <div class="flex-1 space-y-4 overflow-y-auto py-1">
+        <!-- What the failing request already contributed to the draft. Shown
+             rather than silently attached: the user is about to mail it. -->
+        <div
+          v-if="errorContext"
+          class="rounded-md bg-muted/50 px-3 py-2 text-xs"
+        >
+          <p class="text-muted-foreground">{{ t("support.errorAttached") }}</p>
+          <p class="mt-1 font-mono text-foreground">
+            {{ errorContext.reference
+            }}<template v-if="errorContext.status">
+              · {{ errorContext.status }}</template
+            ><template v-if="errorContext.endpoint">
+              · {{ errorContext.endpoint }}</template
+            >
+          </p>
+        </div>
+
         <!-- Topic -->
         <div class="space-y-2">
           <Label>{{ t("support.topicLabel") }}</Label>
@@ -160,7 +177,12 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Switch } from "../ui/switch";
 import { Textarea } from "../ui/textarea";
 import { useToast } from "../ui/toast/use-toast";
-import type { SupportConfig, SupportProvider, SupportTopic } from "./types";
+import type {
+  SupportConfig,
+  SupportErrorContext,
+  SupportProvider,
+  SupportTopic,
+} from "./types";
 
 const props = withDefaults(
   defineProps<{
@@ -172,6 +194,10 @@ const props = withDefaults(
     defaultTopic?: SupportTopic;
     /** App version stamped into the context block. */
     version?: string;
+    /** Set when the dialog was opened from a failure: pre-fills the draft with
+     *  the reference, status and endpoint so the user only writes what they
+     *  were trying to do. */
+    errorContext?: SupportErrorContext | null;
     /** z-index utility applied to both the backdrop and the panel. Needed when
      *  the host sits above the default dialog layer (the marketing landing is
      *  a z-1000 full-screen takeover). */
@@ -181,6 +207,7 @@ const props = withDefaults(
     topics: () => ["technical", "sales", "other"] as SupportTopic[],
     defaultTopic: undefined,
     version: "",
+    errorContext: undefined,
     zClass: undefined,
   }
 );
@@ -294,7 +321,12 @@ const isNoteFilled = computed(() => {
 });
 
 function templateForTopic(value: SupportTopic): string {
-  return value === "technical" ? t("support.templates.technical") : "";
+  if (value !== "technical") return "";
+  // Opened from an error we already described — asking "what happened instead?"
+  // when we know the status, the endpoint and the message is busywork.
+  return props.errorContext
+    ? t("support.templates.errorReport")
+    : t("support.templates.technical");
 }
 
 watch(topic, (newTopic) => {
@@ -316,7 +348,10 @@ watch(
     screenshotDataUrl.value = null;
     screenshotBlob.value = null;
     showNoteError.value = false;
-    topic.value = firstTopic.value;
+    topic.value =
+      props.errorContext && props.topics.includes("technical")
+        ? "technical"
+        : firstTopic.value;
     withScreenshot.value = topic.value === "technical";
     const initial = templateForTopic(topic.value);
     note.value = initial;
@@ -337,8 +372,12 @@ async function capture() {
       logging: false,
       useCORS: true,
       backgroundColor: null,
-      // Don't photograph the dialog that is asking for the photograph.
-      ignoreElements: (el) => el.getAttribute?.("role") === "dialog",
+      // Don't photograph the dialog that is asking for the photograph — nor
+      // its backdrop, which would otherwise dim the whole capture and hand
+      // support a screenshot of a page nobody can read.
+      ignoreElements: (el) =>
+        el.getAttribute?.("role") === "dialog" ||
+        el.hasAttribute?.("data-dialog-overlay"),
     });
     screenshotDataUrl.value = canvas.toDataURL("image/png");
     await new Promise<void>((resolve) => {
@@ -358,6 +397,19 @@ async function capture() {
   } finally {
     capturing.value = false;
   }
+}
+
+function buildErrorBlock(): string {
+  const e = props.errorContext;
+  if (!e) return "";
+  const lines = [`Reference: ${e.reference}`];
+  if (e.status !== undefined) lines.push(`HTTP status: ${e.status}`);
+  if (e.endpoint) lines.push(`Endpoint: ${e.endpoint}`);
+  if (e.serverMessage) lines.push(`Message: ${e.serverMessage}`);
+  // The full id: Sentry's search needs all 32 characters, while the toast only
+  // showed the user a quotable prefix.
+  if (e.eventId) lines.push(`Sentry event: ${e.eventId}`);
+  return lines.join("\n");
 }
 
 function buildContext(): string {
@@ -408,6 +460,7 @@ function buildBody(includeLogs: boolean): string {
   // Diagnostics belong to a bug report. A sales or enterprise enquiry is a
   // message between people — don't staple a user-agent dump to it.
   if (topic.value === "technical") {
+    if (props.errorContext) sections.push("", "— Error —", buildErrorBlock());
     sections.push("", "— Context —", buildContext());
     if (includeLogs) {
       const logs = buildLogs();
@@ -418,7 +471,8 @@ function buildBody(includeLogs: boolean): string {
 }
 
 function buildSubject(): string {
-  return `${subjectPrefix.value} ${
+  const ref = props.errorContext ? ` ${props.errorContext.reference}` : "";
+  return `${subjectPrefix.value}${ref} ${
     note.value.trim().slice(0, 60) || t("support.defaultSubject")
   }`;
 }

@@ -23,7 +23,10 @@ export default {
   templates: {
     technical:
       "Ce que j'ai fait :\n\nCe que j'attendais :\n\nCe qui s'est passé :\n",
+    errorReport: "Ce que j'essayais de faire :\n",
   },
+  reportAction: "Signaler ce problème",
+  errorAttached: "Ce signalement inclura les détails de l'erreur ci-dessous.",
   includeScreenshot: "Joindre une capture de cette page",
   capturing: "Capture d'écran en cours…",
   screenshotFailed: "Capture impossible — l'envoi se fera sans.",

@@ -22,7 +22,10 @@ export default {
   },
   templates: {
     technical: "What I did:\n\nWhat I expected:\n\nWhat happened instead:\n",
+    errorReport: "What I was trying to do:\n",
   },
+  reportAction: "Report this problem",
+  errorAttached: "This report will include the error details below.",
   includeScreenshot: "Include a screenshot of this page",
   capturing: "Capturing screenshot…",
   screenshotFailed: "Couldn't capture a screenshot — sending without one.",
