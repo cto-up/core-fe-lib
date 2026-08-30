@@ -1,5 +1,14 @@
 <template>
-  <div class="min-h-screen">
+  <!-- `--app-nav-shift` is how far a viewport-filling pane may pull itself UP to
+       reclaim the strip `main` reserves for the top bar, once that bar has slid
+       away on scroll. A document-scrolled page ignores it: its content scrolls
+       past the strip like everything else. A page whose OWN inner element
+       scrolls never moves the strip, so without this it stays on screen as an
+       empty band under the hidden bar. -->
+  <div
+    class="min-h-screen"
+    :style="{ '--app-nav-shift': navCollapsed ? '-4rem' : '0px' }"
+  >
     <AppBackground />
 
     <!-- Sidebar -->
