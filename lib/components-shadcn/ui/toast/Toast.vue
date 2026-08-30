@@ -19,7 +19,14 @@ const variantStyles = computed(() => {
       // Something broke on our side. Same orange, tinted rather than filled —
       // the left rule and the CircleAlert icon separate "we're on it" from the
       // amber "you can fix this" case at a glance.
-      return "border-error/40 border-l-4 border-l-error bg-error/10 text-error";
+      //
+      // The tint is painted as a flat gradient OVER an opaque `bg-background`,
+      // not as `bg-error/10` alone: a 10% background-color is 90% transparent,
+      // so the page showed straight through the toast and its message competed
+      // with whatever button happened to sit behind it. background-image and
+      // background-color are different properties, so the two compose on one
+      // element and tailwind-merge keeps both.
+      return "border-error/40 border-l-4 border-l-error bg-background bg-gradient-to-r from-error/10 to-error/10 text-error";
     case "warning":
       // The user can act on this and it is reversible, so it sits one step below
       // `error`. Amber literals rather than `--warning`, whose foreground is

@@ -4,7 +4,7 @@
       <SelectValue :placeholder="placeholder" />
     </SelectTrigger>
     <SelectContent>
-      <SelectItem v-for="c in CURRENCIES" :key="c" :value="c">
+      <SelectItem v-for="c in currencies" :key="c" :value="c">
         {{ c }}
       </SelectItem>
     </SelectContent>
@@ -21,12 +21,24 @@ import {
   SelectValue,
 } from "../ui/select";
 
-// Supported currencies. Only EUR for now — extend this list as billing grows.
-const CURRENCIES = ["EUR"] as const;
-
 const props = withDefaults(
-  defineProps<{ modelValue?: string; placeholder?: string }>(),
-  { modelValue: "EUR", placeholder: "Currency" }
+  defineProps<{
+    modelValue?: string;
+    placeholder?: string;
+    /**
+     * The codes on offer. Defaults to EUR alone — what this component has
+     * always shown — because what a consumer can actually charge in is decided
+     * by its own payment integration, not by this list. A consumer that settles
+     * in more currencies passes its own set rather than widening the default
+     * for everyone.
+     */
+    currencies?: readonly string[];
+  }>(),
+  {
+    modelValue: "EUR",
+    placeholder: "Currency",
+    currencies: () => ["EUR"],
+  }
 );
 
 const emit = defineEmits<{ "update:modelValue": [string] }>();
