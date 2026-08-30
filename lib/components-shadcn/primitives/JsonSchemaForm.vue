@@ -18,7 +18,7 @@
              plain text input so the form still works (degraded). -->
         <Label :for="`jsf-${field.name}`">
           {{ titleFor(field) }}
-          <span v-if="field.required" class="text-destructive">*</span>
+          <span v-if="field.required" class="text-error">*</span>
         </Label>
         <Input
           :id="`jsf-${field.name}`"
@@ -34,7 +34,7 @@
       <template v-else>
         <Label :for="`jsf-${field.name}`">
           {{ titleFor(field) }}
-          <span v-if="field.required" class="text-destructive">*</span>
+          <span v-if="field.required" class="text-error">*</span>
         </Label>
 
         <!-- enum: select -->

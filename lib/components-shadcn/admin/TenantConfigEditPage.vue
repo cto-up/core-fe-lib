@@ -13,7 +13,7 @@
               id="name"
               v-model="tenantConfig.name"
               list="tenant-config-schema-keys"
-              :class="{ 'border-destructive': (v$ as any).name.$error }"
+              :class="{ 'border-error': (v$ as any).name.$error }"
               :disabled="!!tenantConfig.id"
               autocomplete="off"
               @keydown.enter.prevent
@@ -25,7 +25,7 @@
                 :value="entry.key"
               />
             </datalist>
-            <p v-if="(v$ as any).name.$error" class="text-sm text-destructive">
+            <p v-if="(v$ as any).name.$error" class="text-sm text-error">
               Field required & max length 50
             </p>
           </div>

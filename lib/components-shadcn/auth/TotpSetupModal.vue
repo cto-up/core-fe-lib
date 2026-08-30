@@ -45,7 +45,7 @@
             )
           "
         />
-        <p v-if="error" class="text-destructive text-sm">
+        <p v-if="error" class="text-error text-sm">
           {{ error }}
         </p>
       </div>

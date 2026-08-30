@@ -1,6 +1,6 @@
 <template>
   <span v-if="loading" class="text-muted-foreground">Loading...</span>
-  <span v-else-if="error" class="text-destructive">Error loading</span>
+  <span v-else-if="error" class="text-error">Error loading</span>
   <span v-else>{{ theModel[optionLabel] || "-" }}</span>
 </template>
 

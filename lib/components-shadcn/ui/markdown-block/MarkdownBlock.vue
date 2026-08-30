@@ -2,7 +2,7 @@
   <div v-if="loading" class="flex items-center justify-center py-8">
     <Loader2 class="h-8 w-8 animate-spin text-primary" />
   </div>
-  <div v-else-if="error" class="text-center py-8 text-destructive">
+  <div v-else-if="error" class="text-center py-8 text-error">
     <AlertCircle class="h-8 w-8 mx-auto mb-2" />
     <p>{{ error }}</p>
   </div>

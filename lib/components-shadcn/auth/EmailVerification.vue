@@ -54,14 +54,14 @@
     >
       <CardHeader class="text-center">
         <div
-          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-destructive/15 text-destructive"
+          class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-error/15 text-error"
         >
           <XCircle class="h-6 w-6" />
         </div>
         <CardTitle class="text-2xl font-bold">
           {{ $t("auth.emailVerification.error.title") }}
         </CardTitle>
-        <CardDescription class="text-destructive">
+        <CardDescription class="text-error">
           {{ errorMessage }}
         </CardDescription>
       </CardHeader>

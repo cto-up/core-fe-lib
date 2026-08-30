@@ -7,8 +7,8 @@
     <Card class="relative z-10 w-full max-w-md backdrop-blur-sm bg-card/80">
       <CardHeader class="space-y-1 text-center">
         <div class="flex justify-center mb-2">
-          <div class="rounded-full bg-destructive/10 p-3">
-            <TriangleAlert class="h-7 w-7 text-destructive" />
+          <div class="rounded-full bg-error/10 p-3">
+            <TriangleAlert class="h-7 w-7 text-error" />
           </div>
         </div>
         <CardTitle class="text-2xl font-bold">
@@ -26,7 +26,7 @@
 
         <div
           v-else-if="reason"
-          class="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+          class="rounded-md border border-error/40 bg-error/10 p-3 text-sm text-error"
         >
           {{ reason }}
         </div>

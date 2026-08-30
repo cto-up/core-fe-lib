@@ -105,10 +105,10 @@
               id="name"
               v-model="user.name"
               :disabled="userExists !== null"
-              :class="{ 'border-destructive': (v$ as any).name.$error }"
+              :class="{ 'border-error': (v$ as any).name.$error }"
               @keydown.enter.prevent
             />
-            <p v-if="(v$ as any).name.$error" class="text-sm text-destructive">
+            <p v-if="(v$ as any).name.$error" class="text-sm text-error">
               {{ $t("core.user.validation.nameRequired") }}
             </p>
           </div>

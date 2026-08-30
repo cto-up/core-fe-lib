@@ -84,7 +84,7 @@
           />
         </div>
 
-        <p v-if="error" class="text-sm text-destructive">{{ error }}</p>
+        <p v-if="error" class="text-sm text-error">{{ error }}</p>
       </div>
 
       <DialogFooter>

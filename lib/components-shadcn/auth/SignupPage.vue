@@ -130,7 +130,7 @@
               v-model="email"
               type="email"
               class="pl-10"
-              :class="{ 'border-destructive': $v.email.$error }"
+              :class="{ 'border-error': $v.email.$error }"
               :disabled="loading"
               placeholder="you@example.com"
               autofocus
@@ -138,7 +138,7 @@
               @keydown.enter="handleSubmit"
             />
           </div>
-          <p v-if="$v.email.$error" class="text-sm text-destructive">
+          <p v-if="$v.email.$error" class="text-sm text-error">
             {{ $t("auth.signUp.emailInvalid") }}
           </p>
         </div>

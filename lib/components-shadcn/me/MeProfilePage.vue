@@ -16,12 +16,9 @@
                 <Input
                   id="name"
                   v-model="profile.name"
-                  :class="{ 'border-destructive': (v$ as any).name.$error }"
+                  :class="{ 'border-error': (v$ as any).name.$error }"
                 />
-                <p
-                  v-if="(v$ as any).name.$error"
-                  class="text-sm text-destructive"
-                >
+                <p v-if="(v$ as any).name.$error" class="text-sm text-error">
                   Field required & max length 50
                 </p>
               </div>

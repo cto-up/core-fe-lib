@@ -71,7 +71,7 @@
             class="min-h-[120px]"
           />
           <div class="flex items-center justify-between text-xs">
-            <span :class="showNoteError ? 'text-destructive' : 'invisible'">
+            <span :class="showNoteError ? 'text-error' : 'invisible'">
               {{ t("support.noteRequired") }}
             </span>
             <span class="font-mono text-muted-foreground"

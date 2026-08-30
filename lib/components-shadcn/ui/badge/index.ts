@@ -11,6 +11,7 @@ export const badgeVariants = cva(
         secondary: "border-transparent bg-muted/60 text-muted-foreground",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow",
+        error: "border-transparent bg-error text-error-foreground shadow",
         success: "border-transparent bg-success text-success-foreground shadow",
         info: "border-transparent bg-info text-info-foreground shadow",
         warning: "border-transparent bg-warning text-warning-foreground shadow",

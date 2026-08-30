@@ -47,7 +47,7 @@ const toggleVisibility = () => {
         :placeholder="placeholder"
         :class="[
           'pl-9 pr-9',
-          error ? 'border-red-500 focus-visible:ring-red-500' : '',
+          error ? 'border-error focus-visible:ring-error' : '',
         ]"
         @update:model-value="emit('update:modelValue', String($event))"
       />
@@ -63,7 +63,7 @@ const toggleVisibility = () => {
       </button>
     </div>
 
-    <p v-if="error" class="text-xs font-medium text-red-600 dark:text-red-400">
+    <p v-if="error" class="text-xs font-medium text-error">
       {{ error }}
     </p>
   </div>

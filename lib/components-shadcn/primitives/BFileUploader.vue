@@ -61,7 +61,7 @@
             :class="
               cn(
                 'mb-4 transition-all',
-                hasError && 'text-destructive',
+                hasError && 'text-error',
                 !hasError && isDragging && 'text-primary scale-110',
                 !hasError && isHovering && 'scale-105'
               )
@@ -86,7 +86,7 @@
               {{ getAcceptDescription() }}
             </p>
 
-            <p v-if="hasError" class="text-sm text-destructive mt-2">
+            <p v-if="hasError" class="text-sm text-error mt-2">
               {{ errorMessage }}
             </p>
           </div>

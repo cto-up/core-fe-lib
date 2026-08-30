@@ -8,7 +8,7 @@
         :class="
           cn(
             'flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 flex-1',
-            error && 'border-destructive'
+            error && 'border-error'
           )
         "
       />
@@ -19,7 +19,7 @@
             variant="outline"
             size="icon"
             :disabled="disable"
-            :class="cn(error && 'border-destructive')"
+            :class="cn(error && 'border-error')"
           >
             <CalendarIcon class="h-4 w-4" />
           </Button>
@@ -45,7 +45,7 @@
         </PopoverContent>
       </Popover>
     </div>
-    <p v-if="error && errorMessage" class="text-sm text-destructive">
+    <p v-if="error && errorMessage" class="text-sm text-error">
       {{ errorMessage }}
     </p>
   </div>

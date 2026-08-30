@@ -27,11 +27,11 @@
         <!-- Session refresh required — standalone, no verify footer -->
         <template v-if="aal2State.sessionRefreshRequired">
           <div
-            class="flex items-start gap-3 p-4 rounded-md bg-destructive/10 border border-destructive/30"
+            class="flex items-start gap-3 p-4 rounded-md bg-error/10 border border-error/30"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-5 w-5 mt-0.5 shrink-0 text-destructive"
+              class="h-5 w-5 mt-0.5 shrink-0 text-error"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -43,7 +43,7 @@
                 d="M12 15v2m0-6v2m-6 4a9 9 0 1118 0 9 9 0 01-18 0z"
               />
             </svg>
-            <p class="text-sm text-destructive">
+            <p class="text-sm text-error">
               {{ t("mfa.aal2.sessionRefreshRequired") }}
             </p>
           </div>
@@ -218,7 +218,7 @@
             <!-- Error Message -->
             <div
               v-if="aal2State.error"
-              class="text-sm text-destructive text-center p-2 bg-destructive/10 rounded-md"
+              class="text-sm text-error text-center p-2 bg-error/10 rounded-md"
             >
               {{ aal2State.error }}
             </div>

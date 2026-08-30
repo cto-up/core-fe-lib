@@ -184,7 +184,7 @@
         <div class="relative">
           <Input
             v-model="cronExpression"
-            :class="{ 'border-destructive': !!errorMessage }"
+            :class="{ 'border-error': !!errorMessage }"
             @update:model-value="updateCron"
           />
           <Popover>
@@ -256,7 +256,7 @@
             </PopoverContent>
           </Popover>
         </div>
-        <p v-if="errorMessage" class="text-sm text-destructive">
+        <p v-if="errorMessage" class="text-sm text-error">
           {{ errorMessage }}
         </p>
       </TabsContent>
@@ -272,11 +272,11 @@
             <Label>Seconds</Label>
             <Input
               v-model="seconds"
-              :class="{ 'border-destructive': !!secondsError }"
+              :class="{ 'border-error': !!secondsError }"
               @update:model-value="updateFromFields"
             />
             <p class="text-xs text-muted-foreground mt-1">0-59, *, /, -</p>
-            <p v-if="secondsError" class="text-xs text-destructive mt-1">
+            <p v-if="secondsError" class="text-xs text-error mt-1">
               {{ secondsError }}
             </p>
           </div>
@@ -285,11 +285,11 @@
             <Label>Minutes</Label>
             <Input
               v-model="minutes"
-              :class="{ 'border-destructive': !!minutesError }"
+              :class="{ 'border-error': !!minutesError }"
               @update:model-value="updateFromFields"
             />
             <p class="text-xs text-muted-foreground mt-1">0-59, *, /, -</p>
-            <p v-if="minutesError" class="text-xs text-destructive mt-1">
+            <p v-if="minutesError" class="text-xs text-error mt-1">
               {{ minutesError }}
             </p>
           </div>
@@ -298,11 +298,11 @@
             <Label>Hours</Label>
             <Input
               v-model="hours"
-              :class="{ 'border-destructive': !!hoursError }"
+              :class="{ 'border-error': !!hoursError }"
               @update:model-value="updateFromFields"
             />
             <p class="text-xs text-muted-foreground mt-1">0-23, *, /, -</p>
-            <p v-if="hoursError" class="text-xs text-destructive mt-1">
+            <p v-if="hoursError" class="text-xs text-error mt-1">
               {{ hoursError }}
             </p>
           </div>
@@ -311,11 +311,11 @@
             <Label>Day (1-31)</Label>
             <Input
               v-model="day"
-              :class="{ 'border-destructive': !!dayError }"
+              :class="{ 'border-error': !!dayError }"
               @update:model-value="updateFromFields"
             />
             <p class="text-xs text-muted-foreground mt-1">1-31, *, /, -</p>
-            <p v-if="dayError" class="text-xs text-destructive mt-1">
+            <p v-if="dayError" class="text-xs text-error mt-1">
               {{ dayError }}
             </p>
           </div>
@@ -325,7 +325,7 @@
             <div class="relative">
               <Input
                 v-model="month"
-                :class="{ 'border-destructive': !!monthError }"
+                :class="{ 'border-error': !!monthError }"
                 @update:model-value="updateFromFields"
               />
               <Popover>
@@ -358,7 +358,7 @@
               </Popover>
             </div>
             <p class="text-xs text-muted-foreground mt-1">1-12, *, /, -</p>
-            <p v-if="monthError" class="text-xs text-destructive mt-1">
+            <p v-if="monthError" class="text-xs text-error mt-1">
               {{ monthError }}
             </p>
           </div>
@@ -368,7 +368,7 @@
             <div class="relative">
               <Input
                 v-model="weekday"
-                :class="{ 'border-destructive': !!weekdayError }"
+                :class="{ 'border-error': !!weekdayError }"
                 @update:model-value="updateFromFields"
               />
               <Popover>
@@ -401,7 +401,7 @@
               </Popover>
             </div>
             <p class="text-xs text-muted-foreground mt-1">0-6, *, /, -</p>
-            <p v-if="weekdayError" class="text-xs text-destructive mt-1">
+            <p v-if="weekdayError" class="text-xs text-error mt-1">
               {{ weekdayError }}
             </p>
           </div>

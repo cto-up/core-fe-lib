@@ -38,11 +38,11 @@
 
         <div v-else-if="state.error" class="text-center py-6">
           <div
-            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 mb-4"
+            class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 mb-4"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class="h-8 w-8 text-destructive"
+              class="h-8 w-8 text-error"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -55,7 +55,7 @@
               />
             </svg>
           </div>
-          <p class="text-sm text-destructive mb-4">
+          <p class="text-sm text-error mb-4">
             {{ state.error }}
           </p>
           <Button variant="outline" @click="cancel">

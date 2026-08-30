@@ -135,13 +135,10 @@
               <Input
                 id="name"
                 v-model="apiToken.name"
-                :class="{ 'border-destructive': (v$ as any).name.$error }"
+                :class="{ 'border-error': (v$ as any).name.$error }"
                 @blur="v$.name.$touch"
               />
-              <p
-                v-if="(v$ as any).name.$error"
-                class="text-sm text-destructive"
-              >
+              <p v-if="(v$ as any).name.$error" class="text-sm text-error">
                 Name is required.
               </p>
             </div>
@@ -162,13 +159,10 @@
               <DatePicker
                 v-model="apiToken.expiresAt"
                 :format="'ISO'"
-                :class="{ 'border-destructive': (v$ as any).expiresAt.$error }"
+                :class="{ 'border-error': (v$ as any).expiresAt.$error }"
                 @blur="v$.expiresAt.$touch"
               />
-              <p
-                v-if="(v$ as any).expiresAt.$error"
-                class="text-sm text-destructive"
-              >
+              <p v-if="(v$ as any).expiresAt.$error" class="text-sm text-error">
                 Expires At is required.
               </p>
             </div>
@@ -183,7 +177,7 @@
             </div>
           </div>
           <div v-else class="grid gap-4 py-4">
-            <div class="text-sm text-destructive">
+            <div class="text-sm text-error">
               {{ $t("core.apiToken.copyWarning") }}
             </div>
             <div class="space-y-2">

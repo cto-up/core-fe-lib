@@ -11,19 +11,20 @@ const props = defineProps<{
 const variantStyles = computed(() => {
   switch (props.variant) {
     case "destructive":
-      return "border-destructive bg-destructive text-destructive-foreground";
-    case "warning":
-      // Amber rather than a semantic token: the palette defines no warning
-      // colour, and both halves are written explicitly so the toast is legible
-      // in either theme.
-      return "border-amber-500/40 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-100";
+      // Orange, never red. Red is `--destructive`, and it belongs to the button
+      // that is about to destroy something, so it keeps its alarm value; a toast
+      // only reports what already happened.
+      return "border-error bg-error text-error-foreground";
     case "fault":
-      // Something broke on our side. It reads as serious without the solid
-      // red fill of `destructive`: white-on-red tells the user something
-      // dangerous happened *to them*, when a 5xx is ours to fix and there is
-      // nothing for them to fear. Rose keeps it distinguishable from the
+      // Something broke on our side. Same orange, tinted rather than filled —
+      // the left rule and the CircleAlert icon separate "we're on it" from the
       // amber "you can fix this" case at a glance.
-      return "border-rose-500/40 bg-rose-50 text-rose-900 dark:bg-rose-950 dark:text-rose-100";
+      return "border-error/40 border-l-4 border-l-error bg-error/10 text-error";
+    case "warning":
+      // The user can act on this and it is reversible, so it sits one step below
+      // `error`. Amber literals rather than `--warning`, whose foreground is
+      // white: this needs dark-on-tint in light mode and the reverse in dark.
+      return "border-amber-500/40 bg-amber-50 text-amber-900 dark:bg-amber-950 dark:text-amber-100";
     default:
       return "border bg-background text-foreground";
   }

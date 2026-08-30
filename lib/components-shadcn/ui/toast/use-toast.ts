@@ -2,8 +2,10 @@ import { ref } from "vue";
 
 // "warning" is for a state the user can act on — a refusal that is expected and
 // reversible. "fault" is for what broke on our side: serious, but not the solid
-// red of "destructive", which is now reserved for a consequence the user caused
-// and cannot undo. A red toast for every guard trains people to ignore red.
+// fill of "destructive", which is reserved for a consequence the user caused and
+// cannot undo. None of the three is red: red belongs to the button that is about
+// to destroy something, and a red toast for every guard trains people to ignore
+// red.
 export type ToastVariant = "default" | "destructive" | "warning" | "fault";
 
 /** An affordance rendered inside the toast, e.g. "Report this problem". */

@@ -7,9 +7,9 @@
         type="number"
         :placeholder="label"
         :readonly="readonly"
-        :class="cn(error && 'border-red-500')"
+        :class="cn(error && 'border-error')"
       />
-      <p v-if="error && errorMessage" class="text-sm text-red-500">
+      <p v-if="error && errorMessage" class="text-sm text-error">
         {{ errorMessage }}
       </p>
     </div>

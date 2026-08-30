@@ -11,7 +11,7 @@
         </SelectItem>
       </SelectContent>
     </Select>
-    <p v-if="error && errorMessage" class="text-sm text-red-500">
+    <p v-if="error && errorMessage" class="text-sm text-error">
       {{ errorMessage }}
     </p>
   </div>

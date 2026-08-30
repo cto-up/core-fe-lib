@@ -16,7 +16,7 @@ const alertClasses = computed(() =>
     "relative w-full rounded-lg border p-4",
     {
       "bg-background text-foreground": props.variant === "default",
-      "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive":
+      "border-error/50 text-error dark:border-error [&>svg]:text-error":
         props.variant === "destructive",
     },
     props.class

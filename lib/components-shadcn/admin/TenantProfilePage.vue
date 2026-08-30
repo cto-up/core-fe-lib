@@ -460,12 +460,12 @@
                     $t('core.tenantProfile.placeholders.displayName')
                   "
                   :class="{
-                    'border-destructive': (v$ as any).displayName.$error,
+                    'border-error': (v$ as any).displayName.$error,
                   }"
                 />
                 <p
                   v-if="(v$ as any).displayName.$error"
-                  class="text-sm text-destructive"
+                  class="text-sm text-error"
                 >
                   {{ $t("core.tenantProfile.validation.maxLength", { n: 50 }) }}
                 </p>

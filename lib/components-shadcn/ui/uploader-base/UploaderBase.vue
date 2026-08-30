@@ -16,7 +16,7 @@
           hasContent && 'has-content',
           isDragging && 'border-primary bg-primary/5',
           isHovering && !hasContent && 'border-primary/50 bg-accent',
-          hasError && 'border-destructive bg-destructive/5',
+          hasError && 'border-error bg-error/5',
           'min-h-[200px] flex items-center justify-center'
         )
       "

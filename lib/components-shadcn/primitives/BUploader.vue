@@ -15,7 +15,7 @@
           'drop-zone rounded-lg border-4 border-dashed transition-all min-h-[200px] relative',
           isDragging ? 'border-primary bg-primary/5' : '',
           isHovering ? 'border-primary/50 bg-accent' : '',
-          hasError ? 'border-destructive bg-destructive/5' : '',
+          hasError ? 'border-error bg-error/5' : '',
           !isDragging && !hasError ? 'border-muted-foreground/25' : ''
         )
       "
@@ -165,7 +165,7 @@
                 cn(
                   'mb-4 transition-all',
                   hasError
-                    ? 'text-destructive'
+                    ? 'text-error'
                     : isDragging
                       ? 'text-primary scale-110'
                       : isHovering
@@ -202,7 +202,7 @@
                 >{{ acceptSummary }}</span
               >
             </p>
-            <p v-if="hasError" class="text-sm text-destructive mt-2">
+            <p v-if="hasError" class="text-sm text-error mt-2">
               {{ errorMessage }}
             </p>
           </div>

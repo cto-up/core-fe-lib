@@ -33,6 +33,11 @@
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 20% 98%;
 
+    /* Errors are orange, not red. Red belongs to `destructive` — the button
+       that is about to destroy something — so it keeps its alarm value. */
+    --error: 24 95% 42%;
+    --error-foreground: 0 0% 100%;
+
     --border: 220 13% 91%;
     --input: 220 13% 91%;
     --ring: 262.1 83.3% 57.8%;
@@ -89,6 +94,9 @@
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 20% 98%;
+
+    --error: 27 96% 61%;
+    --error-foreground: 24 90% 8%;
 
     --border: 215 27.9% 16.9%;
     --input: 215 27.9% 16.9%;

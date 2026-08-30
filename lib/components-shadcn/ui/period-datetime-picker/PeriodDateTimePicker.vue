@@ -12,7 +12,7 @@
               cn(
                 'justify-start text-left font-normal',
                 !fromDateTime && 'text-muted-foreground',
-                error && 'border-destructive'
+                error && 'border-error'
               )
             "
           >
@@ -96,7 +96,7 @@
       </Select>
     </div>
 
-    <p v-if="error && errorMessage" class="text-sm text-destructive">
+    <p v-if="error && errorMessage" class="text-sm text-error">
       {{ errorMessage }}
     </p>
   </div>

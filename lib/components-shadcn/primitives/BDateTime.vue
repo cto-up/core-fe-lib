@@ -9,7 +9,7 @@
             cn(
               'w-full justify-start text-left font-normal',
               !displayValue && 'text-muted-foreground',
-              error && 'border-red-500'
+              error && 'border-error'
             )
           "
           :disabled="disable"
@@ -26,7 +26,7 @@
         />
       </PopoverContent>
     </Popover>
-    <p v-if="error && errorMessage" class="text-sm text-red-500">
+    <p v-if="error && errorMessage" class="text-sm text-error">
       {{ errorMessage }}
     </p>
   </div>

@@ -12,11 +12,11 @@
             <Input
               id="name"
               v-model="tenant.name"
-              :class="{ 'border-destructive': (v$ as any).name.$error }"
+              :class="{ 'border-error': (v$ as any).name.$error }"
               @update:model-value="clearName"
               @keydown.enter.prevent
             />
-            <p v-if="(v$ as any).name.$error" class="text-sm text-destructive">
+            <p v-if="(v$ as any).name.$error" class="text-sm text-error">
               Should start with a letter and only consist of letters, digits and
               hyphens with 4-20 characters
             </p>
@@ -30,14 +30,11 @@
             <Input
               id="subdomain"
               v-model="tenant.subdomain"
-              :class="{ 'border-destructive': (v$ as any).subdomain.$error }"
+              :class="{ 'border-error': (v$ as any).subdomain.$error }"
               @update:model-value="clearSubdomain"
               @keydown.enter.prevent
             />
-            <p
-              v-if="(v$ as any).subdomain.$error"
-              class="text-sm text-destructive"
-            >
+            <p v-if="(v$ as any).subdomain.$error" class="text-sm text-error">
               Field required & max length 50
             </p>
           </div>

@@ -13,7 +13,7 @@
         </p>
       </div>
 
-      <div v-if="error" class="rounded-md bg-destructive/10 p-4">
+      <div v-if="error" class="rounded-md bg-error/10 p-4">
         <div class="flex">
           <div class="ml-3">
             <h3 class="text-sm font-medium text-foreground">
@@ -127,7 +127,7 @@
           }}
         </p>
 
-        <p v-if="conflictError" class="text-sm text-destructive">
+        <p v-if="conflictError" class="text-sm text-error">
           {{ conflictError }}
         </p>
 
@@ -185,10 +185,7 @@
             required
           />
         </div>
-        <div
-          v-if="passwordError"
-          class="text-sm text-destructive dark:text-destructive"
-        >
+        <div v-if="passwordError" class="text-sm text-error dark:text-error">
           {{ passwordError }}
         </div>
 

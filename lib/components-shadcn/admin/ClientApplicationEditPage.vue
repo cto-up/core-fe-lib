@@ -14,10 +14,10 @@
             <Input
               id="name"
               v-model="clientApplication.name"
-              :class="{ 'border-destructive': (v$ as any).name.$error }"
+              :class="{ 'border-error': (v$ as any).name.$error }"
               @keydown.enter.prevent
             />
-            <p v-if="(v$ as any).name.$error" class="text-sm text-destructive">
+            <p v-if="(v$ as any).name.$error" class="text-sm text-error">
               Field required & max length 50
             </p>
           </div>
@@ -30,13 +30,10 @@
             <Input
               id="description"
               v-model="clientApplication.description"
-              :class="{ 'border-destructive': (v$ as any).description.$error }"
+              :class="{ 'border-error': (v$ as any).description.$error }"
               @keydown.enter.prevent
             />
-            <p
-              v-if="(v$ as any).description.$error"
-              class="text-sm text-destructive"
-            >
+            <p v-if="(v$ as any).description.$error" class="text-sm text-error">
               Field required & max length 50
             </p>
           </div>
