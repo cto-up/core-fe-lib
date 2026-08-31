@@ -191,6 +191,10 @@ export default {
     diagnosticsTitle: "Dettagli tecnici",
     diagnosticsCopy: "Copia dettagli",
     diagnosticsCopied: "Copiato",
+    continuePrompt:
+      "Conferma qui sotto per completare l'apertura del tuo account.",
+    continueBody: "Il tuo link è pronto. Conferma per aprire il tuo account.",
+    continueButton: "Continua",
     conflictTitle: "Hai già effettuato l'accesso",
     conflictSignedInAs: "Accesso effettuato come",
     conflictBody:

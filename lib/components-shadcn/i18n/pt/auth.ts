@@ -192,6 +192,9 @@ export default {
     diagnosticsTitle: "Detalhes técnicos",
     diagnosticsCopy: "Copiar detalhes",
     diagnosticsCopied: "Copiado",
+    continuePrompt: "Confirme abaixo para concluir a abertura da sua conta.",
+    continueBody: "O seu link está pronto. Confirme para abrir a sua conta.",
+    continueButton: "Continuar",
     conflictTitle: "Já tem sessão iniciada",
     conflictSignedInAs: "Sessão iniciada como",
     conflictBody:

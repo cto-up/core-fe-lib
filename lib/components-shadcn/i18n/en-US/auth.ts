@@ -183,6 +183,9 @@ export default {
     diagnosticsTitle: "Technical details",
     diagnosticsCopy: "Copy details",
     diagnosticsCopied: "Copied",
+    continuePrompt: "Confirm below to finish opening your account.",
+    continueBody: "Your link is ready. Confirm to open your account.",
+    continueButton: "Continue",
     conflictTitle: "You're already signed in",
     conflictSignedInAs: "Signed in as",
     conflictBody:

@@ -197,6 +197,11 @@ export default {
     diagnosticsTitle: "Technische Details",
     diagnosticsCopy: "Details kopieren",
     diagnosticsCopied: "Kopiert",
+    continuePrompt:
+      "Bestätigen Sie unten, um die Einrichtung Ihres Kontos abzuschließen.",
+    continueBody:
+      "Ihr Link ist bereit. Bestätigen Sie, um Ihr Konto zu öffnen.",
+    continueButton: "Weiter",
     conflictTitle: "Sie sind bereits angemeldet",
     conflictSignedInAs: "Angemeldet als",
     conflictBody:

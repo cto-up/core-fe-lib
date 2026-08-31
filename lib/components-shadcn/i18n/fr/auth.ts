@@ -196,6 +196,10 @@ export default {
     diagnosticsTitle: "Détails techniques",
     diagnosticsCopy: "Copier les détails",
     diagnosticsCopied: "Copié",
+    continuePrompt:
+      "Confirmez ci-dessous pour finaliser l'ouverture de votre compte.",
+    continueBody: "Votre lien est prêt. Confirmez pour ouvrir votre compte.",
+    continueButton: "Continuer",
     conflictTitle: "Vous êtes déjà connecté",
     conflictSignedInAs: "Connecté en tant que",
     conflictBody:

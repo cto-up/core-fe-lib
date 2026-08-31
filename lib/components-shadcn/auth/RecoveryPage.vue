@@ -150,6 +150,26 @@
         </div>
       </div>
 
+      <!-- Invitation links have no password step, so there is no form submit to
+           hang redemption on. A button buys the same guarantee for one click:
+           a mail scanner renders this and leaves, and the token survives. -->
+      <div
+        v-if="showContinueGate && !loading && !conflict && !error && !success"
+        class="rounded-md border bg-card p-4 space-y-4"
+      >
+        <p class="text-sm text-muted-foreground">
+          {{
+            tf(
+              "continueBody",
+              "Your link is ready. Confirm to open your account."
+            )
+          }}
+        </p>
+        <Button class="w-full" @click="handleContinue">
+          {{ tf("continueButton", "Continue") }}
+        </Button>
+      </div>
+
       <!-- Loading State -->
       <div v-if="loading && !showPasswordForm" class="text-center">
         <div
@@ -162,7 +182,7 @@
 
       <!-- Password Form -->
       <form
-        v-if="showPasswordForm && !success"
+        v-if="showPasswordForm && !success && !conflict && !linkDead"
         class="mt-8 space-y-6"
         @submit.prevent="handlePasswordSubmit"
       >
@@ -185,10 +205,6 @@
             required
           />
         </div>
-        <div v-if="passwordError" class="text-sm text-error dark:text-error">
-          {{ passwordError }}
-        </div>
-
         <div>
           <Button
             type="submit"
@@ -278,12 +294,32 @@ const tf = (key: string, fallback: string): string => {
 const { getCurrentSession, clearSession } = useKratosAuth();
 const aal2Store = useAal2Store();
 
-const loading = ref(true);
-const statusMessage = ref(t("auth.recovery.activatingLink"));
+const loading = ref(false);
+const statusMessage = ref("");
 const error = ref("");
 const success = ref(false);
 const showPasswordForm = ref(false);
+/**
+ * Invitation links (`return_to`) never reach a password form, so there is no
+ * submit to hang redemption on. They get an explicit button instead — the same
+ * guarantee that a human, not a renderer, is what spends the token.
+ */
+const showContinueGate = ref(false);
 const submitting = ref(false);
+
+/** Captured at mount and held until a deliberate user action spends them. */
+const pendingFlowId = ref("");
+/** The token still owed to Kratos; cleared the moment it is spent. */
+const pendingToken = ref("");
+const pendingReturnTo = ref<string | undefined>(undefined);
+/** Whether the link carried a token at all — for diagnostics, never cleared. */
+const hadToken = ref(false);
+/**
+ * A session exists, by redemption or because the user adopted the one already
+ * in the browser. Guards every retry: the token is gone by then, and
+ * re-submitting it is the one thing guaranteed to fail.
+ */
+const sessionReady = ref(false);
 /** The recovery token was rejected — only a fresh email can unblock the user. */
 const linkDead = ref(false);
 /** Reconstructed cause, shown to the user and forwarded to `reportFailure`. */
@@ -293,12 +329,7 @@ const report = ref<RecoveryFailureReport | null>(null);
  * tell whether it belongs to the same person. Holds what is needed to resume
  * either way once the user has said which account the link is for.
  */
-const conflict = ref<{
-  flowId: string;
-  token: string;
-  returnTo?: string;
-  email: string;
-} | null>(null);
+const conflict = ref<{ email: string } | null>(null);
 const resolving = ref(false);
 /** Shown inside the conflict card, so the two choices stay on screen. */
 const conflictError = ref("");
@@ -465,252 +496,196 @@ const copyDiagnostics = async () => {
 };
 
 /**
- * One end-to-end recovery attempt: redeem `token` if there is one, then open a
- * settings flow so the user can set a password.
+ * Spend the recovery token and prove that a session came back.
  *
- * Re-entrant on purpose — the session-conflict card calls it again once the
- * user has said which account the link belongs to.
+ * Only ever called from a user action. Redeeming on mount meant that anything
+ * which merely RENDERED the page — a corporate mail sandbox detonating the
+ * link, a restored mobile tab — burned the one-time token, and the person who
+ * clicked afterwards was told their link had already been used. It had: by a
+ * machine, on their behalf.
  *
- * `adoptedSession` marks the branch where the user kept the session already in
- * the browser rather than redeeming the token. It only gates `return_to`: with
- * no token spent, that redirect is warranted by the user's choice instead of by
- * the cookie check below.
+ * Returns false when the page has already told the user what went wrong.
+ * Throws for anything the caller should translate.
  */
-const runRecovery = async (
-  flowId: string,
-  token: string,
-  returnTo?: string,
-  adoptedSession = false
-): Promise<void> => {
-  loading.value = true;
+const redeemToken = async (): Promise<boolean> => {
+  // Nothing left to spend: already redeemed, adopted the live session, or the
+  // link never carried a token in the first place.
+  if (sessionReady.value) return true;
+  if (!pendingToken.value) {
+    sessionReady.value = true;
+    return true;
+  }
+
+  statusMessage.value = t("auth.recovery.activatingLink");
+  try {
+    await kratosService.submitRecoveryFlow(pendingFlowId.value, {
+      method: "link",
+      token: pendingToken.value,
+    });
+  } catch (err) {
+    const kratosError = extractKratosError(err);
+    if (kratosError?.id !== KratosErrorIds.SESSION_ALREADY_AVAILABLE) throw err;
+
+    // Kratos refuses a recovery submission whenever a session cookie is
+    // present, and it does so BEFORE reading the token — so this error proves
+    // a session exists, never that it is the one this link belongs to. The
+    // flow does not name the identity it was minted for either, so there is
+    // nothing here to compare. Treating it as "same person" silently sets the
+    // signed-in account's password from a stranger's link and leaves the real
+    // token unspent. Hand the choice to the only party that can make it.
+    const current = await kratosService
+      .getSession({ force: true })
+      .catch(() => null);
+    console.warn(
+      "⚠️  A session was already live; asking the user whose it is."
+    );
+    conflict.value = { email: current?.identity?.traits?.email ?? "" };
+    statusMessage.value = "";
+    return false;
+  }
+
+  // The POST resolving proves NOTHING about the token. Kratos answers a
+  // browser recovery flow with a 303 whether it accepted the token or rejected
+  // it (expired / already used → it mints a fresh flow and redirects to the
+  // recovery UI carrying the error), and submitRecoveryFlow uses
+  // `redirect: "manual"`, which makes every redirect an opaque status-0
+  // response with unreadable headers. Success and failure are therefore
+  // indistinguishable at the call site.
+  //
+  // The session cookie is the only honest signal: it exists if and only if the
+  // token was redeemed. Without this check a dead link sails on to
+  // initSettingsFlow() and surfaces as "request does not have a valid
+  // authentication session" — a 401 that reads like a bug in the app rather
+  // than "ask for a new email", which is what the user actually needs.
+  const session = await kratosService
+    .getSession({ force: true })
+    .catch(() => null);
+  if (!session?.active) {
+    console.warn("❌ Recovery token was not redeemed — no session.");
+    await failAsDeadLink("activate", pendingFlowId.value, true);
+    return false;
+  }
+
+  pendingToken.value = "";
+  sessionReady.value = true;
+  return true;
+};
+
+/**
+ * Open the settings flow that will carry the new password — once.
+ *
+ * Reused verbatim on a retry. When Kratos rejects a password for being too
+ * weak the flow is still live but the token that opened it is long spent, so
+ * deriving a fresh one is precisely what cannot work.
+ */
+const openSettingsFlow = async (): Promise<boolean> => {
+  if (settingsFlowId.value && csrfToken.value) return true;
+
+  const flow = await kratosService.initSettingsFlow().catch(async (err) => {
+    const kratosError = extractKratosError(err);
+    if (kratosError?.id !== KratosErrorIds.SESSION_AAL2_REQUIRED) throw err;
+
+    console.log(
+      "🔐 AAL2 required for settings flow, prompting verification..."
+    );
+    const verified = await aal2Store.triggerVerification();
+    if (!verified) throw err; // user cancelled
+
+    return kratosService.initSettingsFlow();
+  });
+
+  settingsFlowId.value = flow.id;
+  console.log("✅ Settings flow created:", settingsFlowId.value);
+  const csrfNode = flow.ui?.nodes?.find(
+    (node) => node.attributes?.name === "csrf_token"
+  );
+  if (csrfNode) {
+    csrfToken.value = csrfNode.attributes.value as string;
+  }
+
+  if (!csrfToken.value) {
+    error.value = t("auth.recovery.csrfTokenError");
+    return false;
+  }
+  return true;
+};
+
+/**
+ * Turn a failure of the link lifecycle — redeeming, or opening settings — into
+ * what the user sees. Shared by both entry points so the invitation gate and
+ * the password form report a dead link identically.
+ */
+const reportRecoveryError = async (
+  stage: RecoveryFailureStage,
+  err: unknown
+) => {
+  console.error("❌ Recovery process failed:", err);
+  const kratosError = extractKratosError(err);
+  console.error("Error details:", {
+    status: kratosError?.code,
+    data: kratosError,
+  });
+
+  // AAL2 must be tested FIRST and excluded. `session_aal2_required` is also a
+  // 403, but it means the opposite: the link redeemed, the session is live, and
+  // the user simply declined the MFA prompt. Sending them to "request a new
+  // link" would be a dead end — a fresh link lands them right back here.
+  if (kratosError?.id === KratosErrorIds.SESSION_AAL2_REQUIRED) {
+    error.value = t("auth.recovery.sessionExpired");
+    // Diagnostics without telemetry: cancelling MFA is a choice, not an
+    // incident, but the details still help if the user reports confusion.
+    await attachDiagnostics(
+      stage,
+      pendingFlowId.value,
+      hadToken.value,
+      err,
+      false
+    );
+  } else if (kratosError?.code === 401 || kratosError?.code === 403) {
+    // No usable session, which on this page only ever has one cause: the
+    // recovery link did not redeem. Say that, and offer the one action that
+    // fixes it.
+    await failAsDeadLink(stage, pendingFlowId.value, hadToken.value, err);
+  } else {
+    error.value =
+      getUserFriendlyMessage(err) ||
+      (err instanceof Error ? err.message : null) ||
+      t("auth.recovery.processingError");
+    await attachDiagnostics(stage, pendingFlowId.value, hadToken.value, err);
+  }
+};
+
+/** Clear the last attempt's verdict so a retry is judged on its own merits. */
+const beginAttempt = () => {
   error.value = "";
   linkDead.value = false;
   report.value = null;
+};
 
+/**
+ * The invitation path: redeem, then hand the user on to where the link was
+ * pointing. No password is set here — the account already has one.
+ */
+const handleContinue = async () => {
+  if (loading.value) return;
+  loading.value = true;
+  beginAttempt();
   try {
-    // If a token is present, we need to submit it to activate the recovery
-    // flow. On success Kratos redeems the token and sets a session cookie, at
-    // which point we can init settings. See below for why the POST alone tells
-    // us nothing about whether that happened.
-    if (token) {
-      statusMessage.value = t("auth.recovery.activatingLink");
-      try {
-        await kratosService.submitRecoveryFlow(flowId, {
-          method: "link",
-          token,
-        });
-      } catch (err) {
-        const kratosError = extractKratosError(err);
-        if (kratosError?.id !== KratosErrorIds.SESSION_ALREADY_AVAILABLE) {
-          throw err;
-        }
-
-        // Kratos refuses a recovery submission whenever a session cookie is
-        // present, and it does so BEFORE reading the token — so this error
-        // proves a session exists, never that it is the one this link belongs
-        // to. The flow does not name the identity it was minted for either, so
-        // there is nothing here to compare. Treating it as "same person"
-        // silently sets the signed-in account's password from a stranger's
-        // link and leaves the real token unspent. Hand the choice to the only
-        // party that can make it.
-        const current = await kratosService
-          .getSession({ force: true })
-          .catch(() => null);
-        console.warn(
-          "⚠️  A session was already live; asking the user whose it is."
-        );
-        conflict.value = {
-          flowId,
-          token,
-          returnTo,
-          email: current?.identity?.traits?.email ?? "",
-        };
-        statusMessage.value = "";
-        loading.value = false;
-        return;
-      }
-
-      // The POST resolving proves NOTHING about the token. Kratos answers a
-      // browser recovery flow with a 303 whether it accepted the token or
-      // rejected it (expired / already used → it mints a fresh flow and
-      // redirects to the recovery UI carrying the error), and submitRecoveryFlow
-      // uses `redirect: "manual"`, which makes every redirect an opaque
-      // status-0 response with unreadable headers. Success and failure are
-      // therefore indistinguishable at the call site.
-      //
-      // The session cookie is the only honest signal: it exists if and only if
-      // the token was redeemed. Without this check a dead link sails on to
-      // initSettingsFlow() and surfaces as "request does not have a valid
-      // authentication session" — a 401 that reads like a bug in the app rather
-      // than "ask for a new email", which is what the user actually needs.
-      const session = await kratosService
-        .getSession({ force: true })
-        .catch(() => null);
-      if (!session?.active) {
-        console.warn("❌ Recovery token was not redeemed — no session.");
-        await failAsDeadLink("activate", flowId, true);
-        return;
-      }
-    }
-
-    // When a return_to destination is present (invitation flow), skip the
-    // password-setting step and redirect directly. The user is now authenticated.
-    if (returnTo && (token || adoptedSession)) {
-      await getCurrentSession();
-      void router.push(returnTo);
-      return;
-    }
-
-    const flow = await kratosService.initSettingsFlow().catch(async (err) => {
-      const kratosError = extractKratosError(err);
-      if (kratosError?.id !== KratosErrorIds.SESSION_AAL2_REQUIRED) throw err;
-
-      // Settings requires AAL2 — prompt the user to verify MFA, then retry
-      console.log(
-        "🔐 AAL2 required for settings flow, prompting verification..."
-      );
-      const verified = await aal2Store.triggerVerification();
-      if (!verified) throw err; // user cancelled
-
-      return kratosService.initSettingsFlow();
-    });
-
-    settingsFlowId.value = flow.id;
-    console.log("✅ Settings flow created:", settingsFlowId.value);
-    const csrfNode = flow.ui?.nodes?.find(
-      (node) => node.attributes?.name === "csrf_token"
-    );
-    if (csrfNode) {
-      csrfToken.value = csrfNode.attributes.value as string;
-    }
-
-    if (!csrfToken.value) {
-      error.value = t("auth.recovery.csrfTokenError");
-      loading.value = false;
-      return;
-    }
-
-    statusMessage.value = t("auth.recovery.pleaseSetPassword");
-    showPasswordForm.value = true;
-    loading.value = false;
+    if (!(await redeemToken())) return;
+    await getCurrentSession();
+    void router.push(pendingReturnTo.value ?? props.homePath);
   } catch (err) {
-    console.error("❌ Recovery process failed:", err);
-    const kratosError = extractKratosError(err);
-    console.error("Error details:", {
-      status: kratosError?.code,
-      data: kratosError,
-    });
-
-    // 401/403 out of the settings flow means there is no usable session, which
-    // on this page only ever has one cause: the recovery link did not redeem.
-    // Say that, and offer the one action that fixes it.
-    //
-    // AAL2 must be tested FIRST and excluded. `session_aal2_required` is also a
-    // 403, but it means the opposite: the link redeemed, the session is live,
-    // and the user simply declined the MFA prompt. Sending them to "request a
-    // new link" would be a dead end — a fresh link lands them right back here.
-    if (kratosError?.id === KratosErrorIds.SESSION_AAL2_REQUIRED) {
-      error.value = t("auth.recovery.sessionExpired");
-      // Diagnostics without telemetry: cancelling MFA is a choice, not an
-      // incident, but the details still help if the user reports confusion.
-      await attachDiagnostics("settings", flowId, Boolean(token), err, false);
-    } else if (kratosError?.code === 401 || kratosError?.code === 403) {
-      await failAsDeadLink("settings", flowId, Boolean(token), err);
-      return;
-    } else {
-      error.value =
-        getUserFriendlyMessage(err) ||
-        (err instanceof Error ? err.message : null) ||
-        t("auth.recovery.processingError");
-      await attachDiagnostics("settings", flowId, Boolean(token), err);
-    }
-    loading.value = false;
-  }
-};
-
-onMounted(async () => {
-  const flowId = route.query.flow as string;
-  const token = route.query.token as string;
-  const returnTo = route.query.return_to as string | undefined;
-
-  console.log("🎬 RecoveryPage mounted:", {
-    flowId,
-    token: token?.substring(0, 10) + "...",
-    currentUrl: globalThis.location.href,
-    origin: globalThis.location.origin,
-  });
-
-  if (!flowId) {
-    error.value = t("auth.recovery.invalidLink");
-    loading.value = false;
-    return;
-  }
-
-  // Once, here rather than inside runRecovery: the conflict card may run the
-  // recovery a second time, and the token it replays is the one captured above.
-  if (token) stripTokenFromUrl();
-
-  await runRecovery(flowId, token, returnTo);
-});
-
-/**
- * "This link is for another account." Drop the session so Kratos stops
- * refusing, then redeem the token for whoever it actually belongs to.
- *
- * If the token turns out to be spent, the retry fails as a dead link and the
- * user is offered a fresh one — the honest end to a link that was never proven
- * good in the first place.
- */
-const signOutAndUseLink = async () => {
-  const pending = conflict.value;
-  if (!pending || resolving.value) return;
-  resolving.value = true;
-  conflictError.value = "";
-  try {
-    await clearSession();
-
-    // clearSession swallows a failed logout by design. Re-running the recovery
-    // on a session that is still live would draw this very card again, forever,
-    // so check before retrying and say what actually went wrong instead.
-    const stillLive = await kratosService
-      .getSession({ force: true })
-      .catch(() => null);
-    if (stillLive?.active) {
-      conflictError.value = tf(
-        "conflictSignOutFailed",
-        "We could not sign you out. Sign out from the menu, then open the link again."
-      );
-      return;
-    }
-
-    conflict.value = null;
-    await runRecovery(pending.flowId, pending.token, pending.returnTo);
+    await reportRecoveryError("activate", err);
   } finally {
-    resolving.value = false;
-  }
-};
-
-/**
- * "That account is mine." Keep the live session and set ITS password — what
- * this page used to do unconditionally, now only when the user says so. The
- * token stays unspent: nothing ever established that it was valid.
- */
-const continueAsCurrentUser = async () => {
-  const pending = conflict.value;
-  if (!pending || resolving.value) return;
-  resolving.value = true;
-  conflictError.value = "";
-  try {
-    conflict.value = null;
-    await runRecovery(pending.flowId, "", pending.returnTo, true);
-  } finally {
-    resolving.value = false;
+    loading.value = false;
   }
 };
 
 const handlePasswordSubmit = async () => {
   passwordError.value = "";
 
+  // Validated BEFORE anything is spent. A mistyped confirmation must not cost
+  // the user their one-time link.
   if (password.value !== confirmPassword.value) {
     passwordError.value = t("auth.recovery.passwordsDoNotMatch");
     return;
@@ -722,8 +697,24 @@ const handlePasswordSubmit = async () => {
   }
 
   submitting.value = true;
+  beginAttempt();
 
   try {
+    // Redeeming and opening the settings flow are link-lifecycle steps: when
+    // they fail the link is dead, which is a different conversation from "that
+    // password is too weak" and needs a different answer on screen.
+    try {
+      if (!(await redeemToken())) return;
+      if (!(await openSettingsFlow())) return;
+    } catch (err) {
+      await reportRecoveryError(
+        sessionReady.value ? "settings" : "activate",
+        err
+      );
+      return;
+    }
+
+    statusMessage.value = t("auth.recovery.pleaseSetPassword");
     const response = await kratosService.setPasswordAfterRecovery(
       settingsFlowId.value,
       password.value,
@@ -749,6 +740,9 @@ const handlePasswordSubmit = async () => {
   } catch (err) {
     console.error("❌ Password set failed:", err);
 
+    // The token is spent by now, so a rejected password must never send the
+    // user back for a new link. The settings flow is still live: correct the
+    // password and submit again.
     const validationErrors = extractValidationErrors(err);
     const passwordErrors = validationErrors.find((e) => e.field === "password");
 
@@ -765,4 +759,104 @@ const handlePasswordSubmit = async () => {
     submitting.value = false;
   }
 };
+
+/** Re-enter whichever action the session-conflict card interrupted. */
+const resumeAfterConflict = async () => {
+  if (showContinueGate.value) await handleContinue();
+  else await handlePasswordSubmit();
+};
+
+/**
+ * "This link is for another account." Drop the session so Kratos stops
+ * refusing, then redeem the token for whoever it actually belongs to.
+ *
+ * If the token turns out to be spent, the retry fails as a dead link and the
+ * user is offered a fresh one — the honest end to a link that was never proven
+ * good in the first place.
+ */
+const signOutAndUseLink = async () => {
+  if (!conflict.value || resolving.value) return;
+  resolving.value = true;
+  conflictError.value = "";
+  try {
+    await clearSession();
+
+    // clearSession swallows a failed logout by design. Re-running the recovery
+    // on a session that is still live would draw this very card again, forever,
+    // so check before retrying and say what actually went wrong instead.
+    const stillLive = await kratosService
+      .getSession({ force: true })
+      .catch(() => null);
+    if (stillLive?.active) {
+      conflictError.value = tf(
+        "conflictSignOutFailed",
+        "We could not sign you out. Sign out from the menu, then open the link again."
+      );
+      return;
+    }
+
+    conflict.value = null;
+    await resumeAfterConflict();
+  } finally {
+    resolving.value = false;
+  }
+};
+
+/**
+ * "That account is mine." Keep the live session and set ITS password. The
+ * token stays unspent: nothing ever established that it was valid.
+ */
+const continueAsCurrentUser = async () => {
+  if (!conflict.value || resolving.value) return;
+  resolving.value = true;
+  conflictError.value = "";
+  try {
+    pendingToken.value = "";
+    sessionReady.value = true;
+    conflict.value = null;
+    await resumeAfterConflict();
+  } finally {
+    resolving.value = false;
+  }
+};
+
+onMounted(() => {
+  const flowId = route.query.flow as string;
+  const token = (route.query.token as string) ?? "";
+  const returnTo = route.query.return_to as string | undefined;
+
+  console.log("🎬 RecoveryPage mounted:", {
+    flowId,
+    token: token ? token.substring(0, 10) + "..." : "",
+    currentUrl: globalThis.location.href,
+    origin: globalThis.location.origin,
+  });
+
+  if (!flowId) {
+    error.value = t("auth.recovery.invalidLink");
+    return;
+  }
+
+  pendingFlowId.value = flowId;
+  pendingToken.value = token;
+  hadToken.value = Boolean(token);
+  pendingReturnTo.value = returnTo;
+
+  // Before anything else, and without a network call: a token left in the
+  // address bar sits in the history, leaks through the Referer of every asset
+  // the page loads, and is re-submitted by a plain reload.
+  if (token) stripTokenFromUrl();
+
+  // Nothing is spent here. The page only offers the action that will spend it.
+  if (returnTo && token) {
+    statusMessage.value = tf(
+      "continuePrompt",
+      "Confirm below to finish opening your account."
+    );
+    showContinueGate.value = true;
+  } else {
+    statusMessage.value = t("auth.recovery.pleaseSetPassword");
+    showPasswordForm.value = true;
+  }
+});
 </script>
