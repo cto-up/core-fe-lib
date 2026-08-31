@@ -11,6 +11,7 @@ export default {
     closeMobile: "Close menu",
   },
   header: {
+    language: "Language",
     menu: "Menu",
     home: "Home",
     login: "Login",

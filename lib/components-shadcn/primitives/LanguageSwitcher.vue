@@ -14,7 +14,7 @@ import {
   getSupportedLocales,
 } from "../i18n/supported-locales";
 
-const { locale, getLocaleMessage, setLocaleMessage } = useI18n({
+const { t, locale, getLocaleMessage, setLocaleMessage } = useI18n({
   useScope: "global",
 });
 
@@ -88,10 +88,17 @@ const currentLocale = computed({
 <template>
   <div class="flex items-center">
     <Select v-model="currentLocale">
-      <SelectTrigger class="h-11 md:h-10 w-auto min-w-[130px]" variant="ghost">
+      <!-- Icon-only on a phone. Spelled out, this control plus its chevron took
+           ~140px of a 390px top bar to display a setting people change about
+           twice a year; the language name returns at `sm`. -->
+      <SelectTrigger
+        class="h-11 min-w-[2.75rem] justify-center md:h-10 sm:min-w-[130px] sm:justify-between"
+        variant="ghost"
+        :aria-label="t('layout.header.language')"
+      >
         <span class="flex items-center gap-2">
           <Languages class="h-4 w-4 shrink-0 text-muted-foreground" />
-          <SelectValue />
+          <span class="hidden sm:inline"><SelectValue /></span>
         </span>
       </SelectTrigger>
       <SelectContent>

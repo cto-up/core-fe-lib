@@ -94,13 +94,30 @@
         </template>
       </AppMainNavbar>
 
-      <!-- Page Content -->
-      <main class="mt-16 mx-auto flex flex-col items-center">
+      <!-- Page Content. The bottom padding clears the phone tab bar AND the
+           home indicator behind it; without it the last card of every list sits
+           under the bar and cannot be reached. -->
+      <main
+        class="mt-16 mx-auto flex flex-col items-center"
+        :class="
+          showMobileTabs
+            ? 'pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0'
+            : ''
+        "
+      >
         <RouterView v-slot="{ Component, route: viewRoute }">
           <component :is="Component" :key="viewRoute.path" />
         </RouterView>
       </main>
     </div>
+
+    <!-- Phone navigation. Opt-in via `mobileTabs`, and only once there is a
+         signed-in user with a role to navigate as. -->
+    <AppMobileTabBar
+      v-if="showMobileTabs"
+      :tabs="props.mobileTabs!"
+      :label="t('layout.header.menu')"
+    />
 
     <!-- Help & contact — opened from the sidebar's utility entry. Opt-in: only
          apps that pass `support` get it. -->
@@ -124,7 +141,7 @@ import {
   onUnmounted,
   type Component,
 } from "vue";
-import { useRouter } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { useI18n } from "vue-i18n";
 import {
   User,
@@ -163,6 +180,8 @@ import type {
 } from "../primitives/AppMainSidebar.vue";
 import type { MenuLink } from "../types/menu-link";
 import type { UserMenuItem } from "../primitives/AppUserMenu.vue";
+import AppMobileTabBar from "../primitives/AppMobileTabBar.vue";
+import type { MobileTab } from "../primitives/AppMobileTabBar.vue";
 
 /**
  * The complete SaaS app layout — `AppMainSidebar` + `AppMainNavbar` +
@@ -218,6 +237,10 @@ const props = withDefaults(
     support?: SupportConfigInput;
     /** Optional: which desks the support dialog offers. */
     supportTopics?: SupportTopic[];
+    /** Opt-in phone navigation. Pass the app's primary destinations and they
+     *  render as a bottom tab bar below `md`, with `main` padded to clear it.
+     *  Omit and nothing changes — apps without one keep the drawer alone. */
+    mobileTabs?: MobileTab[];
   }>(),
   {
     brandingText: "App",
@@ -235,11 +258,13 @@ const props = withDefaults(
     menuLinksTransform: undefined,
     support: undefined,
     supportTopics: () => ["technical", "sales", "other"] as SupportTopic[],
+    mobileTabs: undefined,
   }
 );
 
 const { t } = useI18n();
 const router = useRouter();
+const route = useRoute();
 const userStore = useUserStore();
 const appStore = useAppStore();
 const { isTenantSubdomain } = useUrl();
@@ -377,6 +402,18 @@ const mobileSidebarOpen = ref(false);
 // it first or the dialog opens behind it.
 const supportOpen = ref(false);
 const supportErrorContext = ref<SupportErrorContext | null>(null);
+// An immersive surface — a lesson, a deck being presented, a study session —
+// opts out with `meta.hideMobileTabs`. A reading view that keeps a tab bar
+// pinned over its own controls is worse than one without navigation for the
+// minute the reader is in it, and the header still gets them out.
+const showMobileTabs = computed(
+  () =>
+    !!props.mobileTabs?.length &&
+    userStore.isLogged &&
+    userStore.hasRole &&
+    !route.meta?.hideMobileTabs
+);
+
 const supportConfig = computed(() =>
   resolveSupportConfig(props.support ?? false)
 );
