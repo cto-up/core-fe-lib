@@ -49,6 +49,32 @@ export function useHideOnScroll(options: HideOnScrollOptions = {}) {
     return (target as HTMLElement).scrollTop || 0;
   };
 
+  /**
+   * Is this scroller pinned to its own end? Collapsing the bar makes a
+   * viewport-filling pane TALLER, and a pane already at its end has its
+   * `scrollTop` clamped back by exactly that much — an upward jump this
+   * composable cannot tell from a flick up, whose reveal then re-shrinks the
+   * pane. That loop is the flicker the bar showed at the foot of a long page.
+   * A real reveal gesture leaves the end before it asks for anything, so the
+   * end is the one place an upward jump carries no intent.
+   */
+  const atEndOf = (target: EventTarget | null): boolean => {
+    const doc = document.documentElement;
+    const [top, viewport, total] =
+      !target || target === window || target === document
+        ? [
+            window.scrollY || doc.scrollTop || 0,
+            window.innerHeight,
+            doc.scrollHeight,
+          ]
+        : [
+            (target as HTMLElement).scrollTop || 0,
+            (target as HTMLElement).clientHeight,
+            (target as HTMLElement).scrollHeight,
+          ];
+    return top + viewport >= total - 1;
+  };
+
   const update = (target: EventTarget | null) => {
     ticking = false;
     const y = scrollTopOf(target);
@@ -65,14 +91,31 @@ export function useHideOnScroll(options: HideOnScrollOptions = {}) {
     }
     lastTarget = target;
 
-    // Forced-visible (desktop / open drawer) or docked near the top.
-    if (disabled?.value || y <= threshold) {
+    // Forced-visible (desktop / open drawer).
+    if (disabled?.value) {
       collapsed.value = false;
       lastY = y;
       return;
     }
 
     const diff = y - lastY;
+
+    // Clamped by our own collapse, not by a gesture — re-anchor only. Ahead of
+    // the docked check on purpose: on a pane barely taller than the viewport
+    // the clamp lands back INSIDE the threshold, and re-docking there hands the
+    // strip back, which re-clamps, which is the same flicker one rung down.
+    if (diff < 0 && atEndOf(target)) {
+      lastY = y;
+      return;
+    }
+
+    // Docked near the top — the bar stays put for tiny scrolls.
+    if (y <= threshold) {
+      collapsed.value = false;
+      lastY = y;
+      return;
+    }
+
     if (Math.abs(diff) < delta) return; // micro-scroll — leave state as-is
     collapsed.value = diff > 0; // down hides, up reveals
     lastY = y;
