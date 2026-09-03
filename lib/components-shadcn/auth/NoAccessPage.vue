@@ -122,7 +122,21 @@ const tenantName = computed(
     tenantStore.tenant?.subdomain ||
     "this tenant"
 );
-const contactEmail = computed(() => tenantStore.tenant?.profile?.contactEmail);
+const contactEmail = computed(() => {
+  const profile = tenantStore.tenant?.profile;
+  if (!profile) return undefined;
+  if ("contactEmail" in profile && typeof profile.contactEmail === "string") {
+    return profile.contactEmail;
+  }
+  const anyProfile = profile as Record<string, unknown>;
+  if (
+    "contact_email" in anyProfile &&
+    typeof anyProfile.contact_email === "string"
+  ) {
+    return anyProfile.contact_email;
+  }
+  return undefined;
+});
 
 const handleSignOut = async () => {
   await signMeOut();

@@ -121,7 +121,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Textarea } from "../ui/textarea";
 import MultiSelect from "../ui/multi-select/MultiSelect.vue"; // Assuming a custom MultiSelect component
 import { Save } from "lucide-vue-next";
-import { computed } from "vue";
 
 const { toast } = useToast();
 const { handleError } = useErrors();
@@ -164,12 +163,6 @@ const rules = {
 const v$ = useVuelidate(rules, profile as UserProfileSchema);
 const { t } = useI18n();
 
-const backgroundPictureURL = computed(() => {
-  return profile && profile.backgroundPictureURL
-    ? profile.backgroundPictureURL
-    : undefined;
-});
-
 const onSubmit = async () => {
   const isFormCorrect = await v$.value.$validate();
   // you can show some extra alert to the user or just leave each field to show it's `$errors`.
@@ -189,7 +182,13 @@ const onSubmit = async () => {
       variant: "default",
     });
     // set user name in store
-    userStore.setUser({ ...userStore.user, name: profile.name });
+    if (userStore.user) {
+      userStore.setUser({
+        ...userStore.user,
+        name: profile.name,
+        roles: userStore.user.roles ?? [],
+      });
+    }
   } catch (err) {
     handleError(err);
   } finally {

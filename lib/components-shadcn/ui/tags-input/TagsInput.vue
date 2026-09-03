@@ -22,7 +22,7 @@ const emits = defineEmits<{
 const tags = useVModel(props, "modelValue", emits, {
   passive: true,
   defaultValue: [],
-}) as unknown as { value: string[] };
+});
 
 const draft = ref("");
 
@@ -44,7 +44,12 @@ function onKeydown(e: KeyboardEvent) {
   if (e.key === "Enter" || e.key === ",") {
     e.preventDefault();
     commit();
-  } else if (e.key === "Backspace" && !draft.value && tags.value.length) {
+  } else if (
+    e.key === "Backspace" &&
+    !draft.value &&
+    tags.value &&
+    tags.value.length
+  ) {
     removeAt(tags.value.length - 1);
   }
 }

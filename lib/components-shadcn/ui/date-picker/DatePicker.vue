@@ -64,8 +64,15 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  modelValue: undefined,
+  label: undefined,
+  error: false,
+  errorMessage: undefined,
+  disable: false,
   format: "YYYY-MM-DD",
   placeholder: "Pick a date",
+  minDate: undefined,
+  maxDate: undefined,
 });
 
 const emit = defineEmits<{
@@ -93,14 +100,24 @@ const dateValue = computed(() => {
   }
 });
 
-const onDateSelect = (date: Date | undefined) => {
-  if (!date) {
+const onDateSelect = (date: unknown) => {
+  // Calendar component may pass DatePickerModel or Date
+  let dateObj: Date | undefined;
+  if (date instanceof Date) {
+    dateObj = date;
+  } else if (date && typeof date === "object" && "getTime" in date) {
+    dateObj = new Date(date as Date);
+  } else {
+    dateObj = undefined;
+  }
+
+  if (!dateObj) {
     emit("update:modelValue", "");
     return;
   }
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+  const year = dateObj.getFullYear();
+  const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const day = String(dateObj.getDate()).padStart(2, "0");
   const dateStr = `${year}-${month}-${day}`;
   if (props.format === "ISO") {
     emit("update:modelValue", new Date(dateStr + "T00:00:00").toISOString());

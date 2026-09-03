@@ -185,7 +185,7 @@
           <Input
             v-model="cronExpression"
             :class="{ 'border-error': !!errorMessage }"
-            @update:model-value="updateCron"
+            @update:model-value="(v) => updateCron(String(v))"
           />
           <Popover>
             <PopoverTrigger as-child>
