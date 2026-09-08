@@ -25,7 +25,7 @@
         />
       </Button>
       <Button
-        v-if="showHome"
+        v-if="showHome && (online || homeWorksOffline)"
         variant="ghost"
         size="icon"
         class="h-11 w-11 md:h-10 md:w-10"
@@ -62,8 +62,14 @@
           <slot name="avatar" />
         </template>
       </AppUserMenu>
+      <!--
+        Hidden with no network: signing in needs the server, so offering it
+        offline is a guaranteed dead end — the learner taps it, the form cannot
+        load, and there is no way back. True in every consuming app, which is
+        why it lives here rather than in one of them.
+      -->
       <Button
-        v-else-if="showLogin"
+        v-else-if="showLogin && online"
         variant="ghost"
         size="icon"
         class="h-11 w-11 md:h-10 md:w-10"
@@ -78,6 +84,22 @@
 </template>
 
 <script lang="ts" setup>
+import { onUnmounted, ref } from "vue";
+
+// Live connectivity, so the bar stops offering what cannot work the moment the
+// network goes. navigator.onLine is a weak signal for "is the server
+// reachable", but it is exactly the right one for "is a navigation to a page
+// that must be fetched guaranteed to fail".
+const online = ref(navigator.onLine);
+const setOnline = () => (online.value = true);
+const setOffline = () => (online.value = false);
+globalThis.addEventListener("online", setOnline);
+globalThis.addEventListener("offline", setOffline);
+onUnmounted(() => {
+  globalThis.removeEventListener("online", setOnline);
+  globalThis.removeEventListener("offline", setOffline);
+});
+
 import AppNavbar from "./AppNavbar.vue";
 import AppUserMenu, { type UserMenuItem } from "./AppUserMenu.vue";
 import LanguageSwitcher from "./LanguageSwitcher.vue";
@@ -133,6 +155,12 @@ withDefaults(
     sidebarExpanded?: boolean;
     showMobileToggle?: boolean;
     showHome?: boolean;
+    /**
+     * Does the consumer's home route work with no network? Default false, so
+     * the Home button hides offline rather than leading somewhere blank. An
+     * app whose home IS offline-capable opts back in.
+     */
+    homeWorksOffline?: boolean;
     showLogin?: boolean;
     showLanguageSwitcher?: boolean;
     showThemeToggle?: boolean;
@@ -150,6 +178,7 @@ withDefaults(
     sidebarExpanded: true,
     showMobileToggle: false,
     showHome: false,
+    homeWorksOffline: false,
     showLogin: true,
     showLanguageSwitcher: true,
     showThemeToggle: true,
