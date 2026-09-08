@@ -65,7 +65,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { Check, ChevronsUpDown } from "lucide-vue-next";
 import { cn } from "../../utils";
-import { useI18n } from "vue-i18n";
+// Aliased: this component also takes a `useI18n` PROP, and an import of the
+// same name collides with it in the template. The prop is public API —
+// consumers pass :use-i18n — so the import is what moves.
+import { useI18n as useVueI18n } from "vue-i18n";
 import { useToast } from "../toast";
 
 interface Props {
@@ -96,7 +99,7 @@ const emit = defineEmits<{
   "update:extra": [value: string];
 }>();
 
-const { locale } = useI18n();
+const { locale } = useVueI18n();
 const { toast } = useToast();
 
 const open = ref(false);

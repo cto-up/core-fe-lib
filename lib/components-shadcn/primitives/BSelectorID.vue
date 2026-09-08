@@ -109,7 +109,10 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import axios from "axios";
-import { useI18n } from "vue-i18n";
+// Aliased: this component also takes a `useI18n` PROP, and an import of the
+// same name collides with it in the template. The prop is public API —
+// consumers pass :use-i18n — so the import is what moves.
+import { useI18n as useVueI18n } from "vue-i18n";
 import { useErrors } from "../composables/useErrors";
 import { Badge } from "../ui/badge";
 import {
@@ -156,7 +159,7 @@ const emit = defineEmits<{
   "update:extra": [value: string];
 }>();
 
-const { locale } = useI18n();
+const { locale } = useVueI18n();
 const { handleError } = useErrors();
 
 const open = ref(false);
