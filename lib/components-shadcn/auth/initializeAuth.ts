@@ -18,11 +18,17 @@ import {
   handleAal2Error,
   useAal2Store,
 } from "../../authentication/vue";
-import { useRoute } from "vue-router";
+import type { Router } from "vue-router";
 
 export interface InitializeAuthOptions {
   /** Path the user is redirected to on session expiry. Defaults to `/signin`. */
   signinPath?: string;
+  /**
+   * The app's router, so the 401 handler can tell an auth-required route from
+   * a public one. Optional and backwards compatible: without it the handler
+   * declines to redirect rather than guessing, which is the safe direction.
+   */
+  router?: Router;
 }
 
 /**
@@ -137,11 +143,20 @@ export function initializeAuth(options: InitializeAuthOptions = {}) {
       if (error.response?.status === 401 && !originalRequest._retry) {
         originalRequest._retry = true;
 
-        // Don't redirect to signin for routes that don't require authentication
-        const currentRoute = useRoute();
-        const isAuthFlow = !currentRoute.matched.some(
-          (record) => record.meta.requiresAuth
-        );
+        // Don't redirect to signin for routes that don't require authentication.
+        //
+        // NOT useRoute(): that is a composable, and this runs inside an axios
+        // interceptor where there is no component setup context — it returned
+        // undefined and `.matched` threw a TypeError on EVERY 401, which
+        // reached the learner as an unexplained "Network error" with a report
+        // button on a page that had loaded fine.
+        //
+        // Without a router we cannot know whether this route needs auth, and
+        // the safe answer is to leave the learner where they are: a wrong
+        // redirect to sign-in loses their place, while not redirecting costs
+        // only that the app's own guard handles it on the next navigation.
+        const matched = options.router?.currentRoute.value.matched ?? [];
+        const isAuthFlow = !matched.some((record) => record.meta.requiresAuth);
 
         try {
           // Try to get fresh session.
