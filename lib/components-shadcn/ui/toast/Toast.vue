@@ -20,13 +20,18 @@ const variantStyles = computed(() => {
       // the left rule and the CircleAlert icon separate "we're on it" from the
       // amber "you can fix this" case at a glance.
       //
-      // The tint is painted as a flat gradient OVER an opaque `bg-background`,
-      // not as `bg-error/10` alone: a 10% background-color is 90% transparent,
-      // so the page showed straight through the toast and its message competed
-      // with whatever button happened to sit behind it. background-image and
-      // background-color are different properties, so the two compose on one
-      // element and tailwind-merge keeps both.
-      return "border-error/40 border-l-4 border-l-error bg-background bg-gradient-to-r from-error/10 to-error/10 text-error";
+      // ONE background utility, mixed in CSS rather than layered in Tailwind.
+      //
+      // This was `bg-background bg-gradient-to-r from-error/10 to-error/10`, on
+      // the assumption that background-color and background-image are different
+      // properties and tailwind-merge would keep both. It does not: it treats
+      // them as conflicting and drops `bg-background`, leaving a 10% tint over
+      // nothing — so the toast was 90% transparent and the page read straight
+      // through it, which is exactly what the old comment said it had fixed.
+      //
+      // color-mix keeps the tint token-driven and dark-mode-correct while being
+      // a single class nothing can merge away.
+      return "border-error/40 border-l-4 border-l-error bg-[color-mix(in_srgb,hsl(var(--error))_10%,hsl(var(--background)))] text-error";
     case "warning":
       // The user can act on this and it is reversible, so it sits one step below
       // `error`. Amber literals rather than `--warning`, whose foreground is
