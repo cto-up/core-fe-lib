@@ -10,6 +10,7 @@ import { useI18n } from "vue-i18n";
 import { notificationServiceKey } from "../../plugins/injection-keys";
 import { useUserStore } from "core-fe-lib/stores/user-store";
 import { updateUserFromSession } from "./kratos-update-user";
+import { classifyAuthResponse } from "../core/auth-outcome";
 import {
   kratosService,
   type KratosSession,
@@ -99,6 +100,18 @@ export const useKratosAuth = () => {
       await updateUserFromSession(currentSession);
       return currentSession;
     } catch (error) {
+      // A failed fetch is NOT a sign-out. fetchSession resolves null for a real
+      // 401 and throws for everything else; collapsing that back into null here
+      // signed a user out whenever the network blinked, and the two cases look
+      // identical from the outside while demanding opposite behaviour.
+      //
+      // Keeping a session we could not confirm grants nothing — the backend
+      // re-validates every request, so the worst case is one 401 the existing
+      // handler recovers from. Clearing one destroys work in flight.
+      if (classifyAuthResponse(error) === "network-unavailable") {
+        console.warn("Session unreachable; keeping the current user:", error);
+        return userStore.session ?? null;
+      }
       console.error("Error getting session:", error);
       await updateUserFromSession(null);
       return null;
