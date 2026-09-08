@@ -58,6 +58,7 @@
           userStore.isLogged && userStore.hasRole && isMobile
         "
         :show-home="!(userStore.isLogged || userStore.hasRole)"
+        :home-works-offline="homeWorksOffline"
         :mobile-sidebar-open="mobileSidebarOpen"
         :is-logged-in="userStore.isLogged"
         :is-dark="appStore.isDark"
@@ -210,6 +211,12 @@ const props = withDefaults(
     resolveIcon: (name?: string) => Component;
     brandingText?: string;
     homePath?: string;
+    /**
+     * Set when `homePath` resolves to something that works with no network,
+     * so the Home button survives going offline instead of hiding. Consumers
+     * that point home at a fetched landing page leave this false.
+     */
+    homeWorksOffline?: boolean;
     signinPath?: string;
     profilePath?: string;
     securityPath?: string;
@@ -245,6 +252,7 @@ const props = withDefaults(
   {
     brandingText: "App",
     homePath: "/home",
+    homeWorksOffline: false,
     signinPath: "/signin",
     profilePath: "/user/me/profile",
     securityPath: "/user/me/security",
