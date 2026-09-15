@@ -15,6 +15,14 @@ export default {
       unknown: "—",
       perMillion: "{input} entrada / {output} salida por M",
     },
+    modalities: {
+      text: "texto",
+      image: "imagen",
+      audio: "audio",
+      video: "vídeo",
+      file: "archivo",
+      tooltip: "Lee {input} · produce {output}",
+    },
     stats: {
       reliability: "F",
       formatting: "M",

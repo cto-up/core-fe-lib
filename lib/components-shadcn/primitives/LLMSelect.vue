@@ -33,6 +33,29 @@
                   {{ t("llm.select.noKey.badge") }}
                 </span>
                 <span
+                  v-if="m.effective_input_modalities?.length"
+                  class="flex items-center gap-0.5 text-muted-foreground/70"
+                  :title="modalityTitle(m)"
+                >
+                  <component
+                    :is="MODALITY_ICONS[x]"
+                    v-for="x in m.effective_input_modalities"
+                    :key="`in-${x}`"
+                    class="h-3 w-3"
+                    :data-test="`llm-option-in-${x}`"
+                  />
+                  <template v-if="producesMedia(m)">
+                    <ArrowRight class="h-3 w-3 text-muted-foreground/50" />
+                    <component
+                      :is="MODALITY_ICONS[x]"
+                      v-for="x in m.effective_output_modalities"
+                      :key="`out-${x}`"
+                      class="h-3 w-3"
+                      :data-test="`llm-option-out-${x}`"
+                    />
+                  </template>
+                </span>
+                <span
                   v-if="m.stats && (m.stats.samples > 0 || m.stats.votes > 0)"
                   class="flex items-center gap-1 text-[10px] font-mono"
                   :title="statsTooltip(m.stats)"
@@ -109,6 +132,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import type { Component } from "vue";
+import {
+  ArrowRight,
+  AudioLines,
+  FileText,
+  Film,
+  Image,
+  Type,
+} from "lucide-vue-next";
+import {
+  filterByModalities,
+  producesMedia,
+  type Modality,
+} from "./llm-modalities";
 
 export interface LLMStats {
   samples: number;
@@ -133,6 +170,9 @@ export interface LLMRegistryEntry {
    * revoked stays visible and explains itself.
    */
   reachable?: boolean;
+  /** Declared inputs cut down to what hub's adapter for the provider carries. */
+  effective_input_modalities?: Modality[];
+  effective_output_modalities?: Modality[];
 }
 
 export type LLMCapability =
@@ -155,6 +195,10 @@ export interface LLMFetcherArgs {
    * empty and let the next save silently rewrite the stored model.
    */
   currentKey?: string;
+  /** The model must read every one of these, on its effective list. */
+  inputModalities?: Modality[];
+  /** The model must be able to produce every one of these. */
+  outputModalities?: Modality[];
 }
 
 const props = withDefaults(
@@ -177,6 +221,10 @@ const props = withDefaults(
     capability?: LLMCapability;
     provider?: string;
     taskType?: string;
+    /** AND: offer only models that read all of these. */
+    inputModalities?: Modality[];
+    /** AND: offer only models that can produce all of these. */
+    outputModalities?: Modality[];
   }>(),
   {
     id: "llm_key",
@@ -188,6 +236,8 @@ const props = withDefaults(
     taskType: "",
     fetcher: undefined,
     items: undefined,
+    inputModalities: undefined,
+    outputModalities: undefined,
   }
 );
 
@@ -230,9 +280,23 @@ const PROVIDER_LABELS: Record<string, string> = {
   ollama: "Ollama (local)",
 };
 
+/**
+ * The fetcher is asked for the modalities and filters server-side; filtering
+ * again here keeps static `items`, and a host whose fetcher ignores the
+ * arguments, from offering a model that cannot serve.
+ */
+const visibleEntries = computed(() =>
+  filterByModalities(
+    entries.value,
+    props.inputModalities,
+    props.outputModalities,
+    props.modelValue || undefined
+  )
+);
+
 const groups = computed(() => {
   const byProvider = new Map<string, LLMRegistryEntry[]>();
-  for (const e of entries.value) {
+  for (const e of visibleEntries.value) {
     if (!byProvider.has(e.provider)) byProvider.set(e.provider, []);
     byProvider.get(e.provider)!.push(e);
   }
@@ -290,6 +354,12 @@ async function fetchEntries() {
       capability: props.capability,
       taskType: props.taskType || undefined,
       currentKey: props.modelValue || undefined,
+      inputModalities: props.inputModalities?.length
+        ? [...props.inputModalities]
+        : undefined,
+      outputModalities: props.outputModalities?.length
+        ? [...props.outputModalities]
+        : undefined,
     });
   } catch {
     entries.value = [];
@@ -307,12 +377,35 @@ watch(
 );
 
 watch(
-  [() => props.taskType, () => props.capability, () => props.provider],
+  [
+    () => props.taskType,
+    () => props.capability,
+    () => props.provider,
+    () => props.inputModalities?.join(","),
+    () => props.outputModalities?.join(","),
+  ],
   () => {
     if (props.fetcher) void fetchEntries();
   },
   { immediate: true }
 );
+
+const MODALITY_ICONS: Record<Modality, Component> = {
+  text: Type,
+  image: Image,
+  audio: AudioLines,
+  video: Film,
+  file: FileText,
+};
+
+function modalityTitle(m: LLMRegistryEntry): string {
+  const names = (ms?: Modality[]) =>
+    (ms ?? []).map((x) => t(`llm.select.modalities.${x}`)).join(", ");
+  return t("llm.select.modalities.tooltip", {
+    input: names(m.effective_input_modalities),
+    output: names(m.effective_output_modalities),
+  });
+}
 
 function scoreClass(v: number | undefined): string {
   if (v === undefined) return "text-muted-foreground";
