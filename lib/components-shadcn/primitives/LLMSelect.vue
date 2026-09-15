@@ -137,13 +137,11 @@ export interface LLMRegistryEntry {
 
 export type LLMCapability =
   | "text"
-  | "vision"
   | "ocr"
   | "layout"
   | "embedder"
   | "reasoning"
   | "code"
-  | "audio"
   | "moderation";
 
 export interface LLMFetcherArgs {

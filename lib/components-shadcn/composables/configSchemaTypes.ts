@@ -24,13 +24,11 @@ export type ConfigFieldType =
  */
 export type LLMCapability =
   | "text"
-  | "vision"
   | "ocr"
   | "layout"
   | "embedder"
   | "reasoning"
   | "code"
-  | "audio"
   | "moderation";
 
 export interface TenantConfigSchemaEntry {
