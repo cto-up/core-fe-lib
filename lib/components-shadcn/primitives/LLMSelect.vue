@@ -199,6 +199,16 @@ export interface LLMFetcherArgs {
   inputModalities?: Modality[];
   /** The model must be able to produce every one of these. */
   outputModalities?: Modality[];
+  /**
+   * Keep only models whose PROVIDER serves this endpoint family — `chat`,
+   * `embed`, `image` or `audio`.
+   *
+   * A different axis from `capability`, which describes the model. A picker
+   * choosing what an image tool should call wants whatever the box can render;
+   * such a model is tagged `text`, because a provider's /v1/models publishes an
+   * id and nothing else.
+   */
+  providerEndpoint?: string;
 }
 
 const props = withDefaults(
