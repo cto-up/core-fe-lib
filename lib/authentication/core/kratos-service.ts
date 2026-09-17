@@ -312,12 +312,17 @@ class KratosService {
   /**
    * ── Session cache (roadmap 020, item 3) ────────────────────────────────────
    *
-   * THE PROBLEM. `getSession()` is called from two per-request hot paths in
+   * THE PROBLEM. `getSession()` was called from two per-request hot paths in
    * `components-shadcn/auth/initializeAuth.ts`: the global axios REQUEST
    * interceptor (to read `tenant_id` for the `X-Tenant-ID` header) and the
    * `OpenAPI.TOKEN` resolver (invoked by every generated client call). Each was
    * an uncached network round-trip, so every API call was preceded by one or
    * two serialized `GET /kratos/sessions/whoami`.
+   *
+   * The TOKEN resolver is gone as of issue #182 — it handed the Kratos session
+   * UUID out as a bearer token, which is not a credential — so the request
+   * interceptor is now the only hot path. The cache still earns its keep:
+   * concurrent API calls each pass through that interceptor.
    *
    * Measured in Sentry over 14 days: 17,850 sampled calls at 20% sampling
    * (~89,000 real), avg 536 ms, p95 1,767 ms — 63% of all frontend HTTP
@@ -326,14 +331,15 @@ class KratosService {
    *
    * THE FIX, in two parts:
    *   1. In-flight de-duplication. Concurrent callers share one promise. This
-   *      alone collapses the burst, because the interceptor and the TOKEN
-   *      resolver fire microseconds apart for the same request.
+   *      alone collapses the burst: it used to be the interceptor and the
+   *      TOKEN resolver firing microseconds apart for one request, and it is
+   *      now any two API calls issued together.
    *   2. A short TTL cache, bounded additionally by the session's own
    *      `expires_at` so we never serve a session we know has lapsed.
    *
    * WHY THIS IS SAFE — and why it is NOT the backend cache that roadmap 018 T5
-   * dropped. The cached value is used for exactly two things: the `X-Tenant-ID`
-   * request header and the bearer token. Neither is an authorization decision:
+   * dropped. The cached value is used for exactly one thing: the `X-Tenant-ID`
+   * request header. That is not an authorization decision:
    * the BACKEND independently re-validates every request against Kratos, so a
    * stale entry here cannot grant access to anything. The worst case is one
    * request that 401s — and the existing 401 handler already invalidates and

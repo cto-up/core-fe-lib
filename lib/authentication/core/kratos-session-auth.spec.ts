@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import axios from "axios";
 
 /**
  * AUTHENTICATION REGRESSION SUITE for the session cache (roadmap 020, item 3).
@@ -9,10 +8,11 @@ import axios from "axios";
  * lock a user out or, worse, keep them looking signed in after signing out.
  *
  * Why this needs its own suite: the cache sits in front of the single source of
- * truth for "who is this request from". The two consumers are the axios request
- * interceptor (X-Tenant-ID) and the OpenAPI.TOKEN resolver (bearer token), both
- * in components-shadcn/auth/initializeAuth.ts, and both run on EVERY API call.
- * A wrong answer there is an auth bug, not a performance bug.
+ * truth for "who is this request from". Its consumer is the axios request
+ * interceptor (X-Tenant-ID) in components-shadcn/auth/initializeAuth.ts, which
+ * runs on EVERY API call. A wrong answer there is an auth bug, not a
+ * performance bug. (There was a second consumer, the OpenAPI.TOKEN resolver;
+ * issue #182 removed it — it sent the session UUID as a bearer token.)
  *
  * The safety net that makes the cache tolerable at all: the BACKEND
  * independently re-validates every request against Kratos, so a stale entry
@@ -247,10 +247,13 @@ describe("auth sequence: expiry and the 401 recovery path", () => {
   });
 });
 
-describe("what the two hot consumers read", () => {
-  it("X-Tenant-ID and the bearer token stay correct across cached reads", async () => {
+describe("what the hot consumer reads", () => {
+  it("X-Tenant-ID stays correct across cached reads", async () => {
     // Mirrors initializeAuth.ts: the request interceptor reads
-    // identity.metadata_public.tenant_id, the OpenAPI.TOKEN resolver reads .id.
+    // identity.metadata_public.tenant_id. That is the ONLY thing it takes from
+    // the session — `.id` is the Kratos session UUID, not a credential, and
+    // sending it as a token or a bearer is issue #182. The request is
+    // authenticated by the HttpOnly session cookie, via withCredentials.
     const svc = await newService();
     get.mockResolvedValue({
       data: sessionFor("u1", "tenant-corpa", "sess-xyz"),
@@ -259,19 +262,19 @@ describe("what the two hot consumers read", () => {
     for (let i = 0; i < 5; i++) {
       const s = await svc.getSession();
       expect(s?.identity.metadata_public?.tenant_id).toBe("tenant-corpa");
-      expect(s?.id).toBe("sess-xyz");
     }
     expect(get).toHaveBeenCalledTimes(1);
   });
 
-  it("an unauthenticated read yields no tenant and an empty token", async () => {
+  it("an unauthenticated read yields no tenant at all", async () => {
     const svc = await newService();
     get.mockRejectedValue({ response: { status: 401 } });
     const s = await svc.getSession();
     expect(s).toBeNull();
-    // initializeAuth does `session?.id || ""` and skips the header when absent.
+    // initializeAuth skips the tenant header entirely when it is absent —
+    // an empty-string X-Tenant-ID is worse than none (the backend treats "" as
+    // a real value and every tenant-scoped query matches nothing).
     expect(s?.identity?.metadata_public?.tenant_id).toBeUndefined();
-    expect(s?.id ?? "").toBe("");
   });
 
   it("a tenant switch is observed once the settings mutation invalidates", async () => {

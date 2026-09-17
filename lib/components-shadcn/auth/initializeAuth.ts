@@ -71,16 +71,17 @@ export function initializeAuth(options: InitializeAuthOptions = {}) {
         return config; // ✅ Don't modify Kratos flow requests
       }
 
-      // Extract session cookie value and send as header for backend
-      // The backend's Kratos client needs this to verify the session
-      const cookies = document.cookie.split(";");
-      const sessionCookie = cookies.find((c) =>
-        c.trim().startsWith("ory_kratos_session=")
-      );
-      if (sessionCookie) {
-        const sessionToken = sessionCookie.split("=")[1].trim();
-        config.headers["X-Session-Token"] = sessionToken;
-      }
+      // No session header. `ory_kratos_session` is HttpOnly (Ory's default,
+      // and nothing in infra/ overrides it), so reading it from
+      // `document.cookie` never returned anything and this only ever looked
+      // like it was authenticating the request. `withCredentials` above is
+      // what actually sends the cookie.
+      //
+      // X-Session-Token itself is still a real mechanism — native/mobile
+      // clients on Kratos API flows hold a genuine session token and the
+      // backend prefers that header over the cookie
+      // (shared/auth/kratos/provider.go:70). A browser has no such token, and
+      // sending anything else here shadows the cookie it would have accepted.
 
       try {
         // Get current Kratos session for tenant context
@@ -170,9 +171,15 @@ export function initializeAuth(options: InitializeAuthOptions = {}) {
           const session = await kratosService.getSession({ force: true });
 
           if (session?.active) {
-            // Update session token and tenant context
-            originalRequest.headers["X-Session-Token"] = session.id;
-
+            // Send NO session header on the retry. This used to set
+            // `X-Session-Token = session.id`, which is the Kratos session
+            // UUID — neither a cookie value nor a native token. The backend
+            // reads that header BEFORE the cookie and wraps it as
+            // `ory_kratos_session=<value>` for Kratos
+            // (provider.go:70-77, :638), so the UUID shadowed the valid cookie
+            // the browser sent on this very request and the retry 401'd. The
+            // refetch above proves the session is live; it does not produce a
+            // credential, and none is needed — withCredentials sends the cookie.
             const tenantID = session.identity.metadata_public?.tenant_id;
             if (tenantID) {
               originalRequest.headers["X-Tenant-ID"] = tenantID;
@@ -217,14 +224,11 @@ export function initializeAuth(options: InitializeAuthOptions = {}) {
     }
   );
 
-  // Update OpenAPI TOKEN resolver
-  OpenAPI.TOKEN = async () => {
-    try {
-      const session = await kratosService.getSession();
-      return session?.id || "";
-    } catch {
-      // Return empty string if no session - this is normal for public endpoints
-      return "";
-    }
-  };
+  // No OpenAPI.TOKEN resolver. It used to return `session.id` as a bearer
+  // token, the same conflation as the 401 retry above: the session UUID is not
+  // a credential. It was invisible because the backend only falls through to
+  // `Authorization` when both the header and the cookie are absent
+  // (provider.go:79-85) — and a browser that has no cookie has no session to
+  // send either, so this never once carried a working credential. Cookie auth
+  // needs no token resolver; `WITH_CREDENTIALS` above is the whole mechanism.
 }

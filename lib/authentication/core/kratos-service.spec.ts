@@ -88,9 +88,10 @@ describe("kratosService.getSession caching", () => {
     let resolve!: (v: unknown) => void;
     get.mockReturnValue(new Promise((r) => (resolve = r)));
 
-    // The real shape of the bug: the axios request interceptor and the
-    // OpenAPI.TOKEN resolver fire microseconds apart, before any response has
-    // populated the cache.
+    // The real shape of the bug: several API calls fire microseconds apart,
+    // each through the axios request interceptor, before any response has
+    // populated the cache. (It was the interceptor and the OpenAPI.TOKEN
+    // resolver until issue #182 removed the latter.)
     const all = Promise.all([
       svc.getSession(),
       svc.getSession(),
