@@ -27,11 +27,15 @@ const props = defineProps<
 >();
 const emits = defineEmits<DialogContentEmits>();
 
-const delegatedProps = computed(() => {
-  const { class: _, overlayClass: __, hideClose: ___, ...delegated } = props;
-
-  return delegated;
-});
+/** The three props declared above are OURS; the rest are radix's. Forwarding
+ *  `class` would put it back on the element and undo the computed one. */
+const OURS = new Set(["class", "overlayClass", "hideClose"]);
+const delegatedProps = computed(
+  () =>
+    Object.fromEntries(
+      Object.entries(props).filter(([k]) => !OURS.has(k))
+    ) as DialogContentProps
+);
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
@@ -47,11 +51,20 @@ const forwarded = useForwardPropsEmits(delegatedProps, emits);
         )
       "
     />
+    <!-- `max-h-[90dvh] overflow-y-auto` is not decoration. A dialog is centred
+         with -translate-y-1/2, so one taller than the window hangs off BOTH
+         edges and neither end can be reached — the form's first field and its
+         Save button are equally gone, with nothing to scroll. Bounding it here
+         rather than per dialog is the point: 18 of this app's 54 dialogs had
+         hand-rolled a max-h, which means the other 36 were one long form away
+         from being unusable. A short dialog is unaffected — the max-height
+         does not bind and nothing scrolls. A dialog that wants a pinned footer
+         still overrides with `flex flex-col` and scrolls its own body. -->
     <DialogContent
       v-bind="forwarded"
       :class="
         cn(
-          'fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',
+          'fixed left-1/2 top-1/2 z-50 grid max-h-[90dvh] w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] sm:rounded-lg',
           props.class
         )
       "
