@@ -294,15 +294,11 @@ axios.interceptors.request.use(
       return config; // Don't modify Kratos flow requests
     }
 
-    // Extract session cookie and send as header for backend API
-    const cookies = document.cookie.split(";");
-    const sessionCookie = cookies.find((c) =>
-      c.trim().startsWith("ory_kratos_session=")
-    );
-    if (sessionCookie) {
-      const sessionToken = sessionCookie.split("=")[1].trim();
-      config.headers["X-Session-Token"] = sessionToken;
-    }
+    // No session header is set here, and none is needed. The
+    // ory_kratos_session cookie is HttpOnly (Ory's default; nothing in infra/
+    // overrides it), so document.cookie never saw it — the block that used to
+    // live here could not run, and never once did. The cookie travels on its
+    // own because withCredentials is set.
 
     try {
       // Get current Kratos session for tenant context.
@@ -366,9 +362,12 @@ axios.interceptors.response.use(
         const session = await kratosService.getSession({ force: true });
 
         if (session?.active) {
-          // Update session token and retry
-          originalRequest.headers["X-Session-Token"] = session.id;
-
+          // No session header on the retry. session.id is the session UUID, not
+          // a credential, and the backend reads X-Session-Token BEFORE the
+          // cookie — so setting it here shadowed the perfectly good cookie the
+          // browser had already attached, and the retry 401'd every time.
+          // Re-fetching the session proves it is live; it does not produce a
+          // token to send.
           const tenantID = session.identity.metadata_public?.tenant_id;
           if (tenantID) {
             originalRequest.headers["X-Tenant-ID"] = tenantID;
@@ -685,8 +684,10 @@ location /kratos/ {
 # Backend API
 location /api/ {
     proxy_pass http://backend:7001/api/;
-    proxy_set_header X-Session-Token $http_x_session_token;
-    proxy_set_header X-Tenant-ID $http_x_tenant_id;
+    # No proxy_set_header for X-Session-Token or X-Tenant-ID. nginx forwards
+    # the client's request headers upstream by default, and the real
+    # infra/nginx-template.conf in hub, lms and care carries no such line —
+    # this snippet used to document one that exists in no deployment.
 }
 ```
 
@@ -704,8 +705,14 @@ COOKIES_DOMAIN=.yourdomain.com
 
 ## Key Concepts
 
-- **Session Cookie**: `ory_kratos_session` cookie set by Kratos, domain `.ctoup.localhost`
-- **Session Token**: Extracted from cookie and sent as `X-Session-Token` header to backend
+- **Session Cookie**: `ory_kratos_session` cookie set by Kratos, domain
+  `.ctoup.localhost`. HttpOnly, so no JavaScript can read it; it reaches the
+  backend because `withCredentials` is set, not because anything copies it.
+- **Session Token**: a **native** Kratos session token, obtained from
+  `POST /self-service/login/api` by a non-browser client (the Android apps).
+  Such a client sends it as `X-Session-Token`, and the backend presents it to
+  Kratos *as a session token* rather than re-wrapping it as a cookie. The web
+  front end does **not** set this header: it has no token, only the cookie.
 - **Tenant Context**: `X-Tenant-ID` header derived from session metadata
 - **Session Cache**: `getSession()` is memoised in memory (30s positive / 2s
   negative, capped by `expires_at`) with in-flight de-duplication. Invalidated
