@@ -235,6 +235,17 @@ const props = withDefaults(
     inputModalities?: Modality[];
     /** AND: offer only models that can produce all of these. */
     outputModalities?: Modality[];
+    /**
+     * Offer only models whose PROVIDER serves this endpoint family — `chat`,
+     * `embed`, `image`, `audio`.
+     *
+     * The axis to filter a drawing picker on, and not `capability`: a box that
+     * only draws publishes its models through /v1/models, which carries an id
+     * and nothing else, so every one of them arrives tagged `text`. Filtering
+     * on the model would offer a list of things that cannot draw and hide the
+     * one that can.
+     */
+    providerEndpoint?: string;
   }>(),
   {
     id: "llm_key",
@@ -248,6 +259,7 @@ const props = withDefaults(
     items: undefined,
     inputModalities: undefined,
     outputModalities: undefined,
+    providerEndpoint: undefined,
   }
 );
 
@@ -370,6 +382,7 @@ async function fetchEntries() {
       outputModalities: props.outputModalities?.length
         ? [...props.outputModalities]
         : undefined,
+      providerEndpoint: props.providerEndpoint || undefined,
     });
   } catch {
     entries.value = [];
@@ -393,6 +406,7 @@ watch(
     () => props.provider,
     () => props.inputModalities?.join(","),
     () => props.outputModalities?.join(","),
+    () => props.providerEndpoint,
   ],
   () => {
     if (props.fetcher) void fetchEntries();

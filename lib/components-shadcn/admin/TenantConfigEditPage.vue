@@ -84,6 +84,7 @@
               :id="`tenant-config-llm-${tenantConfig.name}`"
               :model-value="tenantConfig.value ?? ''"
               :capability="schemaEntry.requiresCapability ?? 'text'"
+              :provider-endpoint="schemaEntry.providerEndpoint"
               :task-type="schemaEntry.taskType"
               :placeholder="schemaEntry.defaultValue ?? 'Select a model…'"
               :fetcher="llmFetcher"

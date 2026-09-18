@@ -105,5 +105,50 @@ describe("LLMSelect hands the modalities to its fetcher", () => {
     const args = fetcher.mock.calls[0][0];
     expect(args.inputModalities).toBeUndefined();
     expect(args.outputModalities).toBeUndefined();
+    expect(args.providerEndpoint).toBeUndefined();
+  });
+});
+
+// The axis a drawing picker has to filter on. A box that only draws publishes
+// its models through /v1/models, which carries an id and nothing else, so they
+// all arrive tagged `text`: a capability filter offers a list of models that
+// cannot draw and hides the one that can. The endpoint family belongs to the
+// PROVIDER, which is the only place the truth is recorded.
+describe("LLMSelect hands the provider's endpoint family to its fetcher", () => {
+  const i18n = createI18n({ legacy: false, locale: "en", messages: {} });
+
+  it("passes it through and asks again when it changes", async () => {
+    const fetcher = vi.fn<
+      (args: LLMFetcherArgs) => Promise<LLMRegistryEntry[]>
+    >(async () => []);
+    const w = mount(LLMSelect, {
+      props: { modelValue: "", fetcher, providerEndpoint: "image" },
+      global: { plugins: [i18n] },
+    });
+    await flushPromises();
+    expect(fetcher).toHaveBeenLastCalledWith(
+      expect.objectContaining({ providerEndpoint: "image" })
+    );
+
+    await w.setProps({ providerEndpoint: "audio" });
+    await flushPromises();
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher).toHaveBeenLastCalledWith(
+      expect.objectContaining({ providerEndpoint: "audio" })
+    );
+  });
+
+  // It narrows by provider and not by model, so it must not quietly become a
+  // capability filter: those two disagree for exactly the box this is for.
+  it("does not touch the capability filter", async () => {
+    const fetcher = vi.fn<
+      (args: LLMFetcherArgs) => Promise<LLMRegistryEntry[]>
+    >(async () => []);
+    mount(LLMSelect, {
+      props: { modelValue: "", fetcher, providerEndpoint: "image" },
+      global: { plugins: [i18n] },
+    });
+    await flushPromises();
+    expect(fetcher.mock.calls[0][0].capability).toBe("text");
   });
 });

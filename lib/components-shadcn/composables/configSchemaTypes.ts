@@ -44,6 +44,17 @@ export interface TenantConfigSchemaEntry {
    */
   requiresCapability?: LLMCapability;
   /**
+   * Only meaningful for `type: "llm"`. Keep only models whose PROVIDER serves
+   * this endpoint family — `chat`, `embed`, `image`, `audio`.
+   *
+   * A different axis from `requiresCapability`, which describes the model. A
+   * setting that chooses what will DRAW wants this one: a box that only draws
+   * publishes its models through /v1/models, which carries an id and nothing
+   * else, so they all arrive tagged `text` and no model-level filter can find
+   * them.
+   */
+  providerEndpoint?: "chat" | "embed" | "image" | "audio";
+  /**
    * Only meaningful for `type: "llm"`. When set, the dropdown asks the
    * registry for per-(llm_key, taskType) feedback stats and renders
    * rating chips (reliability / formatting / userApproval) next to each
