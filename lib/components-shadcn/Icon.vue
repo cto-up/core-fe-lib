@@ -1,8 +1,9 @@
+<!-- eslint-disable vue/multi-word-component-names --
+     Registered globally as <Icon> in hub, lms and care. Renaming it to satisfy
+     the rule would rewrite every call site in three apps to buy nothing. -->
 <script setup lang="ts">
 import { computed } from "vue";
-import * as icons from "lucide-vue-next";
-
-type IconsType = Record<string, any>;
+import { resolveIcon } from "./icon-names";
 
 const props = defineProps({
   name: {
@@ -18,18 +19,7 @@ const props = defineProps({
   defaultClass: String,
 });
 
-const toPascalCase = (name: string) =>
-  name
-    .split(/[-_]/)
-    .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-    .join("");
-
-const icon = computed(() => {
-  const key = /[a-z][A-Z]/.test(props.name)
-    ? props.name
-    : toPascalCase(props.name);
-  return (icons as IconsType)[key];
-});
+const icon = computed(() => resolveIcon(props.name));
 </script>
 
 <template>
