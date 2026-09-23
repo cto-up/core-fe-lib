@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type HTMLAttributes } from "vue";
+import { computed, ref, type HTMLAttributes } from "vue";
 import { useVModel } from "@vueuse/core";
 import { cn } from "../../utils";
 
@@ -26,6 +26,25 @@ const modelValue = useVModel(props, "modelValue", emits, {
   passive: true,
   defaultValue: props.defaultValue,
 });
+
+// A file input CANNOT be v-modelled. v-model's input handler copies el.value —
+// the browser's "C:\fakepath\photo.png" — into the model, and the next patch
+// writes it back, which the DOM refuses:
+//   InvalidStateError: This input element accepts a filename, which may only be
+//   programmatically set to the empty string.
+// It surfaces only after a real file is chosen, so it never showed up in a test
+// that merely rendered the component. The file variant therefore renders
+// without the directive; @change and the rest still arrive through $attrs.
+const isFile = computed(() => props.type === "file");
+
+const inputClass = computed(() => [
+  cn(
+    "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+    props.class
+  ),
+  props.prependIcon ? "pl-12 left-placeholder" : "",
+]);
+
 const isFocused = ref<boolean>(false);
 const onFocus = (e: FocusEvent) => {
   isFocused.value = true;
@@ -48,15 +67,21 @@ const onKeydown = (e: KeyboardEvent) => {
       class="text-slate-500 absolute h-4 top-1/2 -translate-y-1/2 left-4"
     />
     <input
+      v-if="isFile"
+      v-bind="$attrs"
+      :class="inputClass"
+      :placeholder="placeholder"
+      type="file"
+      :disabled="disabled"
+      @focus="onFocus"
+      @blur="onBlur"
+      @keydown="onKeydown"
+    />
+    <input
+      v-else
       v-model="modelValue"
       v-bind="$attrs"
-      :class="[
-        cn(
-          'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
-          props.class
-        ),
-        prependIcon ? 'pl-12 left-placeholder' : '',
-      ]"
+      :class="inputClass"
       :placeholder="placeholder"
       :type="type"
       :disabled="disabled"
