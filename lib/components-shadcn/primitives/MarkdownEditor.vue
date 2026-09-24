@@ -15,14 +15,14 @@
     </div>
 
     <EditorContent
-      :editor="editor"
+      :editor="editor ?? undefined"
       class="prose prose-sm max-w-none p-4 min-h-[200px]"
     />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref, computed } from "vue";
+import { onBeforeUnmount, onMounted, ref, computed, type Ref } from "vue";
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -46,7 +46,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update"]);
 
-const editor = ref<Editor | null>(null);
+const editor = ref<Editor | null>(null) as Ref<Editor | null>;
 
 const toolbarActions = computed(() => [
   {
