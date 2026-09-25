@@ -97,7 +97,11 @@ export default {
       "Nous vous enverrons un lien sécurisé pour continuer. Aucun mot de passe requis — le lien vous permet de définir votre mot de passe une fois connecté.",
     spamHint:
       "Vous ne voyez pas l'e-mail ? Pensez à vérifier votre dossier spam ou courrier indésirable.",
+    resendButton: "Renvoyer l'e-mail",
+    resending: "Envoi en cours...",
+    resendCooldown: "Renvoyer dans {seconds}s",
     notifications: {
+      resent: "E-mail renvoyé",
       validationError: "Veuillez vérifier vos saisies.",
       error: "Une erreur s'est produite. Veuillez réessayer.",
     },

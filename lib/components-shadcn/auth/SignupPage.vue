@@ -45,6 +45,19 @@
         </p>
       </CardContent>
       <CardFooter class="flex flex-col space-y-3 p-4">
+        <Button
+          class="w-full"
+          data-test="signup-resend"
+          :disabled="loading || resendCooldown > 0"
+          @click="handleResend"
+        >
+          <Loader2 v-if="loading" class="mr-2 h-4 w-4 animate-spin" />
+          <template v-if="loading">{{ $t("auth.signUp.resending") }}</template>
+          <template v-else-if="resendCooldown > 0">
+            {{ $t("auth.signUp.resendCooldown", { seconds: resendCooldown }) }}
+          </template>
+          <template v-else>{{ $t("auth.signUp.resendButton") }}</template>
+        </Button>
         <Button variant="outline" class="w-full" @click="resetForm">
           {{ $t("auth.signUp.changeEmail") }}
         </Button>
@@ -188,7 +201,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { useToast } from "../ui/toast/use-toast";
 import { AuthService } from "../../openapi/core";
@@ -308,6 +321,28 @@ async function handleProviderSignUp(provider: string): Promise<void> {
   }
 }
 
+// Matches the backend's per-address cooldown, which refuses a sooner send silently.
+const RESEND_COOLDOWN_SECONDS = 60;
+const resendCooldown = ref(0);
+let resendTimer: ReturnType<typeof setInterval> | undefined;
+
+function stopResendCooldown(): void {
+  clearInterval(resendTimer);
+  resendTimer = undefined;
+  resendCooldown.value = 0;
+}
+
+function startResendCooldown(): void {
+  stopResendCooldown();
+  resendCooldown.value = RESEND_COOLDOWN_SECONDS;
+  resendTimer = setInterval(() => {
+    resendCooldown.value--;
+    if (resendCooldown.value <= 0) stopResendCooldown();
+  }, 1000);
+}
+
+onUnmounted(stopResendCooldown);
+
 const rules = computed(() => ({
   email: { required, emailVerif, $autoDirty: true, maxLength: maxLength(100) },
 }));
@@ -324,16 +359,27 @@ const handleSubmit = async () => {
     return;
   }
 
-  loading.value = true;
+  if (await sendEmail()) {
+    // Always show success - never reveal if user exists
+    emailSent.value = true;
+    startResendCooldown();
+  }
+};
 
+const handleResend = async () => {
+  if (await sendEmail()) {
+    toast({ title: t("auth.signUp.notifications.resent") });
+    startResendCooldown();
+  }
+};
+
+async function sendEmail(): Promise<boolean> {
+  loading.value = true;
   try {
-    // Call identify endpoint - backend handles everything
     await AuthService.identifyUser({
       email: email.value,
     });
-
-    // Always show success - never reveal if user exists
-    emailSent.value = true;
+    return true;
   } catch (error) {
     console.error("Identify error:", error);
 
@@ -347,12 +393,14 @@ const handleSubmit = async () => {
       title: t("auth.error"),
       description: errMessage,
     });
+    return false;
   } finally {
     loading.value = false;
   }
-};
+}
 
 const resetForm = () => {
+  stopResendCooldown();
   emailSent.value = false;
   email.value = "";
   $v.value.$reset();

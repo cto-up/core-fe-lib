@@ -92,7 +92,11 @@ export default {
     secureExplainer:
       "We'll send you a secure link to continue. No password needed — the link lets you set your password once you're in.",
     spamHint: "Don't see the email? Check your spam or junk folder.",
+    resendButton: "Resend the email",
+    resending: "Sending...",
+    resendCooldown: "Resend in {seconds}s",
     notifications: {
+      resent: "Email sent again",
       validationError: "Please enter a valid email address.",
       error: "Something went wrong. Please try again.",
     },
