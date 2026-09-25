@@ -11,6 +11,7 @@ import { notificationServiceKey } from "../../plugins/injection-keys";
 import { useUserStore } from "core-fe-lib/stores/user-store";
 import { updateUserFromSession } from "./kratos-update-user";
 import { classifyAuthResponse } from "../core/auth-outcome";
+import { safeRedirectTarget } from "../core/safe-redirect";
 import {
   kratosService,
   type KratosSession,
@@ -121,7 +122,7 @@ export const useKratosAuth = () => {
   }
 
   function redirectAfterLogin(returnTo?: string): void {
-    const target = returnTo || "/";
+    const target = safeRedirectTarget(returnTo);
     if (target.startsWith("http")) {
       globalThis.location.href = target;
     } else {

@@ -118,6 +118,7 @@ import {
 } from "../ui/card";
 import { Button } from "../ui/button";
 import AppBackground from "../primitives/AppBackground.vue";
+import { safeRedirectTarget } from "../../authentication/core/safe-redirect";
 
 const props = withDefaults(
   defineProps<{
@@ -154,8 +155,10 @@ const isPopup =
   !globalThis.opener.closed;
 
 function reportToOpener(success: boolean) {
-  const returnTo = route.query.return_to as string | undefined;
-  const targetOrigin = returnTo ? new URL(returnTo).origin : "*";
+  const returnTo = safeRedirectTarget(route.query.return_to as string, "");
+  const targetOrigin = returnTo
+    ? new URL(returnTo, globalThis.location.href).origin
+    : globalThis.location.origin;
   globalThis.opener?.postMessage(
     { type: "aal2-webauthn", success },
     targetOrigin
@@ -288,7 +291,7 @@ async function runCeremony(auto = false) {
       reportToOpener(true);
       return;
     }
-    const returnTo = route.query.return_to as string;
+    const returnTo = safeRedirectTarget(route.query.return_to as string, "");
     if (returnTo) {
       globalThis.location.href = returnTo;
     } else {
@@ -329,7 +332,7 @@ function cancel() {
     reportToOpener(false);
     return;
   }
-  const returnTo = route.query.return_to as string;
+  const returnTo = safeRedirectTarget(route.query.return_to as string, "");
   if (returnTo) {
     globalThis.location.href = returnTo;
   } else {

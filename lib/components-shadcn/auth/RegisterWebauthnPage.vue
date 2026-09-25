@@ -134,6 +134,7 @@ import {
 } from "../ui/card";
 import { Button } from "../ui/button";
 import AppBackground from "../primitives/AppBackground.vue";
+import { safeRedirectTarget } from "../../authentication/core/safe-redirect";
 
 const { t } = useI18n();
 const route = useRoute();
@@ -178,9 +179,9 @@ async function runCeremony(auto = false) {
 
     state.success = true;
 
-    const returnTo = route.query.return_to as string;
+    const returnTo = safeRedirectTarget(route.query.return_to as string);
     setTimeout(() => {
-      globalThis.location.href = returnTo || "/";
+      globalThis.location.href = returnTo;
     }, 1500);
   } catch (error: unknown) {
     // NotAllowedError covers both "no user activation" (WebKit, on the
@@ -213,11 +214,8 @@ function describeError(error: unknown): string {
 }
 
 function cancel() {
-  const returnTo = route.query.return_to as string;
-  if (returnTo) {
-    globalThis.location.href = returnTo;
-  } else {
-    globalThis.location.href = "/";
-  }
+  globalThis.location.href = safeRedirectTarget(
+    route.query.return_to as string
+  );
 }
 </script>
