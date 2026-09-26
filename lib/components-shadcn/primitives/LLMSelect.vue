@@ -380,7 +380,7 @@ async function fetchEntries() {
   if (!props.fetcher) return;
   loading.value = true;
   try {
-    entries.value = await props.fetcher({
+    const fetched = await props.fetcher({
       provider: props.provider || undefined,
       capability: props.capability,
       taskType: props.taskType || undefined,
@@ -393,6 +393,7 @@ async function fetchEntries() {
         : undefined,
       providerEndpoint: props.providerEndpoint || undefined,
     });
+    entries.value = Array.isArray(fetched) ? fetched : [];
   } catch {
     entries.value = [];
   } finally {
@@ -423,10 +424,12 @@ watch(
   { immediate: true }
 );
 
+// Reads the list only when there is something to fill in, so an existing
+// record never pays for it.
 watch(
-  () => [props.autoSelect, props.modelValue, groups.value] as const,
-  ([auto, value, gs]) => {
-    if (!auto || value) return;
+  () => (props.autoSelect && !props.modelValue ? groups.value : null),
+  (gs) => {
+    if (!gs) return;
     const offered = gs
       .flatMap((g) => g.models)
       .filter((m) => m.reachable !== false);
