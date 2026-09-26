@@ -259,6 +259,7 @@ import {
   type RecoveryFailureStage,
 } from "./recovery-diagnostics";
 import { Button } from "../ui/button";
+import { safeFromQuery } from "../../authentication/core/safe-redirect";
 import PasswordInput from "../primitives/PasswordInput.vue";
 import AppBackground from "../primitives/AppBackground.vue";
 
@@ -312,6 +313,10 @@ const pendingFlowId = ref("");
 /** The token still owed to Kratos; cleared the moment it is spent. */
 const pendingToken = ref("");
 const pendingReturnTo = ref<string | undefined>(undefined);
+/** Where a sign-up link lands once the password is set (`?from=`, vetted). */
+const afterPasswordPath = computed(
+  () => safeFromQuery(route.query.from) || props.homePath
+);
 /** Whether the link carried a token at all — for diagnostics, never cleared. */
 const hadToken = ref(false);
 /**
@@ -731,7 +736,9 @@ const handlePasswordSubmit = async () => {
     setTimeout(() => {
       void (async () => {
         try {
-          await router.push(props.homePath);
+          const target = afterPasswordPath.value;
+          if (target.startsWith("http")) globalThis.location.href = target;
+          else await router.push(target);
         } catch (e) {
           console.log(e);
         }

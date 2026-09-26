@@ -62,7 +62,7 @@
           {{ $t("auth.signUp.changeEmail") }}
         </Button>
         <div class="text-center text-sm text-muted-foreground">
-          <RouterLink :to="signinPath" class="text-primary hover:underline">
+          <RouterLink :to="signinTo" class="text-primary hover:underline">
             {{ $t("auth.signUp.backToSignIn") }}
           </RouterLink>
         </div>
@@ -147,7 +147,7 @@
               :disabled="loading"
               placeholder="you@example.com"
               autofocus
-              @blur="$v.email.$touch()"
+              @blur="email && $v.email.$touch()"
               @keydown.enter="handleSubmit"
             />
           </div>
@@ -176,7 +176,7 @@
 
         <div class="text-center text-sm text-muted-foreground">
           {{ $t("auth.signUp.haveAccount") }}
-          <RouterLink :to="signinPath" class="text-primary hover:underline">
+          <RouterLink :to="signinTo" class="text-primary hover:underline">
             {{ $t("auth.signUp.signInLink") }}
           </RouterLink>
         </div>
@@ -221,6 +221,10 @@ import {
   kratosService,
   type KratosOidcProvider,
 } from "../../authentication/core/kratos-service";
+import {
+  safeFromQuery,
+  withFrom,
+} from "../../authentication/core/safe-redirect";
 import { useI18n } from "vue-i18n";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -272,6 +276,9 @@ const loading = ref(false);
 const emailSent = ref(false);
 
 const route = useRoute();
+/** Where the visitor was headed; survives the switch to sign-in and the email. */
+const from = computed(() => safeFromQuery(route.query.from));
+const signinTo = computed(() => withFrom(props.signinPath, from.value));
 const { signInWithProvider } = useKratosAuth();
 const oidcProviders = ref<KratosOidcProvider[]>([]);
 const socialPending = ref("");
@@ -306,10 +313,9 @@ watch(socialSignInEnabled, (enabled) => {
 
 async function handleProviderSignUp(provider: string): Promise<void> {
   socialPending.value = provider;
-  const from = typeof route.query.from === "string" ? route.query.from : "";
   const returnTo = new URL(props.socialReturnPath, globalThis.location.origin);
-  if (from.startsWith("/") && !from.startsWith("//")) {
-    returnTo.searchParams.set("from", from);
+  if (from.value.startsWith("/")) {
+    returnTo.searchParams.set("from", from.value);
   }
   try {
     await signInWithProvider(provider, {
@@ -378,6 +384,7 @@ async function sendEmail(): Promise<boolean> {
   try {
     await AuthService.identifyUser({
       email: email.value,
+      ...(from.value ? { returnTo: from.value } : {}),
     });
     return true;
   } catch (error) {

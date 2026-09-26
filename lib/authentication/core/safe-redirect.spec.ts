@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { safeRedirectTarget } from "./safe-redirect";
+import { safeFromQuery, safeRedirectTarget, withFrom } from "./safe-redirect";
 
 const here = "https://acme.sparkmeee.com/signin?from=x";
 const api = ["https://api.sparkmeee.io"];
@@ -59,5 +59,31 @@ describe("a crafted target never leaves the product", () => {
     expect(safeRedirectTarget("https://evil.example", "/home", here, api)).toBe(
       "/home"
     );
+  });
+});
+
+describe("handing the destination on between auth pages", () => {
+  it("reads a safe from and drops a foreign or missing one", () => {
+    expect(safeFromQuery("/lms/courses/intro")).toBe("/lms/courses/intro");
+    expect(safeFromQuery("https://evil.example/phish")).toBe("");
+    expect(safeFromQuery("//evil.example")).toBe("");
+    expect(safeFromQuery(["/a", "/b"])).toBe("");
+    expect(safeFromQuery(undefined)).toBe("");
+  });
+
+  it("sets from on the sibling link, encoded", () => {
+    expect(withFrom("/signin", "/lms/courses/intro?tab=2")).toBe(
+      "/signin?from=%2Flms%2Fcourses%2Fintro%3Ftab%3D2"
+    );
+  });
+
+  it("keeps a query the link already had and replaces a stale from", () => {
+    expect(withFrom("/admin/signin?x=1&from=/old", "/new")).toBe(
+      "/admin/signin?x=1&from=%2Fnew"
+    );
+  });
+
+  it("leaves the link alone when there is nowhere to go back to", () => {
+    expect(withFrom("/signup", "")).toBe("/signup");
   });
 });

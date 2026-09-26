@@ -173,7 +173,7 @@
         <div v-if="canSignUp" class="text-sm text-center text-muted-foreground">
           {{ $t("auth.signIn.noAccount") }}
           <Button variant="link" class="p-0 h-auto font-normal" as-child>
-            <router-link :to="signupPath">
+            <router-link :to="signupTo">
               {{ $t("auth.signIn.signUpLink") }}
             </router-link>
           </Button>
@@ -201,6 +201,10 @@ import {
   type KratosOidcProvider,
   type KratosUiMessage,
 } from "../../authentication/core/kratos-service";
+import {
+  safeFromQuery,
+  withFrom,
+} from "../../authentication/core/safe-redirect";
 import { useUserStore } from "core-fe-lib/stores/user-store";
 import {
   Card,
@@ -303,6 +307,9 @@ const email = ref("");
 const password = ref("");
 const switching = ref(false);
 const route = useRoute();
+const signupTo = computed(() =>
+  withFrom(props.signupPath, safeFromQuery(route.query.from))
+);
 const router = useRouter();
 const userStore = useUserStore();
 const { canSignUp, socialSignInEnabled } = useTenant();

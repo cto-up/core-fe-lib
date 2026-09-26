@@ -52,3 +52,19 @@ function apiOrigins(): string[] {
     return [];
   }
 }
+
+/** A `from` query value as a safe target, or "" when absent or foreign. */
+export function safeFromQuery(from: unknown): string {
+  return typeof from === "string" ? safeRedirectTarget(from, "") : "";
+}
+
+/**
+ * An auth page's link to its sibling (sign-in ⇄ sign-up) with the destination
+ * handed on, so switching pages does not forget where the user was going.
+ */
+export function withFrom(path: string, from: string): string {
+  if (!from) return path;
+  const url = new URL(path, "http://placeholder.invalid");
+  url.searchParams.set("from", from);
+  return url.pathname + url.search + url.hash;
+}
