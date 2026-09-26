@@ -45,8 +45,9 @@
               <TableRow
                 v-for="row in rows"
                 :key="row.id"
-                class="cursor-pointer hover:bg-muted/50"
-                @click="onRowSelect(row.id)"
+                class="hover:bg-muted/50"
+                clickable
+                @activate="onRowSelect(row.id)"
               >
                 <TableCell class="font-medium">
                   <div class="flex items-center gap-2">
@@ -148,8 +149,9 @@
                       <TableRow
                         v-for="entry in unsetByCategory(category)"
                         :key="entry.key"
-                        class="cursor-pointer hover:bg-muted/30 opacity-70 hover:opacity-100 transition-opacity"
-                        @click="addFromSchema(entry.key)"
+                        class="hover:bg-muted/30 opacity-70 hover:opacity-100 transition-opacity"
+                        clickable
+                        @activate="addFromSchema(entry.key)"
                       >
                         <TableCell
                           class="font-mono text-sm text-muted-foreground w-[40%]"

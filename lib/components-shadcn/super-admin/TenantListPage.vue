@@ -45,8 +45,9 @@
               <TableRow
                 v-for="row in rows"
                 :key="row.id"
-                class="cursor-pointer hover:bg-muted/50"
-                @click="onRowSelect(row.id)"
+                class="hover:bg-muted/50"
+                clickable
+                @activate="onRowSelect(row.id)"
               >
                 <TableCell class="font-medium">
                   {{ row.tenant_id }}
