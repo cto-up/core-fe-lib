@@ -5,6 +5,10 @@ export interface MenuItem {
   caption?: string;
   icon?: string;
   link?: string;
+  /** Extra route prefixes that count as this item for the active highlight,
+   *  for pages that live outside `link` (e.g. `/aiemployee/employees` for a
+   *  list at `/aiemployee/list`). */
+  activePaths?: string[];
   requiredPrivilege?: Role;
   linkType?: string;
   badge?: number;

@@ -5,6 +5,7 @@
         <component
           :is="link ? RouterLink : 'button'"
           :to="link ? link : undefined"
+          :aria-current="isActive ? 'page' : undefined"
           :class="
             cn(
               'w-full overflow-x-hidden justify-start duration-150 inline-flex items-center rounded-md text-sm font-medium text-muted-foreground transition-colors',
@@ -45,6 +46,13 @@
   </TooltipProvider>
 </template>
 
+<script lang="ts">
+export interface SidebarLinkPath {
+  link: string;
+  prefix: string;
+}
+</script>
+
 <script lang="ts" setup>
 import { computed, inject, ref, type Component, type Ref } from "vue";
 import { RouterLink, useRoute } from "vue-router";
@@ -71,6 +79,8 @@ import { cn } from "../utils";
 const props = defineProps<{
   title: string;
   link?: string;
+  /** Extra route prefixes that also make this link active. */
+  activePaths?: string[];
   iconComponent?: Component;
   caption?: string;
   badge?: number;
@@ -83,24 +93,30 @@ const emit = defineEmits<{
 
 const route = useRoute();
 
-// All sibling nav paths (provided by AppMainSidebar) so active state resolves by
-// LONGEST prefix match — a section-index link (`/lms`) yields to a more specific
-// sibling (`/lms/admin/courses`) instead of both highlighting. Falls back to the
-// plain prefix check when used outside AppMainSidebar.
-const allLinkPaths = inject<Ref<string[]>>("sidebarLinkPaths", ref([]));
+// Every nav prefix in the sidebar (provided by AppMainSidebar), each tied to
+// the link it activates, so active state resolves by LONGEST prefix match — a
+// section-index link (`/lms`) yields to a more specific sibling
+// (`/lms/admin/courses`), and an item's `activePaths` claim pages that live
+// outside its own link. Falls back to a plain prefix check outside
+// AppMainSidebar.
+const allLinkPaths = inject<Ref<SidebarLinkPath[]>>(
+  "sidebarLinkPaths",
+  ref([])
+);
 
 const isActive = computed(() => {
   const link = props.link;
   if (!link) return false;
   const matches = (p: string) =>
     route.path === p || route.path.startsWith(p + "/");
-  if (!matches(link)) return false;
   const paths = allLinkPaths.value;
-  if (!paths?.length) return true; // standalone fallback
-  const longest = paths
-    .filter(matches)
-    .reduce((best, p) => (p.length > best.length ? p : best), "");
-  return longest === link;
+  if (!paths?.length) return [link, ...(props.activePaths ?? [])].some(matches);
+  let best: SidebarLinkPath | undefined;
+  for (const p of paths) {
+    if (matches(p.prefix) && (!best || p.prefix.length > best.prefix.length))
+      best = p;
+  }
+  return best?.link === link;
 });
 
 // RouterLink handles the actual navigation (and lets the browser natively

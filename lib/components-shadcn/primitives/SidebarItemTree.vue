@@ -4,6 +4,7 @@
       <SidebarLink
         :title="item.title"
         :link="item.link"
+        :active-paths="item.activePaths"
         :caption="item.caption"
         :badge="item.badge"
         :icon-component="resolveIcon(item.icon)"

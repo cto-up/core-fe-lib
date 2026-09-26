@@ -30,6 +30,7 @@
           <SidebarLink
             :title="item.title"
             :link="item.link"
+            :active-paths="item.activePaths"
             :caption="item.caption"
             :badge="item.badge"
             :icon-component="resolveIcon(item.icon)"
@@ -99,6 +100,7 @@
                 :key="item.title"
                 :title="item.title"
                 :link="item.link"
+                :active-paths="item.activePaths"
                 :caption="item.caption"
                 :badge="item.badge"
                 :icon-component="resolveIcon(item.icon)"
@@ -134,6 +136,7 @@
           <SidebarLink
             :title="item.title"
             :link="item.link"
+            :active-paths="item.activePaths"
             :caption="item.caption"
             :badge="item.badge"
             :icon-component="resolveIcon(item.icon)"
@@ -181,12 +184,15 @@ import {
 } from "../ui/collapsible";
 import { ChevronDown, LifeBuoy } from "lucide-vue-next";
 import { useSidebarSectionState } from "../composables/useSidebarSectionState";
+import type { SidebarLinkPath } from "./SidebarLink.vue";
 
 export interface SidebarMenuItem {
   title: string;
   caption?: string;
   icon?: string;
   link?: string;
+  /** Extra route prefixes that highlight this item (see MenuItem.activePaths). */
+  activePaths?: string[];
   /** Marker tying this item to a sub-group renderer (see SidebarSubGroup). */
   linkType?: string;
   badge?: number;
@@ -274,23 +280,26 @@ const subGroupOpen = ref<Record<string, boolean>>({});
 // Every nav link path, flattened, so each SidebarLink can resolve active state
 // by LONGEST prefix match instead of any-ancestor — otherwise a section-index
 // link like `/lms` lights up on every `/lms/*` page (incl. sibling sections).
-function collectPaths(items?: SidebarMenuItem[]): string[] {
+function collectPaths(items?: SidebarMenuItem[]): SidebarLinkPath[] {
   return (items ?? []).flatMap((it) => [
-    ...(it.link ? [it.link] : []),
+    ...(it.link
+      ? [it.link, ...(it.activePaths ?? [])].map((prefix) => ({
+          link: it.link!,
+          prefix,
+        }))
+      : []),
     ...collectPaths(it.items),
   ]);
 }
-const allLinkPaths = computed<string[]>(() => {
-  const out: string[] = [];
-  for (const s of props.menuLinks ?? []) {
-    if (s.link) out.push(s.link);
+const allLinkPaths = computed<SidebarLinkPath[]>(() => {
+  const out: SidebarLinkPath[] = [];
+  const section = (s: { link?: string; items?: SidebarMenuItem[] }) => {
+    if (s.link) out.push({ link: s.link, prefix: s.link });
     out.push(...collectPaths(s.items));
-  }
+  };
+  (props.menuLinks ?? []).forEach(section);
   out.push(...collectPaths(props.topSection?.items));
-  for (const s of props.trailingSections ?? []) {
-    if (s.link) out.push(s.link);
-    out.push(...collectPaths(s.items));
-  }
+  (props.trailingSections ?? []).forEach(section);
   return out;
 });
 provide("sidebarLinkPaths", allLinkPaths);
