@@ -13,7 +13,10 @@
         <AlertDialogCancel @click.stop.prevent="cancel">
           {{ dialogState.cancel }}
         </AlertDialogCancel>
-        <AlertDialogAction @click.stop.prevent="confirm">
+        <AlertDialogAction
+          :variant="dialogState.destructive ? 'destructive' : 'default'"
+          @click.stop.prevent="confirm"
+        >
           {{ dialogState.ok }}
         </AlertDialogAction>
       </AlertDialogFooter>

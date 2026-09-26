@@ -6,6 +6,8 @@ export interface DialogOptions {
   cancel?: string;
   ok?: string;
   persistent?: boolean;
+  /** The OK button destroys something: render it red (`destructive`). */
+  destructive?: boolean;
 }
 
 interface DialogState extends DialogOptions {
@@ -19,6 +21,7 @@ const dialogState = ref<DialogState>({
   cancel: "Cancel",
   ok: "OK",
   persistent: false,
+  destructive: false,
 });
 
 let currentResolve: ((value: boolean) => void) | null = null;
@@ -34,6 +37,7 @@ const dialog = (options: DialogOptions): Promise<boolean> => {
       cancel: options.cancel || "Cancel",
       ok: options.ok || "OK",
       persistent: options.persistent || false,
+      destructive: options.destructive || false,
     };
   });
 };
