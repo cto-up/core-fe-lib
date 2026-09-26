@@ -146,6 +146,7 @@ import {
   producesMedia,
   type Modality,
 } from "./llm-modalities";
+import { readLastUsedLLM } from "./llm-last-used";
 
 export interface LLMStats {
   samples: number;
@@ -246,6 +247,13 @@ const props = withDefaults(
      * one that can.
      */
     providerEndpoint?: string;
+    /**
+     * On an empty value, pick a model once the list is in: the one this
+     * browser last used when it is offered and has a key, else the first model
+     * with a key. For a NEW record only — an existing record's empty value is
+     * the record's, and must not be filled in behind the user's back.
+     */
+    autoSelect?: boolean;
   }>(),
   {
     id: "llm_key",
@@ -260,10 +268,11 @@ const props = withDefaults(
     inputModalities: undefined,
     outputModalities: undefined,
     providerEndpoint: undefined,
+    autoSelect: false,
   }
 );
 
-defineEmits<{
+const emit = defineEmits<{
   (e: "update:modelValue", value: string): void;
 }>();
 
@@ -410,6 +419,21 @@ watch(
   ],
   () => {
     if (props.fetcher) void fetchEntries();
+  },
+  { immediate: true }
+);
+
+watch(
+  () => [props.autoSelect, props.modelValue, groups.value] as const,
+  ([auto, value, gs]) => {
+    if (!auto || value) return;
+    const offered = gs
+      .flatMap((g) => g.models)
+      .filter((m) => m.reachable !== false);
+    if (!offered.length) return;
+    const last = readLastUsedLLM();
+    const pick = offered.find((m) => m.llm_key === last) ?? offered[0];
+    emit("update:modelValue", pick.llm_key);
   },
   { immediate: true }
 );
