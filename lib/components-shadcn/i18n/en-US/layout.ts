@@ -15,6 +15,8 @@ export default {
     menu: "Menu",
     home: "Home",
     login: "Login",
+    themeDark: "Switch to dark theme",
+    themeLight: "Switch to light theme",
   },
   userPanel: {
     roles: "Role(s)",

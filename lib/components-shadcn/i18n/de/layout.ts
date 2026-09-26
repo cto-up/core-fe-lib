@@ -15,6 +15,8 @@ export default {
     menu: "Menü",
     home: "Startseite",
     login: "Anmelden",
+    themeDark: "Zum dunklen Design wechseln",
+    themeLight: "Zum hellen Design wechseln",
   },
   userPanel: {
     roles: "Rolle(n)",

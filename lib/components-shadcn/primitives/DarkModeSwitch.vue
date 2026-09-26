@@ -3,6 +3,9 @@
     variant="ghost"
     size="icon"
     class="h-11 w-11 md:h-10 md:w-10"
+    :aria-label="
+      t(modelValue ? 'layout.header.themeLight' : 'layout.header.themeDark')
+    "
     @click="toggle"
   >
     <Moon v-if="modelValue" class="h-5 w-5" />
@@ -11,11 +14,14 @@
 </template>
 
 <script lang="ts" setup>
+import { useI18n } from "vue-i18n";
 import { Button } from "../ui/button";
 import { Sun, Moon } from "lucide-vue-next";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ "update:modelValue": [value: boolean] }>();
+
+const { t } = useI18n({ useScope: "global" });
 
 const toggle = () => emit("update:modelValue", !props.modelValue);
 </script>
