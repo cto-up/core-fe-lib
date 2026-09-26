@@ -118,7 +118,7 @@
                 class="relative animate-in fade-in slide-in-from-top-1 duration-200"
               >
                 <span
-                  class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono text-sm leading-none"
+                  class="pointer-events-none absolute left-3 top-1/2 z-10 -translate-y-1/2 text-muted-foreground font-mono text-sm leading-none"
                   >#</span
                 >
                 <Input
@@ -289,7 +289,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive, watch, onMounted, onUnmounted } from "vue";
+import { ref, reactive, watch } from "vue";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Label } from "../ui/label";
@@ -500,7 +500,9 @@ function hexToRgb(hex: string) {
 }
 
 function rgbToHsv(r: number, g: number, b: number) {
-  ((r /= 255), (g /= 255), (b /= 255));
+  r /= 255;
+  g /= 255;
+  b /= 255;
   const max = Math.max(r, g, b),
     min = Math.min(r, g, b);
   // h and s are assigned in every branch below, but the switch has no default
@@ -531,7 +533,9 @@ function rgbToHsv(r: number, g: number, b: number) {
 }
 
 function hsvToRgb(h: number, s: number, v: number) {
-  ((h /= 360), (s /= 100), (v /= 100));
+  h /= 360;
+  s /= 100;
+  v /= 100;
   let r = 0,
     g = 0,
     b = 0;
@@ -542,22 +546,34 @@ function hsvToRgb(h: number, s: number, v: number) {
   const t = v * (1 - (1 - f) * s);
   switch (i % 6) {
     case 0:
-      ((r = v), (g = t), (b = p));
+      r = v;
+      g = t;
+      b = p;
       break;
     case 1:
-      ((r = q), (g = v), (b = p));
+      r = q;
+      g = v;
+      b = p;
       break;
     case 2:
-      ((r = p), (g = v), (b = t));
+      r = p;
+      g = v;
+      b = t;
       break;
     case 3:
-      ((r = p), (g = q), (b = v));
+      r = p;
+      g = q;
+      b = v;
       break;
     case 4:
-      ((r = t), (g = p), (b = v));
+      r = t;
+      g = p;
+      b = v;
       break;
     case 5:
-      ((r = v), (g = p), (b = q));
+      r = v;
+      g = p;
+      b = q;
       break;
   }
   return {

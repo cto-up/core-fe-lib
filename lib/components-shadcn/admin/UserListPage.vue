@@ -13,7 +13,7 @@
         <div class="flex items-center gap-2">
           <div class="relative flex-1 sm:flex-none">
             <Search
-              class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+              class="pointer-events-none absolute left-2.5 top-2.5 z-10 h-4 w-4 text-muted-foreground"
             />
             <Input
               v-model="filter"

@@ -29,7 +29,7 @@
         <div class="border-b p-2">
           <div class="relative">
             <Search
-              class="absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+              class="pointer-events-none absolute left-2 top-1/2 z-10 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
             />
             <Input
               v-model="query"

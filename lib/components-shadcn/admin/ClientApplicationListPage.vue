@@ -11,7 +11,7 @@
         <div class="flex items-center gap-2">
           <div class="relative">
             <Search
-              class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+              class="pointer-events-none absolute left-2.5 top-2.5 z-10 h-4 w-4 text-muted-foreground"
             />
             <Input
               v-model="filter"
@@ -177,40 +177,8 @@ const { handleError } = useErrors();
 
 const rows = ref<ClientApplication[]>([]);
 const loading = ref(false);
-const { currentQuery, setQueryParam, pagination, goToPreviousPage } =
-  useQueryParams();
+const { currentQuery, setQueryParam, pagination } = useQueryParams();
 const filter = ref("");
-
-const columns = [
-  {
-    name: "name",
-    align: "left",
-    label: t("core.clientApplication.fields.name"),
-    field: "name",
-    sortable: true,
-  },
-  {
-    name: "description",
-    align: "left",
-    label: t("core.clientApplication.fields.description"),
-    field: "description",
-    sortable: true,
-  },
-  {
-    name: "active",
-    align: "left",
-    label: t("core.clientApplication.fields.active"),
-    field: "active",
-    sortable: true,
-  },
-  {
-    name: "last_used",
-    align: "left",
-    label: t("core.clientApplication.fields.lastUsed"),
-    field: "last_used",
-    sortable: true,
-  },
-];
 
 const listService: ListService<ClientApplication> = {
   listService(
@@ -285,7 +253,7 @@ const deleteClientApplication = async (id: string, name: string) => {
     .then(() => {
       onRequest({ pagination: pagination.value, getCellValue });
     })
-    .catch((err: any) => {
+    .catch((err) => {
       handleError(err);
     });
 };
