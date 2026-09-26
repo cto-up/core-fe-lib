@@ -137,7 +137,9 @@
         <div class="space-y-2">
           <Label for="email">{{ $t("auth.signUp.emailLabel") }}</Label>
           <div class="relative">
-            <Mail class="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Mail
+              class="pointer-events-none absolute left-3 top-3 z-10 h-4 w-4 text-muted-foreground"
+            />
             <Input
               id="email"
               v-model="email"

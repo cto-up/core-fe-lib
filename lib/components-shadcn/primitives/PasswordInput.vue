@@ -37,7 +37,9 @@ const toggleVisibility = () => {
     </Label>
 
     <div class="relative">
-      <Lock class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+      <Lock
+        class="pointer-events-none absolute left-2.5 top-2.5 z-10 h-4 w-4 text-muted-foreground"
+      />
 
       <Input
         :id="id"
