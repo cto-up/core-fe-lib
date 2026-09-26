@@ -11,13 +11,13 @@
       </AlertDialogHeader>
       <AlertDialogFooter>
         <AlertDialogCancel @click.stop.prevent="cancel">
-          {{ dialogState.cancel }}
+          {{ dialogState.cancel || t("actions.cancel") }}
         </AlertDialogCancel>
         <AlertDialogAction
           :variant="dialogState.destructive ? 'destructive' : 'default'"
           @click.stop.prevent="confirm"
         >
-          {{ dialogState.ok }}
+          {{ dialogState.ok || t("actions.confirm") }}
         </AlertDialogAction>
       </AlertDialogFooter>
     </AlertDialogContent>
@@ -25,6 +25,7 @@
 </template>
 
 <script lang="ts" setup>
+import { useI18n } from "vue-i18n";
 import { useDialog } from "../composables/useDialog";
 import {
   AlertDialog,
@@ -37,6 +38,7 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 
+const { t } = useI18n();
 const { dialogState, confirm, cancel } = useDialog();
 
 const onPointerDownOutside = (event: Event) => {

@@ -152,14 +152,7 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import {
-  Search,
-  Plus,
-  Loader2,
-  Trash2,
-  UserMinus,
-  ArrowLeft,
-} from "lucide-vue-next";
+import { Search, Plus, Loader2, UserMinus, ArrowLeft } from "lucide-vue-next";
 import BPagination from "../primitives/BPagination.vue";
 
 const props = withDefaults(
@@ -182,33 +175,8 @@ const router = useRouter();
 const { handleError } = useErrors();
 const rows = ref<User[]>([]);
 const loading = ref(false);
-const { currentQuery, setQueryParam, pagination, goToPreviousPage } =
-  useQueryParams();
+const { currentQuery, setQueryParam, pagination } = useQueryParams();
 const filter = ref("");
-
-const columns = [
-  {
-    name: "name",
-    align: "left",
-    label: t("core.user.fields.name"),
-    field: "name",
-    sortable: true,
-  },
-  {
-    name: "email",
-    align: "left",
-    label: t("core.user.fields.email"),
-    field: "email",
-    sortable: true,
-  },
-  {
-    name: "roles",
-    align: "left",
-    label: t("core.user.fields.roles"),
-    field: "roles",
-    sortable: true,
-  },
-];
 
 const tenant = ref<Tenant>();
 
@@ -287,9 +255,10 @@ const onCreate = () => {
 };
 const removeUserFromTenant = async (id: string, name: string) => {
   const confirmed = await dialog({
-    message: `Remove ${name} from this tenant? They will lose access but their account will remain active in other tenants.`,
-    cancel: t("actions.cancel"),
-    ok: "Remove from Tenant",
+    message: t("core.user.actions.removeFromTenantConfirm", {
+      name,
+    }),
+    ok: t("core.user.actions.removeFromTenant"),
   });
 
   if (!confirmed) return;
@@ -301,25 +270,7 @@ const removeUserFromTenant = async (id: string, name: string) => {
     .then(() => {
       onRequest({ pagination: pagination.value, getCellValue });
     })
-    .catch((err: any) => {
-      handleError(err);
-    });
-};
-
-const deleteUser = async (id: string, name: string) => {
-  const confirmed = await dialog({
-    message: t("core.user.actions.delete.confirm", { name: name }),
-    cancel: t("actions.cancel"),
-    ok: t("actions.delete"),
-  });
-
-  if (!confirmed) return;
-
-  DefaultService.deleteUserFromSuperAdmin(id, route.params.tenantid as string)
-    .then(() => {
-      onRequest({ pagination: pagination.value, getCellValue });
-    })
-    .catch((err: any) => {
+    .catch((err) => {
       handleError(err);
     });
 };

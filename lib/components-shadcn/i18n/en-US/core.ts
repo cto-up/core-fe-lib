@@ -265,6 +265,8 @@ export default {
         confirm: "Are you sure you want to delete user {name}?",
       },
       removeFromTenant: "Remove from Tenant",
+      removeFromTenantConfirm:
+        "Remove {name} from this tenant? They lose access here, but their account stays active in other tenants.",
       checkEmail: "Check",
       checking: "Checking...",
     },

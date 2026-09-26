@@ -267,6 +267,8 @@ export default {
         confirm: "Êtes-vous sûr de vouloir supprimer l'utilisateur {name} ?",
       },
       removeFromTenant: "Retirer du Tenant",
+      removeFromTenantConfirm:
+        "Retirer {name} de ce tenant ? Il perd l’accès ici, mais son compte reste actif dans les autres tenants.",
       checkEmail: "Vérifier",
       checking: "Vérification...",
     },

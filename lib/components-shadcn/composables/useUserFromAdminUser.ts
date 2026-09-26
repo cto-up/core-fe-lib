@@ -4,6 +4,7 @@ import {
   type User,
   type NewUser,
   type UserProfileSchema,
+  type Role,
 } from "../../openapi/core";
 import { ref, reactive, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -83,7 +84,9 @@ export function useUser() {
       userChecked.value = true;
 
       if (response.exists && response.user) {
-        userExists.value = response.user as any;
+        userExists.value = response.user as NonNullable<
+          typeof userExists.value
+        >;
         user.email = response.user.email || "";
         user.name = response.user.name || "";
         user.id = response.user.id || "";
@@ -225,7 +228,7 @@ export function useUser() {
           tenantId,
           userExists.value.id,
           {
-            roles: user.roles as any,
+            roles: user.roles as Role[],
           }
         );
         user.id = addedUser.id;
@@ -315,9 +318,10 @@ export function useUser() {
 
   const removeUserFromTenant = async () => {
     const confirmed = await dialog({
-      message: `Remove ${user.name} from this tenant? They will lose access but their account will remain active in other tenants.`,
-      cancel: t("actions.cancel"),
-      ok: "Remove from Tenant",
+      message: t("core.user.actions.removeFromTenantConfirm", {
+        name: user.name,
+      }),
+      ok: t("core.user.actions.removeFromTenant"),
     });
 
     if (!confirmed) return;

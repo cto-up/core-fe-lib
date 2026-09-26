@@ -3,7 +3,9 @@ import { ref } from "vue";
 export interface DialogOptions {
   message: string;
   title?: string;
+  /** Defaults to the translated `actions.cancel`. */
   cancel?: string;
+  /** Defaults to the translated `actions.confirm`; prefer a verb ("Remove"). */
   ok?: string;
   persistent?: boolean;
   /** The OK button destroys something: render it red (`destructive`). */
@@ -18,8 +20,8 @@ const dialogState = ref<DialogState>({
   show: false,
   message: "",
   title: "",
-  cancel: "Cancel",
-  ok: "OK",
+  cancel: "",
+  ok: "",
   persistent: false,
   destructive: false,
 });
@@ -34,8 +36,8 @@ const dialog = (options: DialogOptions): Promise<boolean> => {
     dialogState.value = {
       ...options,
       show: true,
-      cancel: options.cancel || "Cancel",
-      ok: options.ok || "OK",
+      cancel: options.cancel || "",
+      ok: options.ok || "",
       persistent: options.persistent || false,
       destructive: options.destructive || false,
     };

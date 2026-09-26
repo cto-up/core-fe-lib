@@ -241,6 +241,8 @@ export default {
         confirm: "Möchten Sie den Benutzer {name} wirklich löschen?",
       },
       removeFromTenant: "Aus Mandant entfernen",
+      removeFromTenantConfirm:
+        "{name} aus diesem Mandanten entfernen? Der Zugriff hier endet, das Konto bleibt in anderen Mandanten aktiv.",
       checkEmail: "Prüfen",
       checking: "Wird geprüft...",
     },

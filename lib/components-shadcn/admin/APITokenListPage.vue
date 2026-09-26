@@ -312,7 +312,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Switch } from "../ui/switch";
 import { Badge } from "../ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent } from "../ui/card";
 import {
   Table,
   TableBody,
@@ -324,7 +324,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -338,7 +337,6 @@ import {
 import DatePicker from "../ui/date-picker/DatePicker.vue"; // Assuming you have a DatePicker component
 import MultiSelect from "../ui/multi-select/MultiSelect.vue";
 import {
-  Search,
   Plus,
   Loader2,
   Trash2,
@@ -347,7 +345,6 @@ import {
   MoreHorizontal,
 } from "lucide-vue-next";
 import BPagination from "../primitives/BPagination.vue";
-import { required } from "@vuelidate/validators";
 
 const route = useRoute();
 const { toast } = useToast();
@@ -368,49 +365,7 @@ const createdToken = ref<{ token: string } | null>(null);
 
 const availableScopes = ["read", "write", "admin"]; // Add your actual scopes here
 
-const columns = [
-  {
-    name: "name",
-    required: true,
-    label: "Name",
-    align: "left",
-    field: "name",
-    sortable: true,
-  },
-  {
-    name: "description",
-    label: "Description",
-    align: "left",
-    field: "description",
-  },
-  {
-    name: "tokenPrefix",
-    label: "Token Prefix",
-    align: "left",
-    field: "tokenPrefix",
-  },
-  {
-    name: "expiresAt",
-    label: "Expires At",
-    align: "left",
-    field: "expiresAt",
-    sortable: true,
-  },
-  {
-    name: "status",
-    label: "Status",
-    align: "left",
-    field: "revoked",
-  },
-  {
-    name: "actions",
-    label: "Actions",
-    align: "right",
-    field: "actions",
-  },
-];
-
-const { setQueryParam, pagination, goToPreviousPage } = useQueryParams();
+const { setQueryParam, pagination } = useQueryParams();
 
 const filter = ref("");
 const includeRevoked = ref(false);
@@ -518,11 +473,10 @@ const revokeToken = async () => {
 
 const confirmDelete = async (token: APIToken) => {
   const confirmed = await dialog({
-    title: "Confirm Deletion",
-    message: `Are you sure you want to delete the token "${token.name}"?`,
-    cancel: "Cancel",
-    ok: "Delete",
+    message: t("core.apiToken.actions.delete.confirm", { name: token.name }),
+    ok: t("actions.delete"),
     persistent: true,
+    destructive: true,
   });
 
   if (!confirmed) return;

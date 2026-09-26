@@ -241,6 +241,8 @@ export default {
         confirm: "Tem a certeza de que pretende eliminar o utilizador {name}?",
       },
       removeFromTenant: "Remover do inquilino",
+      removeFromTenantConfirm:
+        "Remover {name} deste inquilino? Perde o acesso aqui, mas a conta continua ativa noutros inquilinos.",
       checkEmail: "Verificar",
       checking: "A verificar...",
     },
