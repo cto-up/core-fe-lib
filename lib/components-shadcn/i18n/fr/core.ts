@@ -138,7 +138,7 @@ export default {
     name: "Configuration Tenant",
     home: {
       title: "Configurations Tenant",
-      createLabel: "Créez une Configuration Tenant",
+      createLabel: "Créer une configuration tenant",
     },
     detail: {
       title: "Configuration Tenant",
@@ -149,7 +149,7 @@ export default {
     },
     actions: {
       delete: {
-        label: "Supprimez",
+        label: "Supprimer",
         confirm:
           "Etes-vous sûr de vouloir supprimer la configuration tenant %{name}?",
       },
@@ -159,7 +159,7 @@ export default {
     name: "Tenant",
     home: {
       title: "Tenants",
-      createLabel: "Créez un Tenant",
+      createLabel: "Créer un tenant",
     },
     detail: {
       title: "Tenant",
@@ -174,7 +174,7 @@ export default {
     },
     actions: {
       delete: {
-        label: "Supprimez",
+        label: "Supprimer",
         confirm: "Etes-vous sûr de vouloir supprimer le tenant %{name}?",
       },
     },
@@ -192,7 +192,7 @@ export default {
     name: "Nom",
     home: {
       title: "Clients",
-      createLabel: "Créez Client",
+      createLabel: "Créer un client",
     },
     detail: {
       title: "Client",
@@ -202,7 +202,7 @@ export default {
     },
     actions: {
       delete: {
-        label: "Supprimez",
+        label: "Supprimer",
         confirm: "Êtes-vous sur de vouloir supprimer le client %{name}?",
       },
     },
@@ -210,7 +210,7 @@ export default {
   user: {
     home: {
       title: "Utilisateurs",
-      createLabel: "Créez",
+      createLabel: "Créer",
     },
     detail: {
       title: "Utilisateur",

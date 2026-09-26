@@ -103,9 +103,9 @@ describe("GlobalDialog", () => {
   it("keeps the labels a caller passes", async () => {
     i18n.global.locale.value = "fr";
     wrapper = mountDialog();
-    void useDialog().confirmDialog({ message: "x", ok: "Retirez" });
+    void useDialog().confirmDialog({ message: "x", ok: "Retirer" });
     await nextTick();
     await nextTick();
-    expect(buttonLabels()).toEqual([frActions.cancel, "Retirez"]);
+    expect(buttonLabels()).toEqual([frActions.cancel, "Retirer"]);
   });
 });
