@@ -43,7 +43,10 @@ describe("a failed fetch does NOT sign the user out", () => {
   // of these as a sign-out.
   const failures: Array<[string, unknown]> = [
     ["a fetch TypeError", new TypeError("Failed to fetch")],
-    ["an axios network error", { code: "ERR_NETWORK", message: "Network Error" }],
+    [
+      "an axios network error",
+      { code: "ERR_NETWORK", message: "Network Error" },
+    ],
     ["a timeout", { code: "ECONNABORTED", message: "timeout" }],
     ["a 500", { response: { status: 500 } }],
     ["a 502", { response: { status: 502 } }],
