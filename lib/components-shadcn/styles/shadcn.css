@@ -35,7 +35,7 @@
 
     /* Errors are orange, not red. Red belongs to `destructive` — the button
        that is about to destroy something — so it keeps its alarm value. */
-    --error: 24 95% 42%;
+    --error: 24 95% 37%;
     --error-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
