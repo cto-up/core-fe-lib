@@ -39,9 +39,15 @@ function onClick(e: MouseEvent) {
     return;
   // Selecting text to copy it ends in a click; that is not an open.
   if (window.getSelection()?.toString()) return;
+  // The path as dispatched, not the live DOM: a control that re-renders on
+  // its own click (a Test button swapping its icon for a spinner) has left
+  // the tree by the time the click bubbles here, and closest() from a
+  // detached node finds nothing.
   const row = e.currentTarget as HTMLElement;
-  const hit = (e.target as HTMLElement | null)?.closest(INTERACTIVE);
-  if (hit && hit !== row && row.contains(hit)) return;
+  for (const el of e.composedPath()) {
+    if (el === row) break;
+    if (el instanceof Element && el.matches(INTERACTIVE)) return;
+  }
   emit("activate", e);
 }
 
