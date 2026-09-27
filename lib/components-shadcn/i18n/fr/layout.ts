@@ -3,6 +3,9 @@ export default {
     close: "Fermer",
     install: "Installer l'application",
     referenceData: "Données de référence",
+    // The Settings sub-group of platform-level pages (seed data, tool
+    // catalog). Not "Administration": that is the section at the bottom.
+    platform: "Plateforme",
     administration: "Administration",
     management: "Pilotage",
   },

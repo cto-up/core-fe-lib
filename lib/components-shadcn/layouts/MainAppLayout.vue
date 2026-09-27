@@ -377,7 +377,7 @@ const defaultSubGroups = (): SidebarSubGroup[] => [
   {
     linkType: "ADMIN",
     iconComponent: Settings,
-    label: t("layout.menu.administration"),
+    label: t("layout.menu.platform"),
     requiredPrivilege: Role.ADMIN,
   },
   {
