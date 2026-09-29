@@ -264,6 +264,7 @@
 
 <script lang="ts" setup>
 import { onMounted, ref, provide } from "vue";
+import { useRoute } from "vue-router";
 import { useUrl } from "../../composables/useUrl";
 import { useUser } from "../composables/useUser";
 
@@ -361,7 +362,14 @@ const onSubmit = async () => {
   }
 };
 
+// ?email= prefills the add-user form, so a page that found an unknown email
+// can hand it over (lms "Add to academy").
+const route = useRoute();
+
 onMounted(() => {
+  const prefill = route.query.email;
+  if (typeof prefill === "string" && !route.params.id)
+    emailInput.value = prefill;
   fetchUser()
     .then(() => {
       loading.value = false;
