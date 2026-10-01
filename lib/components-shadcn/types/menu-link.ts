@@ -1,6 +1,10 @@
 import { type Role } from "../../openapi/core/models/Role";
 
 export interface MenuItem {
+  /** Stable identity for the row's key and open state. Set it on generated
+   *  rows (one per record) — two records may share a title. Defaults to the
+   *  title. */
+  id?: string;
   title: string;
   caption?: string;
   icon?: string;

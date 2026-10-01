@@ -187,6 +187,8 @@ import { useSidebarSectionState } from "../composables/useSidebarSectionState";
 import type { SidebarLinkPath } from "./SidebarLink.vue";
 
 export interface SidebarMenuItem {
+  /** Row identity for key + open state (see MenuItem.id). */
+  id?: string;
   title: string;
   caption?: string;
   icon?: string;
