@@ -133,7 +133,7 @@ export default {
     dayStepHint:
       "O passo de dias reinicia no dia 1 de cada mês, pelo que o intervalo na mudança de mês pode ser mais curto.",
     atMinute: "Ao minuto (0–59)",
-    atTime: "À hora",
+    atTime: "À hora (UTC)",
     onDays: "Nestes dias",
     dayOfMonth: "Dia do mês (1–31)",
     customPatternHint:

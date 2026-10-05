@@ -131,7 +131,7 @@ export default {
     dayStepHint:
       "Day steps restart on the 1st of each month, so the gap across a month boundary can be shorter.",
     atMinute: "At minute (0–59)",
-    atTime: "At time",
+    atTime: "At time (UTC)",
     onDays: "On these days",
     dayOfMonth: "Day of month (1–31)",
     customPatternHint:

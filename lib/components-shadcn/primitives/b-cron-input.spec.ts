@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { flushPromises, mount } from "@vue/test-utils";
 import { createI18n } from "vue-i18n";
 import BCronInput from "./BCronInput.vue";
@@ -46,10 +46,10 @@ describe("BCronInput friendly mode", () => {
     ["0 */15 * * * *", "Runs every 15 minutes"],
     ["0 30 * * * *", "Runs every hour at :30"],
     ["0 15 */4 * * *", "Runs every 4 hours at :15"],
-    ["0 0 8 * * *", "Runs every day at 08:00"],
-    ["0 0 8 */3 * *", "Runs every 3 days at 08:00"],
-    ["0 30 9 * * 1,3", "Runs every Monday, Wednesday at 09:30"],
-    ["0 0 12 15 * *", "Runs on the 15th of every month at 12:00"],
+    ["0 0 8 * * *", "Runs every day at 08:00 UTC"],
+    ["0 0 8 */3 * *", "Runs every 3 days at 08:00 UTC"],
+    ["0 30 9 * * 1,3", "Runs every Monday, Wednesday at 09:30 UTC"],
+    ["0 0 12 15 * *", "Runs on the 15th of every month at 12:00 UTC"],
   ])("describes %s", async (expr, expected) => {
     expect(preview(await mountCron(expr))).toBe(expected);
   });
@@ -59,7 +59,7 @@ describe("BCronInput friendly mode", () => {
     await intervalInput(w).setValue(5);
     await flushPromises();
     expect(lastEmit(w)).toBe("0 0 8 */5 * *");
-    expect(preview(w)).toBe("Runs every 5 days at 08:00");
+    expect(preview(w)).toBe("Runs every 5 days at 08:00 UTC");
   });
 
   it("rebuilds the hour step when the interval changes", async () => {
@@ -88,7 +88,41 @@ describe("BCronInput friendly mode", () => {
     expect(lastEmit(w)).toBe("0 0 8 */2 * *");
 
     await selectTab(w, 0);
-    expect(preview(w)).toBe("Runs every 2 days at 08:00");
+    expect(preview(w)).toBe("Runs every 2 days at 08:00 UTC");
+  });
+
+  describe("local time", () => {
+    const tz = process.env.TZ;
+    const local = (w: Wrapper) => w.find(".b-cron-local");
+    afterEach(() => {
+      process.env.TZ = tz;
+    });
+
+    it("shows where the UTC time lands on the viewer's clock", async () => {
+      process.env.TZ = "Asia/Kolkata";
+      const w = await mountCron("0 30 11 * * *");
+      expect(local(w).text()).toMatch(
+        /^17:00 your time \(Asia\/(Kolkata|Calcutta)\)$/
+      );
+    });
+
+    it("flags a schedule that falls on another local day", async () => {
+      process.env.TZ = "America/Los_Angeles";
+      const w = await mountCron("0 0 2 * * 1");
+      expect(local(w).text()).toMatch(
+        /^1[89]:00 your time \(America\/Los_Angeles\), the day before$/
+      );
+    });
+
+    it("stays silent when the viewer is on UTC", async () => {
+      process.env.TZ = "UTC";
+      expect(local(await mountCron("0 30 11 * * *")).exists()).toBe(false);
+    });
+
+    it("stays silent for interval schedules", async () => {
+      process.env.TZ = "Asia/Kolkata";
+      expect(local(await mountCron("0 */15 * * * *")).exists()).toBe(false);
+    });
   });
 
   it("falls back to the Simple tab for an expression it can't describe", async () => {

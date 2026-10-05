@@ -170,6 +170,12 @@
             <CalendarClock class="h-5 w-5 text-primary flex-shrink-0" />
             <div class="min-w-0">
               <p class="font-medium text-sm">{{ friendlyPreview }}</p>
+              <p
+                v-if="localPreview"
+                class="b-cron-local text-xs text-muted-foreground"
+              >
+                {{ localPreview }}
+              </p>
               <code class="text-xs text-muted-foreground">{{
                 cronExpression
               }}</code>
@@ -829,7 +835,7 @@ function ordinal(n: number): string {
 }
 
 const friendlyPreview = computed(() => {
-  const time = `${pad2(timeHour.value)}:${pad2(timeMinute.value)}`;
+  const time = `${pad2(timeHour.value)}:${pad2(timeMinute.value)} UTC`;
   switch (frequency.value) {
     case "minutes":
       return everyNMinutes.value <= 1
@@ -857,6 +863,39 @@ const friendlyPreview = computed(() => {
       return `Runs on the ${ordinal(dayOfMonth.value)} of every month at ${time}`;
   }
   return "";
+});
+
+// The scheduler evaluates expressions in UTC; show the viewer where a
+// fixed-time schedule lands on their own clock, including a day rollover.
+const localPreview = computed(() => {
+  if (!["daily", "days", "weekly", "monthly"].includes(frequency.value)) {
+    return "";
+  }
+  const now = new Date();
+  const at = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      timeHour.value,
+      timeMinute.value
+    )
+  );
+  const dayShift =
+    (Date.UTC(at.getFullYear(), at.getMonth(), at.getDate()) -
+      Date.UTC(at.getUTCFullYear(), at.getUTCMonth(), at.getUTCDate())) /
+    86_400_000;
+  const local = `${pad2(at.getHours())}:${pad2(at.getMinutes())}`;
+  if (
+    dayShift === 0 &&
+    local === `${pad2(timeHour.value)}:${pad2(timeMinute.value)}`
+  ) {
+    return "";
+  }
+  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const day =
+    dayShift > 0 ? ", the next day" : dayShift < 0 ? ", the day before" : "";
+  return `${local} your time (${zone})${day}`;
 });
 
 function toggleWeekday(i: number) {

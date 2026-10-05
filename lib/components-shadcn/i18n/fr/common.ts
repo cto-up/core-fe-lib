@@ -132,7 +132,7 @@ export default {
     dayStepHint:
       "Le pas de jours repart le 1er de chaque mois : l'écart au changement de mois peut donc être plus court.",
     atMinute: "À la minute (0–59)",
-    atTime: "À l'heure",
+    atTime: "À l'heure (UTC)",
     onDays: "Ces jours",
     dayOfMonth: "Jour du mois (1–31)",
     customPatternHint:

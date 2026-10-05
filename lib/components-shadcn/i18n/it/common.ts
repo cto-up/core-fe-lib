@@ -131,7 +131,7 @@ export default {
     dayStepHint:
       "Il passo dei giorni riparte il 1° di ogni mese, quindi l'intervallo a cavallo di un mese può essere più breve.",
     atMinute: "Al minuto (0–59)",
-    atTime: "All'ora",
+    atTime: "All'ora (UTC)",
     onDays: "Questi giorni",
     dayOfMonth: "Giorno del mese (1–31)",
     customPatternHint:

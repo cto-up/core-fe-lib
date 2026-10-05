@@ -131,7 +131,7 @@ export default {
     dayStepHint:
       "Der Tagesschritt beginnt am 1. jedes Monats neu — der Abstand über einen Monatswechsel hinweg kann daher kürzer sein.",
     atMinute: "Zur Minute (0–59)",
-    atTime: "Zur Uhrzeit",
+    atTime: "Zur Uhrzeit (UTC)",
     onDays: "An diesen Tagen",
     dayOfMonth: "Tag des Monats (1–31)",
     customPatternHint:
