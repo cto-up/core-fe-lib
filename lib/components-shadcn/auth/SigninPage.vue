@@ -67,7 +67,10 @@
              account — sign in below to add Google as another way in". Dropping
              them leaves the user staring at a bare form after a failed social
              sign-in, with no idea why. -->
-        <div class="grid gap-4" :hidden="!flowMessages.length">
+        <div
+          class="grid gap-4 [&[hidden]]:hidden"
+          :hidden="!flowMessages.length"
+        >
           <div
             v-for="message in flowMessages"
             :key="message.id"
@@ -88,8 +91,14 @@
              Wrapped in an always-mounted element rather than a `<template v-if>`
              for the reason spelled out in SignupPage.vue: these arrive after
              mount, and inserting them before an anchor captured at first render
-             crashes the renderer once anything else has touched the DOM. -->
-        <div class="grid gap-4" :hidden="!oidcProviders.length">
+             crashes the renderer once anything else has touched the DOM.
+             `[&[hidden]]:hidden` because `grid` sets display and so beats the
+             UA's `[hidden]` rule: without it the "OR" divider showed with no
+             provider above it (lms#111). -->
+        <div
+          class="grid gap-4 [&[hidden]]:hidden"
+          :hidden="!oidcProviders.length"
+        >
           <Button
             v-for="provider in oidcProviders"
             :key="provider.value"
