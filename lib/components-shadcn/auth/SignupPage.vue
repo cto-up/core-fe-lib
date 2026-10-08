@@ -75,12 +75,16 @@
       class="relative z-10 w-full max-w-md backdrop-blur-sm bg-card/80"
     >
       <CardHeader class="text-center">
-        <CardTitle class="text-2xl font-bold">
-          {{ $t("auth.signUp.title") }}
-        </CardTitle>
-        <CardDescription>
-          {{ $t("auth.signUp.subtitle") }}
-        </CardDescription>
+        <!-- A consumer that knows why the visitor is here (a course they were
+             about to start) replaces the generic heading with that context. -->
+        <slot name="header">
+          <CardTitle class="text-2xl font-bold">
+            {{ $t("auth.signUp.title") }}
+          </CardTitle>
+          <CardDescription>
+            {{ $t("auth.signUp.subtitle") }}
+          </CardDescription>
+        </slot>
       </CardHeader>
 
       <CardContent class="space-y-4">
