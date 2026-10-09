@@ -97,9 +97,11 @@
 
       <!-- Page Content. The bottom padding clears the phone tab bar AND the
            home indicator behind it; without it the last card of every list sits
-           under the bar and cannot be reached. -->
+           under the bar and cannot be reached. The top offset is padding, not
+           margin: a margin collapses out through min-h-screen and leaves every
+           page 4rem taller than the window. -->
       <main
-        class="mt-16 mx-auto flex flex-col items-center"
+        class="pt-16 mx-auto flex flex-col items-center"
         :class="
           showMobileTabs
             ? 'pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0'
