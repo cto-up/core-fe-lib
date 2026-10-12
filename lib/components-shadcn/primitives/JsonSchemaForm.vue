@@ -63,7 +63,7 @@
           <input
             :id="`jsf-${field.name}`"
             type="checkbox"
-            :checked="Boolean(configValue(field.name))"
+            :checked="checkedValue(field)"
             @change="
               (e) =>
                 setConfig(field.name, (e.target as HTMLInputElement).checked)
@@ -98,7 +98,10 @@
           "
         />
 
-        <p v-if="field.description" class="text-xs text-muted-foreground">
+        <p
+          v-if="field.description && field.type !== 'boolean'"
+          class="text-xs text-muted-foreground"
+        >
           {{ field.description }}
         </p>
       </template>
@@ -211,6 +214,14 @@ const fields = computed<FieldDef[]>(() => {
 function configValue(name: string): string | number | undefined {
   const v = props.modelValue?.config?.[name];
   return typeof v === "string" || typeof v === "number" ? v : undefined;
+}
+
+// configValue narrows to what an Input renders, which drops booleans. An unset
+// field shows the schema default — what the backend applies when it is absent.
+function checkedValue(field: FieldDef): boolean {
+  const v = props.modelValue?.config?.[field.name];
+  if (typeof v === "boolean") return v;
+  return (field.schema as { default?: unknown })?.default === true;
 }
 
 function secretRefValue(name: string): string | null {
