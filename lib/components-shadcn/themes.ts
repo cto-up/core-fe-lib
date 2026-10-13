@@ -90,8 +90,8 @@ export function hexToHsl(hex: string): string {
   const max = Math.max(r, g, b),
     min = Math.min(r, g, b);
   let h = 0,
-    s = 0,
-    l = (max + min) / 2;
+    s = 0;
+  const l = (max + min) / 2;
 
   if (max !== min) {
     const d = max - min;
@@ -113,6 +113,24 @@ export function hexToHsl(hex: string): string {
   return `${(h * 360).toFixed(1)} ${(s * 100).toFixed(1)}% ${(l * 100).toFixed(
     1
   )}%`;
+}
+
+// The brand colour is also text — the sidebar's active item, links. On the
+// dark background one darker than this disappears (a tenant's near-black dark
+// primary hid both), so it is lifted, keeping its hue and saturation.
+const MIN_DARK_PRIMARY_LIGHTNESS = 55;
+
+export function readablePrimary(color: string, isDark: boolean): string {
+  const hsl = color.includes("%") ? color : hexToHsl(color);
+  const [h, s, l] = hsl.split(/\s+/);
+  const lightness = Number.parseFloat(l);
+  if (
+    !isDark ||
+    Number.isNaN(lightness) ||
+    lightness >= MIN_DARK_PRIMARY_LIGHTNESS
+  )
+    return color;
+  return hslToHex(`${h} ${s} ${MIN_DARK_PRIMARY_LIGHTNESS + 5}%`);
 }
 
 export function applyTheme(colors: Record<string, string>) {
@@ -173,6 +191,9 @@ export function applyTheme(colors: Record<string, string>) {
     existingStyle.remove();
     console.log("🗑️ Removed existing tenant theme");
   }
+
+  if (colors.primary)
+    colors = { ...colors, primary: readablePrimary(colors.primary, isDark) };
 
   // Create CSS rules for the current mode
   const cssRules: string[] = [];
