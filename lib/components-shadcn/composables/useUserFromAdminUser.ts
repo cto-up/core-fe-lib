@@ -176,7 +176,17 @@ export function useUser() {
     },
   };
 
-  const rules = computed(() => (isNew.value ? newUserRules : userRules));
+  // Adding someone who already exists only sends roles: their name and email
+  // are theirs, shown locked, and an empty profile name must not block it.
+  const addingExisting = computed(
+    () => !!userExists.value && !userExists.value.isMemberOfTenant
+  );
+  const existingUserRules = { name: {}, email: {} };
+
+  const rules = computed(() => {
+    if (addingExisting.value) return existingUserRules;
+    return isNew.value ? newUserRules : userRules;
+  });
   const v$ = useVuelidate(rules, user);
 
   const fetchUser = async () => {

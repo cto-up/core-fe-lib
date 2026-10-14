@@ -105,6 +105,7 @@
               id="name"
               v-model="user.name"
               :disabled="userExists !== null"
+              :placeholder="userExists ? $t('core.user.fields.noName') : ''"
               :class="{ 'border-error': (v$ as any).name.$error }"
               @keydown.enter.prevent
             />

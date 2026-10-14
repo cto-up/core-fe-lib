@@ -103,6 +103,7 @@
               id="name"
               v-model="user.name"
               :disabled="userExists !== null"
+              :placeholder="userExists ? $t('core.user.fields.noName') : ''"
               :class="{ 'border-error': (v$ as any).name.$error }"
               @keydown.enter.prevent
             />
@@ -266,7 +267,6 @@ import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import {
   Save,
   ArrowLeft,
-  Trash2,
   MoreVertical,
   CheckCircle,
   AlertCircle,
@@ -290,7 +290,6 @@ const {
   userExists,
   checkUserExists,
   saveUser,
-  deleteUser,
   removeUserFromTenant,
   fetchUser,
   requestPasswordResetBySuperAdmin,

@@ -4,6 +4,7 @@ import {
   type User,
   type NewUser,
   type UserProfileSchema,
+  type Role,
 } from "../../openapi/core";
 import { ref, reactive, computed, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -143,7 +144,15 @@ export function useUser() {
     },
   };
 
+  // Adding someone who already exists only sends roles: their name and email
+  // are theirs, shown locked, and an empty profile name must not block it.
+  const addingExisting = computed(
+    () => !!userExists.value && !userExists.value.isMemberOfCurrentTenant
+  );
+  const existingUserRules = { name: {}, email: {} };
+
   const rules = computed(() => {
+    if (addingExisting.value) return existingUserRules;
     return !user.id ? newUserRules : userRules;
   });
 
@@ -177,7 +186,14 @@ export function useUser() {
       userChecked.value = true;
 
       if (response.exists && response.user) {
-        userExists.value = response.user as any;
+        const found = response.user;
+        userExists.value = {
+          id: found.id ?? "",
+          name: found.name ?? "",
+          email: found.email ?? "",
+          tenantCount: found.tenantCount ?? 0,
+          isMemberOfCurrentTenant: found.isMemberOfCurrentTenant ?? false,
+        };
         user.email = response.user.email || "";
         user.name = response.user.name || "";
         user.id = response.user.id || "";
@@ -257,7 +273,7 @@ export function useUser() {
         const addedUser = await DefaultService.addUserMembership(
           userExists.value.id,
           {
-            roles: user.roles as any,
+            roles: user.roles as Role[],
           }
         );
         user.id = addedUser.id;
@@ -280,7 +296,7 @@ export function useUser() {
         // role" (backend: attachGlobalRolesToExistingUser).
         const newUser = await DefaultService.addUser({
           ...user,
-          roles: user.roles as any,
+          roles: user.roles as Role[],
         } as NewUser);
         user.id = newUser.id;
 
@@ -293,7 +309,7 @@ export function useUser() {
         // Update existing user
         await DefaultService.updateUser(user.id, {
           ...user,
-          roles: user.roles as any,
+          roles: user.roles as Role[],
         } as User);
 
         toast({

@@ -220,6 +220,7 @@ export default {
     },
     fields: {
       name: "Nombre",
+      noName: "Sin nombre",
       email: "Correo electrónico",
       password: "Contraseña",
       roles: "Roles",
