@@ -4,6 +4,7 @@
     <Select
       :model-value="modelValue"
       @update:model-value="$emit('update:modelValue', $event)"
+      @update:open="onOpen"
     >
       <SelectTrigger :id="id" class="w-full">
         <SelectValue
@@ -376,9 +377,15 @@ function priceLabel(m: LLMRegistryEntry): string {
   });
 }
 
-async function fetchEntries() {
+// Bumped by every fetch, so a slow answer never overwrites a newer one.
+let fetchSeq = 0;
+
+// quiet keeps the current list on screen while it refreshes, and keeps it
+// when the refresh fails: reopening the picker must not empty it.
+async function fetchEntries(quiet = false) {
   if (!props.fetcher) return;
-  loading.value = true;
+  const seq = ++fetchSeq;
+  if (!quiet) loading.value = true;
   try {
     const fetched = await props.fetcher({
       provider: props.provider || undefined,
@@ -393,12 +400,19 @@ async function fetchEntries() {
         : undefined,
       providerEndpoint: props.providerEndpoint || undefined,
     });
+    if (seq !== fetchSeq) return;
     entries.value = Array.isArray(fetched) ? fetched : [];
   } catch {
-    entries.value = [];
+    if (seq === fetchSeq && !quiet) entries.value = [];
   } finally {
-    loading.value = false;
+    if (seq === fetchSeq) loading.value = false;
   }
+}
+
+// The list is read again each time the picker opens: a model added in another
+// tab since this page loaded is offered without a reload.
+function onOpen(open: boolean) {
+  if (open && props.fetcher) void fetchEntries(true);
 }
 
 watch(
