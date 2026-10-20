@@ -33,13 +33,11 @@
             @update:model-value="onDateSelect"
           />
           <!-- Time row -->
-          <div class="flex items-center gap-2 border-t px-3 py-2">
-            <Clock class="h-4 w-4 text-muted-foreground shrink-0" />
-            <input
-              :value="timeOnly"
-              type="time"
-              class="flex-1 rounded-md border border-input bg-background px-2 py-1 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              @change="onTimeChange"
+          <div class="border-t px-3 py-2">
+            <TimePicker
+              class="flex-1"
+              :model-value="timeOnly"
+              @update:model-value="onTimeChange"
             />
           </div>
         </PopoverContent>
@@ -53,11 +51,12 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import { CalendarIcon, Clock } from "lucide-vue-next";
+import { CalendarIcon } from "lucide-vue-next";
 import { Button } from "../ui/button";
 import { Calendar } from "../ui/calendar";
 import { Label } from "../ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { TimePicker } from "../ui/time-picker";
 import { cn } from "../utils";
 import MaskedDateTimeInput from "./MaskedDateTimeInput.vue";
 
@@ -128,8 +127,7 @@ function onDateSelect(date: Date | undefined) {
   // Keep popup open so user can also pick the time
 }
 
-function onTimeChange(e: Event) {
-  const time = (e.target as HTMLInputElement).value;
+function onTimeChange(time: string) {
   if (!time) return;
   const datePart =
     props.modelValue?.split("T")[0] ?? formatDatePart(new Date());

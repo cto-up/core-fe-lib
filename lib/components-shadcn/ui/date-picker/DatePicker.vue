@@ -3,6 +3,7 @@
     <Label v-if="label">{{ label }}</Label>
     <div class="flex gap-2">
       <MaskedDateInput
+        :id="id"
         v-model="innerValue"
         :disabled="disable"
         :class="
@@ -53,6 +54,7 @@ import MaskedDateInput from "../../primitives/MaskedDateInput.vue";
 
 interface Props {
   modelValue?: string;
+  id?: string;
   label?: string;
   error?: boolean;
   errorMessage?: string;
@@ -65,6 +67,7 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: undefined,
+  id: undefined,
   label: undefined,
   error: false,
   errorMessage: undefined,

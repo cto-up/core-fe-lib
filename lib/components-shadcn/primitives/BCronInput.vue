@@ -129,7 +129,7 @@
             class="space-y-1"
           >
             <Label>{{ t("common.cron.atTime") }}</Label>
-            <Input v-model="timeStr" type="time" class="w-40" />
+            <TimePicker v-model="timeStr" class="w-40" />
           </div>
 
           <!-- Weekly days -->
@@ -449,6 +449,7 @@ import { useVuelidate } from "@vuelidate/core";
 import { required, helpers } from "@vuelidate/validators";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
+import { TimePicker } from "../ui/time-picker";
 import { Label } from "../ui/label";
 import { Badge } from "../ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
