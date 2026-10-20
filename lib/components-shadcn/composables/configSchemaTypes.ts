@@ -15,7 +15,18 @@ export type ConfigFieldType =
    * `requiresCapability`. Use this rather than hardcoded `enum` options
    * whenever the value is an `llm_key`.
    */
-  | "llm";
+  | "llm"
+  /**
+   * A choice among rows the consumer owns (employees, mailboxes…), listed by
+   * the `lookups[entry.lookup]` function the config page receives. The value
+   * stored is the row's id; the form shows its label.
+   */
+  | "lookup";
+
+/** Lists the choices of a "lookup" field: the stored value and its label. */
+export type ConfigLookup = () => Promise<
+  Array<{ value: string; label: string }>
+>;
 
 /**
  * Capability tag that drives which LLM registry rows appear in selectors
@@ -61,6 +72,11 @@ export interface TenantConfigSchemaEntry {
    * option. Match the backend handler `Type()`.
    */
   taskType?: string;
+  /**
+   * Only meaningful for `type: "lookup"`. The key of the `lookups` prop whose
+   * function lists the choices.
+   */
+  lookup?: string;
   defaultValue?: string;
   category: string;
 }

@@ -91,6 +91,30 @@
               @update:model-value="(v) => (tenantConfig.value = v)"
             />
 
+            <Select
+              v-else-if="schemaEntry?.type === 'lookup'"
+              :model-value="tenantConfig.value"
+              @update:model-value="(v) => (tenantConfig.value = v)"
+            >
+              <SelectTrigger
+                :id="`tenant-config-lookup-${tenantConfig.name}`"
+                data-test="tenant-config-lookup"
+              >
+                <SelectValue
+                  :placeholder="schemaEntry.defaultValue || 'Select a value'"
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem
+                  v-for="opt in lookupOptions"
+                  :key="opt.value"
+                  :value="opt.value"
+                >
+                  {{ opt.label }}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
             <!-- Select -->
             <Select
               v-else-if="schemaEntry?.type === 'enum'"
@@ -163,10 +187,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useTenantConfig } from "../composables/useTenantConfig";
 import { useErrors } from "../composables/useErrors";
 import {
+  type ConfigLookup,
   type TenantConfigSchemaEntry,
   buildSchemaMap,
 } from "../composables/configSchemaTypes";
@@ -195,10 +220,12 @@ const props = withDefaults(
   defineProps<{
     schema?: TenantConfigSchemaEntry[];
     llmFetcher?: (args: LLMFetcherArgs) => Promise<LLMRegistryEntry[]>;
+    lookups?: Record<string, ConfigLookup>;
   }>(),
   {
     schema: () => [],
     llmFetcher: undefined,
+    lookups: () => ({}),
   }
 );
 
@@ -218,6 +245,30 @@ const {
 const { handleError } = useErrors();
 
 const schemaEntry = computed(() => getSchemaEntry(tenantConfig.name));
+
+const lookupRows = ref<Array<{ value: string; label: string }>>([]);
+watch(
+  () => (schemaEntry.value?.type === "lookup" ? schemaEntry.value.lookup : ""),
+  async (name) => {
+    lookupRows.value = [];
+    const list = name ? props.lookups[name] : undefined;
+    if (!list) return;
+    try {
+      lookupRows.value = await list();
+    } catch (error) {
+      handleError(error);
+    }
+  },
+  { immediate: true }
+);
+// A stored value no longer listed (a deleted row) stays visible, so saving
+// the form never silently changes it.
+const lookupOptions = computed(() => {
+  const v = tenantConfig.value;
+  if (!v || lookupRows.value.some((o) => o.value === v))
+    return lookupRows.value;
+  return [{ value: v, label: v }, ...lookupRows.value];
+});
 
 onMounted(() => {
   fetchTenantConfig().catch((error) => handleError(error));
