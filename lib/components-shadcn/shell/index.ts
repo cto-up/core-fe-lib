@@ -3,6 +3,7 @@ export { registerModules, getModules } from "./registry";
 export { isModuleEnabled, isModuleEnabledForUser } from "./feature-gate";
 export { useShellNav } from "./nav-factory";
 export { buildModuleRoutes } from "./router-factory";
+export { gateRoutes } from "./route-gate";
 export { mergeModuleMessages } from "./i18n-factory";
 export type { Command, PostAction, CommandHandler } from "./command-handler";
 export { EventType, ExtractJSONObject } from "./events";

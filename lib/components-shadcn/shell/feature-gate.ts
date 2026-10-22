@@ -5,7 +5,7 @@ import type { HubModule, AppContext } from "./types";
  * The privilege a module demands. `superAdminOnly` / `adminOnly` are shorthand
  * for the equivalent `requiredPrivilege`, so there is a single evaluation path.
  */
-function modulePrivilege(module: HubModule): Role | undefined {
+export function modulePrivilege(module: HubModule): Role | undefined {
   if (module.superAdminOnly) return Role.SUPER_ADMIN;
   if (module.adminOnly) return Role.ADMIN;
   return module.requiredPrivilege;
