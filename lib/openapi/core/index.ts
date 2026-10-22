@@ -35,6 +35,8 @@ export type { NewSignUp } from './models/NewSignUp';
 export type { NewTenant } from './models/NewTenant';
 export type { NewTranslation } from './models/NewTranslation';
 export type { NewUser } from './models/NewUser';
+export { PendingDeletion } from './models/PendingDeletion';
+export type { PersonalDataAccess } from './models/PersonalDataAccess';
 export type { PublicTenantSchema } from './models/PublicTenantSchema';
 export { Role } from './models/Role';
 export type { SettingsFlow } from './models/SettingsFlow';

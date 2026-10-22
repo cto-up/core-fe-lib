@@ -75,6 +75,20 @@ describe("DataProtectionPage", () => {
     expect(li.text()).toContain("7 days");
   });
 
+  it("links the accounts pending deletion for an ADMIN only", async () => {
+    const admin = await mountAs(["ADMIN"], coreDataProtectionSections(t));
+    expect(
+      line(admin, "Accounts pending deletion").find("a").attributes("href")
+    ).toBe("/admin/pending-deletions");
+    const customerAdmin = await mountAs(
+      ["CUSTOMER_ADMIN"],
+      coreDataProtectionSections(t)
+    );
+    expect(
+      line(customerAdmin, "Accounts pending deletion").find("a").exists()
+    ).toBe(false);
+  });
+
   it("opens an external href in a new tab", async () => {
     const wrapper = await mountAs(
       ["CUSTOMER_ADMIN"],

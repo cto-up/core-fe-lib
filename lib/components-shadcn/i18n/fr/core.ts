@@ -397,6 +397,7 @@ export default {
         deletionGrace: "Délai de grâce avant l'effacement d'un compte",
         days90: "90 jours",
         days30: "30 jours",
+        pendingDeletions: "Comptes en attente de suppression",
       },
       legal: {
         title: "Pages légales",
@@ -405,5 +406,25 @@ export default {
         cookies: "Politique de cookies",
       },
     },
+  },
+  pendingDeletions: {
+    title: "Comptes en attente de suppression",
+    subtitle:
+      "Les membres dont le compte sera supprimé : ils ont demandé sa fermeture, ou ont été avertis pour inactivité. Les plus proches d'abord.",
+    account: "Compte",
+    stage: "Statut",
+    since: "Depuis",
+    deletesOn: "Supprimé le",
+    tenants: "Organisations",
+    closureRequested: "Fermeture demandée",
+    closedForInactivity: "Fermé pour inactivité",
+    inactiveSince: "Inactif depuis le {date}",
+    inactive: "Inactif",
+    requestedOn: "Demandée le {date}",
+    warnedOn: "Averti le {date}",
+    unlessSignIn: "sauf s'il se reconnecte",
+    loading: "Chargement…",
+    empty: "Aucun compte n'est en attente de suppression.",
+    failed: "Les comptes en attente de suppression n'ont pas pu être chargés.",
   },
 };

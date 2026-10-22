@@ -393,6 +393,7 @@ export default {
         deletionGrace: "Grace period before an account is erased",
         days90: "90 days",
         days30: "30 days",
+        pendingDeletions: "Accounts pending deletion",
       },
       legal: {
         title: "Legal pages",
@@ -401,5 +402,25 @@ export default {
         cookies: "Cookie policy",
       },
     },
+  },
+  pendingDeletions: {
+    title: "Accounts pending deletion",
+    subtitle:
+      "Members whose account will be deleted: they asked to close it, or were warned for inactivity. Soonest first.",
+    account: "Account",
+    stage: "Status",
+    since: "Since",
+    deletesOn: "Deleted on",
+    tenants: "Organizations",
+    closureRequested: "Closure requested",
+    closedForInactivity: "Closed for inactivity",
+    inactiveSince: "Inactive since {date}",
+    inactive: "Inactive",
+    requestedOn: "Requested {date}",
+    warnedOn: "Warned {date}",
+    unlessSignIn: "unless they sign in",
+    loading: "Loading…",
+    empty: "No account is pending deletion.",
+    failed: "The accounts pending deletion could not be loaded.",
   },
 };

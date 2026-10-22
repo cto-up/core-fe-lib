@@ -1,5 +1,5 @@
 import type { RouteLocationRaw } from "vue-router";
-import type { Role } from "../../openapi/core/models/Role";
+import { Role } from "../../openapi/core/models/Role";
 
 /**
  * One line of the Data protection page: a feature, its current value or
@@ -20,6 +20,7 @@ export type DataProtectionSection = {
 };
 
 const ORGANIZATIONS = "/user/me/organizations";
+const PENDING_DELETIONS = "/admin/pending-deletions";
 
 /** The lines every app shares; an app concatenates its own sections. */
 export function coreDataProtectionSections(
@@ -40,6 +41,11 @@ export function coreDataProtectionSections(
       lines: [
         { label: k("lifecycle.leftMembership"), value: k("lifecycle.days90") },
         { label: k("lifecycle.deletionGrace"), value: k("lifecycle.days30") },
+        {
+          label: k("lifecycle.pendingDeletions"),
+          to: PENDING_DELETIONS,
+          requires: Role.ADMIN,
+        },
       ],
     },
     {

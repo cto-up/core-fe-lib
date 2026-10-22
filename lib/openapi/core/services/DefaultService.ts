@@ -15,6 +15,8 @@ import type { NewSignUp } from '../models/NewSignUp';
 import type { NewTenant } from '../models/NewTenant';
 import type { NewTranslation } from '../models/NewTranslation';
 import type { NewUser } from '../models/NewUser';
+import type { PendingDeletion } from '../models/PendingDeletion';
+import type { PersonalDataAccess } from '../models/PersonalDataAccess';
 import type { PublicTenantSchema } from '../models/PublicTenantSchema';
 import type { Role } from '../models/Role';
 import type { Tenant } from '../models/Tenant';
@@ -1891,6 +1893,60 @@ export class DefaultService {
                 'id': id,
                 'tokenId': tokenId,
             },
+            query: {
+                'page': page,
+                'pageSize': pageSize,
+            },
+        });
+    }
+    /**
+     * Lists when staff read another person's personal data. An ADMIN sees the host tenant's rows; a SUPER_ADMIN on a host with no tenant sees every tenant's.
+     *
+     * @param subjectUserId only reads of this person's data
+     * @param actorUserId only reads made by this staff member
+     * @param from accessed at or after
+     * @param to accessed before
+     * @param page page number
+     * @param pageSize maximum number of results to return (at most 100)
+     * @returns PersonalDataAccess personal-data access log, newest first
+     * @throws ApiError
+     */
+    public static listPersonalDataAccess(
+        subjectUserId?: string,
+        actorUserId?: string,
+        from?: string,
+        to?: string,
+        page?: number,
+        pageSize?: number,
+    ): CancelablePromise<Array<PersonalDataAccess>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin-api/v1/personal-data-access',
+            query: {
+                'subjectUserId': subjectUserId,
+                'actorUserId': actorUserId,
+                'from': from,
+                'to': to,
+                'page': page,
+                'pageSize': pageSize,
+            },
+        });
+    }
+    /**
+     * Lists the accounts a deletion is ahead of: a closure their holder asked for, or an inactivity warning that will become one unless they sign in. Soonest first. An ADMIN sees the host tenant's members; a SUPER_ADMIN on a host with no tenant sees every tenant's.
+     *
+     * @param page page number
+     * @param pageSize maximum number of results to return (at most 100)
+     * @returns PendingDeletion accounts pending deletion, soonest first
+     * @throws ApiError
+     */
+    public static listPendingDeletions(
+        page?: number,
+        pageSize?: number,
+    ): CancelablePromise<Array<PendingDeletion>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin-api/v1/pending-deletions',
             query: {
                 'page': page,
                 'pageSize': pageSize,
