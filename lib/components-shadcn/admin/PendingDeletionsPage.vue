@@ -18,7 +18,9 @@
                 <TableHead>{{ $t("core.pendingDeletions.account") }}</TableHead>
                 <TableHead>{{ $t("core.pendingDeletions.stage") }}</TableHead>
                 <TableHead>{{ $t("core.pendingDeletions.since") }}</TableHead>
-                <TableHead>{{ $t("core.pendingDeletions.deletesOn") }}</TableHead>
+                <TableHead>{{
+                  $t("core.pendingDeletions.deletesOn")
+                }}</TableHead>
                 <TableHead v-if="showTenants">
                   {{ $t("core.pendingDeletions.tenants") }}
                 </TableHead>
@@ -146,8 +148,18 @@ function stageLabel(row: PendingDeletion): string {
     : t("core.pendingDeletions.closureRequested");
 }
 
-const holderReason = (row: PendingDeletion) =>
-  !isWarned(row) && row.reason !== INACTIVITY_REASON ? row.reason : null;
+// core-be-lib's AdminClosureReason, optionally followed by ": <admin's reason>".
+const ADMIN_CLOSURE_REASON = "closed by an administrator";
+
+const holderReason = (row: PendingDeletion) => {
+  if (isWarned(row) || row.reason === INACTIVITY_REASON) return null;
+  if (!row.reason?.startsWith(ADMIN_CLOSURE_REASON)) return row.reason;
+  const given = row.reason
+    .slice(ADMIN_CLOSURE_REASON.length)
+    .replace(/^:\s*/, "");
+  const label = t("core.pendingDeletions.closedByAdmin");
+  return given ? `${label}: ${given}` : label;
+};
 
 function formatDate(value?: string | null): string {
   if (!value) return "—";

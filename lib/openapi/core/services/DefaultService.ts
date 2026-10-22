@@ -2,12 +2,16 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { AccountDeletion } from '../models/AccountDeletion';
 import type { APIToken } from '../models/APIToken';
 import type { APITokenAuditLog } from '../models/APITokenAuditLog';
 import type { APITokenCreated } from '../models/APITokenCreated';
 import type { APITokenRevoke } from '../models/APITokenRevoke';
 import type { ClientApplication } from '../models/ClientApplication';
 import type { Config } from '../models/Config';
+import type { LeaveTenantPreview } from '../models/LeaveTenantPreview';
+import type { LeaveTenantRequest } from '../models/LeaveTenantRequest';
+import type { MemberAccountDeletionRequest } from '../models/MemberAccountDeletionRequest';
 import type { NewAPIToken } from '../models/NewAPIToken';
 import type { NewClientApplication } from '../models/NewClientApplication';
 import type { NewConfig } from '../models/NewConfig';
@@ -26,6 +30,7 @@ import type { TenantProfile } from '../models/TenantProfile';
 import type { Translation } from '../models/Translation';
 import type { User } from '../models/User';
 import type { UserActionSchema } from '../models/UserActionSchema';
+import type { UserDataExport } from '../models/UserDataExport';
 import type { UserProfileSchema } from '../models/UserProfileSchema';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -1950,6 +1955,228 @@ export class DefaultService {
             query: {
                 'page': page,
                 'pageSize': pageSize,
+            },
+        });
+    }
+    /**
+     * Export a member's data on their behalf
+     * The same document as GET /api/v1/users/me/export, for a member of the tenant. The tenant is the request's host, like every /admin-api call. Recorded in the personal-data access log as `core.user_export`. Never oneself (use /users/me/export) and never somebody who outranks the caller.
+     *
+     * @param userid
+     * @returns UserDataExport Export document
+     * @throws ApiError
+     */
+    public static exportMemberData(
+        userid: string,
+    ): CancelablePromise<UserDataExport> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin-api/v1/users/{userid}/export',
+            path: {
+                'userid': userid,
+            },
+            errors: {
+                403: `The caller acted on themselves, or on somebody who outranks them`,
+                404: `The user is not an active member of this tenant`,
+                409: `Refused: \`member_of_other_tenants\` when a tenant ADMIN (not a SUPER_ADMIN) acts on somebody who also belongs to another active organization — their data there is not this tenant's to export or close.
+                `,
+            },
+        });
+    }
+    /**
+     * What removing a member from the organization would cost them
+     * The member's leave preview for this tenant, exactly as they would see it at GET /api/v1/users/me/leave-preview. The tenant is the request's host, like every /admin-api call.
+     *
+     * @param userid
+     * @returns LeaveTenantPreview Leave preview
+     * @throws ApiError
+     */
+    public static getMemberLeavePreview(
+        userid: string,
+    ): CancelablePromise<LeaveTenantPreview> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin-api/v1/users/{userid}/leave-preview',
+            path: {
+                'userid': userid,
+            },
+            errors: {
+                403: `The caller acted on themselves, or on somebody who outranks them`,
+                404: `The user is not an active member of this tenant`,
+            },
+        });
+    }
+    /**
+     * Remove a member from the organization through the leave lifecycle
+     * Leave, performed for the member: their decisions applied, the claim removed, the membership set inactive, their tenant data purged after the dormancy window. Concerns this tenant only, so it is offered even when the member belongs to other organizations. The tenant is the request's host, like every /admin-api call.
+     *
+     * @param userid
+     * @param requestBody
+     * @returns void
+     * @throws ApiError
+     */
+    public static leaveTenantForMember(
+        userid: string,
+        requestBody?: LeaveTenantRequest,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/admin-api/v1/users/{userid}/leave',
+            path: {
+                'userid': userid,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                403: `The caller acted on themselves, or on somebody who outranks them`,
+                404: `The user is not an active member of this tenant`,
+                409: `An impact of severity \`decision\` is unresolved`,
+            },
+        });
+    }
+    /**
+     * Close a member's account on their behalf
+     * Schedules the deletion of the member's whole account after the usual grace period, with the reason "closed by an administrator". Nothing is destroyed now: the member is emailed the date and can keep the account from their Organizations page. The tenant is the request's host, like every /admin-api call.
+     *
+     * @param userid
+     * @param requestBody
+     * @returns AccountDeletion Deletion scheduled
+     * @throws ApiError
+     */
+    public static scheduleMemberAccountDeletion(
+        userid: string,
+        requestBody?: MemberAccountDeletionRequest,
+    ): CancelablePromise<AccountDeletion> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/admin-api/v1/users/{userid}/deletion',
+            path: {
+                'userid': userid,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                403: `The caller acted on themselves, or on somebody who outranks them`,
+                404: `The user is not an active member of this tenant`,
+                409: `Refused: \`member_of_other_tenants\` when a tenant ADMIN (not a SUPER_ADMIN) acts on somebody who also belongs to another active organization; \`deletion_already_scheduled\` when a closure is already pending.
+                `,
+            },
+        });
+    }
+    /**
+     * Export a member's data on their behalf
+     * The same document as GET /api/v1/users/me/export, for a member of the tenant. The tenant is the one named in the path. Recorded in the personal-data access log as `core.user_export`. Never oneself (use /users/me/export) and never somebody who outranks the caller.
+     *
+     * @param tenantid
+     * @param userid
+     * @returns UserDataExport Export document
+     * @throws ApiError
+     */
+    public static exportMemberDataFromSuperAdmin(
+        tenantid: string,
+        userid: string,
+    ): CancelablePromise<UserDataExport> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/export',
+            path: {
+                'tenantid': tenantid,
+                'userid': userid,
+            },
+            errors: {
+                403: `The caller acted on themselves, or on somebody who outranks them`,
+                404: `The user is not an active member of this tenant`,
+                409: `Refused: \`member_of_other_tenants\` when a tenant ADMIN (not a SUPER_ADMIN) acts on somebody who also belongs to another active organization — their data there is not this tenant's to export or close.
+                `,
+            },
+        });
+    }
+    /**
+     * What removing a member from the organization would cost them
+     * The member's leave preview for this tenant, exactly as they would see it at GET /api/v1/users/me/leave-preview. The tenant is the one named in the path.
+     *
+     * @param tenantid
+     * @param userid
+     * @returns LeaveTenantPreview Leave preview
+     * @throws ApiError
+     */
+    public static getMemberLeavePreviewFromSuperAdmin(
+        tenantid: string,
+        userid: string,
+    ): CancelablePromise<LeaveTenantPreview> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/leave-preview',
+            path: {
+                'tenantid': tenantid,
+                'userid': userid,
+            },
+            errors: {
+                403: `The caller acted on themselves, or on somebody who outranks them`,
+                404: `The user is not an active member of this tenant`,
+            },
+        });
+    }
+    /**
+     * Remove a member from the organization through the leave lifecycle
+     * Leave, performed for the member: their decisions applied, the claim removed, the membership set inactive, their tenant data purged after the dormancy window. Concerns this tenant only, so it is offered even when the member belongs to other organizations. The tenant is the one named in the path.
+     *
+     * @param tenantid
+     * @param userid
+     * @param requestBody
+     * @returns void
+     * @throws ApiError
+     */
+    public static leaveTenantForMemberFromSuperAdmin(
+        tenantid: string,
+        userid: string,
+        requestBody?: LeaveTenantRequest,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/leave',
+            path: {
+                'tenantid': tenantid,
+                'userid': userid,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                403: `The caller acted on themselves, or on somebody who outranks them`,
+                404: `The user is not an active member of this tenant`,
+                409: `An impact of severity \`decision\` is unresolved`,
+            },
+        });
+    }
+    /**
+     * Close a member's account on their behalf
+     * Schedules the deletion of the member's whole account after the usual grace period, with the reason "closed by an administrator". Nothing is destroyed now: the member is emailed the date and can keep the account from their Organizations page. The tenant is the one named in the path.
+     *
+     * @param tenantid
+     * @param userid
+     * @param requestBody
+     * @returns AccountDeletion Deletion scheduled
+     * @throws ApiError
+     */
+    public static scheduleMemberAccountDeletionFromSuperAdmin(
+        tenantid: string,
+        userid: string,
+        requestBody?: MemberAccountDeletionRequest,
+    ): CancelablePromise<AccountDeletion> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/superadmin-api/v1/tenants/{tenantid}/users/{userid}/deletion',
+            path: {
+                'tenantid': tenantid,
+                'userid': userid,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                403: `The caller acted on themselves, or on somebody who outranks them`,
+                404: `The user is not an active member of this tenant`,
+                409: `Refused: \`member_of_other_tenants\` when a tenant ADMIN (not a SUPER_ADMIN) acts on somebody who also belongs to another active organization; \`deletion_already_scheduled\` when a closure is already pending.
+                `,
             },
         });
     }

@@ -217,7 +217,20 @@
               <Save class="mr-2 h-4 w-4" />
               {{ getSaveButtonText() }}
             </Button>
-            <DropdownMenu>
+            <MemberDataRightsMenu
+              v-if="isTenantSubdomain()"
+              :member="{ id: user.id, name: user.name }"
+              :disabled="loading || !user.id"
+              @left="backToUserList"
+            >
+              <DropdownMenuItem
+                :disabled="loading || !user.id"
+                @click="requestPasswordResetByAdmin"
+              >
+                {{ $t("actions.requestPasswordReset") }}
+              </DropdownMenuItem>
+            </MemberDataRightsMenu>
+            <DropdownMenu v-else>
               <DropdownMenuTrigger as-child>
                 <Button
                   type="button"
@@ -237,16 +250,6 @@
                   {{ $t("actions.requestPasswordReset") }}
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  v-if="isTenantSubdomain()"
-                  :disabled="loading || !user.id"
-                  class="text-orange-600 focus:text-orange-600"
-                  @click="removeUserFromTenant"
-                >
-                  <UserMinus class="mr-2 h-4 w-4" />
-                  {{ $t("core.user.actions.removeFromTenant") }}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  v-else
                   :disabled="loading || !user.id"
                   class="text-destructive focus:text-destructive"
                   @click="deleteUser"
@@ -293,8 +296,8 @@ import {
   CheckCircle,
   AlertCircle,
   Info,
-  UserMinus,
 } from "lucide-vue-next";
+import MemberDataRightsMenu from "./MemberDataRightsMenu.vue";
 import { useToast } from "../ui/toast";
 import { useI18n } from "vue-i18n";
 
@@ -315,7 +318,6 @@ const {
   checkUserExists,
   saveUser,
   deleteUser,
-  removeUserFromTenant,
   fetchUser,
   requestPasswordResetByAdmin,
   backToUserList,

@@ -71,17 +71,12 @@
                 </TableCell>
                 <TableCell class="text-right">
                   <div class="flex items-center justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      :title="'Remove from Tenant'"
-                      @click.stop="
-                        (event: MouseEvent) =>
-                          removeUserFromTenant(row.id, row.name)
-                      "
-                    >
-                      <UserMinus class="h-4 w-4 text-orange-600" />
-                    </Button>
+                    <MemberDataRightsMenu
+                      :member="{ id: row.id, name: row.name }"
+                      :tenant-id="route.params.tenantid as string"
+                      @left="reload"
+                      @closed="reload"
+                    />
                   </div>
                 </TableCell>
               </TableRow>
@@ -139,8 +134,6 @@ import useListService, {
   type ListService,
 } from "../composables/useListService";
 import { useQueryParams } from "../../composables/useQueryParams";
-import { useErrors } from "../composables/useErrors";
-import { useDialog } from "../composables/useDialog";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Badge } from "../ui/badge";
@@ -153,8 +146,9 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { Search, Plus, Loader2, UserMinus, ArrowLeft } from "lucide-vue-next";
+import { Search, Plus, Loader2, ArrowLeft } from "lucide-vue-next";
 import BPagination from "../primitives/BPagination.vue";
+import MemberDataRightsMenu from "../admin/MemberDataRightsMenu.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -169,11 +163,9 @@ const props = withDefaults(
   }
 );
 
-const { dialog } = useDialog();
 const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
-const { handleError } = useErrors();
 const rows = ref<User[]>([]);
 const loading = ref(false);
 const { currentQuery, setQueryParam, pagination } = useQueryParams();
@@ -254,25 +246,5 @@ const onCreate = () => {
     query: currentQuery.value,
   });
 };
-const removeUserFromTenant = async (id: string, name: string) => {
-  const confirmed = await dialog({
-    message: t("core.user.actions.removeFromTenantConfirm", {
-      name,
-    }),
-    ok: t("core.user.actions.removeFromTenant"),
-  });
-
-  if (!confirmed) return;
-
-  DefaultService.removeUserFromTenantFromSuperAdmin(
-    route.params.tenantid as string,
-    id
-  )
-    .then(() => {
-      onRequest({ pagination: pagination.value, getCellValue });
-    })
-    .catch((err) => {
-      handleError(err);
-    });
-};
+const reload = () => onRequest({ pagination: pagination.value, getCellValue });
 </script>

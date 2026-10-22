@@ -205,35 +205,19 @@
               <Save class="mr-2 h-4 w-4" />
               {{ getSaveButtonText() }}
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger as-child>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  :disabled="loading || !user.id"
-                  :title="$t('actions.more')"
-                >
-                  <MoreVertical class="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem
-                  :disabled="loading || !user.id"
-                  @click="requestPasswordResetBySuperAdmin"
-                >
-                  {{ $t("actions.requestPasswordReset") }}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  :disabled="loading || !user.id"
-                  class="text-orange-600 focus:text-orange-600"
-                  @click="removeUserFromTenant"
-                >
-                  <UserMinus class="mr-2 h-4 w-4" />
-                  {{ $t("core.user.actions.removeFromTenant") }}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <MemberDataRightsMenu
+              :member="{ id: user.id, name: user.name }"
+              :tenant-id="tenantId"
+              :disabled="loading || !user.id"
+              @left="backToUserList"
+            >
+              <DropdownMenuItem
+                :disabled="loading || !user.id"
+                @click="requestPasswordResetBySuperAdmin"
+              >
+                {{ $t("actions.requestPasswordReset") }}
+              </DropdownMenuItem>
+            </MemberDataRightsMenu>
           </div>
         </form>
       </CardContent>
@@ -257,21 +241,15 @@ import { Label } from "../ui/label";
 import { Checkbox } from "../ui/checkbox";
 import { Switch } from "../ui/switch";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+import { DropdownMenuItem } from "../ui/dropdown-menu";
+import MemberDataRightsMenu from "../admin/MemberDataRightsMenu.vue";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import {
   Save,
   ArrowLeft,
-  MoreVertical,
   CheckCircle,
   AlertCircle,
   Info,
-  UserMinus,
 } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 
@@ -290,7 +268,6 @@ const {
   userExists,
   checkUserExists,
   saveUser,
-  removeUserFromTenant,
   fetchUser,
   requestPasswordResetBySuperAdmin,
   backToUserList,

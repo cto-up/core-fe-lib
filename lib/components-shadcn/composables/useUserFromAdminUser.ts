@@ -326,33 +326,6 @@ export function useUser() {
       });
   };
 
-  const removeUserFromTenant = async () => {
-    const confirmed = await dialog({
-      message: t("core.user.actions.removeFromTenantConfirm", {
-        name: user.name,
-      }),
-      ok: t("core.user.actions.removeFromTenant"),
-    });
-
-    if (!confirmed) return;
-
-    DefaultService.removeUserFromTenantFromSuperAdmin(tenantId, user.id)
-      .then(() => {
-        toast({
-          title: "User removed from tenant",
-          variant: "default",
-        });
-        void router.push({
-          name: "super-admin-users",
-          params: { tenantid: route.params.tenantid },
-          query: route.query,
-        });
-      })
-      .catch((e) => {
-        handleError(e);
-      });
-  };
-
   const requestPasswordResetBySuperAdmin = async () => {
     loading.value = true;
     try {
@@ -427,7 +400,6 @@ export function useUser() {
     fetchUser,
     saveUser,
     deleteUser,
-    removeUserFromTenant,
     rules,
     requestPasswordResetBySuperAdmin,
     backToUserList,

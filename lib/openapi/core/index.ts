@@ -27,6 +27,8 @@ export { LeaveImpact } from './models/LeaveImpact';
 export type { LeaveTenantPreview } from './models/LeaveTenantPreview';
 export type { LeaveTenantRequest } from './models/LeaveTenantRequest';
 export { LeaveTenantResult } from './models/LeaveTenantResult';
+export type { MemberAccountDeletionRequest } from './models/MemberAccountDeletionRequest';
+export { MemberActionRefusal } from './models/MemberActionRefusal';
 export { MFAStatus } from './models/MFAStatus';
 export type { NewAPIToken } from './models/NewAPIToken';
 export type { NewClientApplication } from './models/NewClientApplication';

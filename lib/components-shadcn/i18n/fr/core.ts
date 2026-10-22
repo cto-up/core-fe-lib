@@ -273,6 +273,38 @@ export default {
       checkEmail: "Vérifier",
       checking: "Vérification...",
     },
+    dataRights: {
+      menu: "Actions pour {name}",
+      export: "Exporter ses données",
+      remove: "Retirer de l'organisation",
+      self: "Pour votre propre compte, passez par Mes organisations.",
+      leave: {
+        title: "Retirer {name} de l'organisation ?",
+        subtitle:
+          "{name} perd l'accès à cette organisation dès maintenant. Son compte et ses autres organisations ne changent pas.",
+        dormancy:
+          "Si {name} ne revient pas avant le {date}, ses données dans cette organisation seront supprimées.",
+        confirm: "Retirer de l'organisation",
+        done: "{name} a été retiré(e) de l'organisation.",
+      },
+      close: {
+        action: "Fermer son compte",
+        title: "Fermer le compte de {name} ?",
+        body: "Le compte et tout ce qu'il contient seront supprimés le {date}. {name} est prévenu(e) par e-mail et peut garder son compte en se connectant d'ici là.",
+        reason:
+          "Motif (facultatif, visible dans Comptes en attente de suppression)",
+        confirm: "Fermer le compte",
+        done: "Le compte de {name} sera supprimé le {date}.",
+        failed: "Impossible de fermer ce compte.",
+      },
+      refused: {
+        title: "Action non autorisée ici",
+        otherTenants:
+          "{name} appartient aussi à une autre organisation ; ses données là-bas ne sont pas les vôtres à exporter ou à fermer. Un administrateur de la plateforme peut le faire, ou {name} depuis son compte.",
+        alreadyScheduled:
+          "Le compte de {name} est déjà programmé pour suppression.",
+      },
+    },
     messages: {
       emailPlaceholder: "Entrez l'email pour vérifier si l'utilisateur existe",
       userFound: "Utilisateur Trouvé : {name}",
@@ -384,11 +416,19 @@ export default {
     subtitle:
       "Ce que la plateforme fait des données personnelles, et où se règle chaque paramètre.",
     core: {
-      rights: {
-        title: "Droits des personnes",
-        export: "Exporter ses données",
+      yourself: {
+        title: "Pour vous-même",
+        export: "Exporter vos données",
         leave: "Quitter une organisation",
-        close: "Fermer son compte",
+        close: "Fermer votre compte",
+        where: "Mes organisations",
+      },
+      member: {
+        title: "Pour un membre",
+        export: "Exporter les données d'un membre",
+        leave: "Retirer un membre de l'organisation",
+        close: "Fermer le compte d'un membre",
+        where: "Administration → Utilisateurs",
       },
       lifecycle: {
         title: "Cycle de vie des comptes",
@@ -418,6 +458,7 @@ export default {
     tenants: "Organisations",
     closureRequested: "Fermeture demandée",
     closedForInactivity: "Fermé pour inactivité",
+    closedByAdmin: "Fermé par un administrateur",
     inactiveSince: "Inactif depuis le {date}",
     inactive: "Inactif",
     requestedOn: "Demandée le {date}",

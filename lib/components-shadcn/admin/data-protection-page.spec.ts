@@ -89,6 +89,26 @@ describe("DataProtectionPage", () => {
     ).toBe(false);
   });
 
+  it("splits people's rights into for yourself and for a member, saying where each is", async () => {
+    const admin = await mountAs(["ADMIN"], coreDataProtectionSections(t));
+    expect(admin.text()).toContain("For yourself");
+    expect(admin.text()).toContain("For a member");
+    expect(line(admin, "Export your data").text()).toContain(
+      "My organizations"
+    );
+    const member = line(admin, "Export a member's data");
+    expect(member.text()).toContain("Administration → Users");
+    expect(member.find("a").attributes("href")).toBe("/users");
+
+    const customerAdmin = await mountAs(
+      ["CUSTOMER_ADMIN"],
+      coreDataProtectionSections(t)
+    );
+    expect(
+      line(customerAdmin, "Export a member's data").find("a").exists()
+    ).toBe(false);
+  });
+
   it("opens an external href in a new tab", async () => {
     const wrapper = await mountAs(
       ["CUSTOMER_ADMIN"],
@@ -110,6 +130,9 @@ describe("coreDataProtectionSections", () => {
       expect(
         lines.filter((l) => l.to === "/user/me/organizations")
       ).toHaveLength(3);
+      const forAMember = lines.filter((l) => l.to === "/users");
+      expect(forAMember).toHaveLength(3);
+      expect(forAMember.every((l) => l.requires === Role.ADMIN)).toBe(true);
       expect(lines.map((l) => l.href).filter(Boolean)).toEqual([
         "/privacy",
         "/terms",

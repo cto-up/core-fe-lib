@@ -124,6 +124,7 @@ import {
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
+import { downloadJson } from "../utils";
 import { MeService } from "../../openapi/core/services/MeService";
 import type { AccountClosurePreview } from "../../openapi/core/models/AccountClosurePreview";
 import type { TenantClosureImpact } from "../../openapi/core/models/TenantClosureImpact";
@@ -186,15 +187,7 @@ const error = ref("");
 async function exportData() {
   exporting.value = true;
   try {
-    const data = await MeService.exportMyData();
-    const url = URL.createObjectURL(
-      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })
-    );
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "my-data.json";
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadJson(await MeService.exportMyData(), "my-data.json");
   } catch (e) {
     const err = e as ApiFailure;
     error.value =

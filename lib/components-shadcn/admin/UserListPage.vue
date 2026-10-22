@@ -99,15 +99,12 @@
                 </TableCell>
                 <TableCell class="text-right">
                   <div class="flex items-center justify-end gap-1">
-                    <Button
+                    <MemberDataRightsMenu
                       v-if="isTenantSubdomain()"
-                      variant="ghost"
-                      size="sm"
-                      :title="'Remove from Tenant'"
-                      @click.stop="removeUserFromTenant(row.id, row.name)"
-                    >
-                      <UserMinus class="h-4 w-4 text-orange-600" />
-                    </Button>
+                      :member="{ id: row.id, name: row.name }"
+                      @left="reload"
+                      @closed="reload"
+                    />
                     <Button
                       v-else
                       variant="ghost"
@@ -180,15 +177,9 @@ import {
   TableRow,
 } from "../ui/table";
 import BPagination from "../primitives/BPagination.vue";
-import {
-  Search,
-  Plus,
-  Trash2,
-  UserMinus,
-  Loader2,
-  MailWarning,
-} from "lucide-vue-next";
+import { Search, Plus, Trash2, Loader2, MailWarning } from "lucide-vue-next";
 import { useUrl } from "../../composables/useUrl";
+import MemberDataRightsMenu from "./MemberDataRightsMenu.vue";
 
 const { isTenantSubdomain } = useUrl();
 const { dialog } = useDialog();
@@ -361,24 +352,7 @@ const onRowSelect = async (userID: string) => {
   });
 };
 
-const removeUserFromTenant = async (id: string, name: string) => {
-  const confirmed = await dialog({
-    message: t("core.user.actions.removeFromTenantConfirm", {
-      name,
-    }),
-    ok: t("core.user.actions.removeFromTenant"),
-  });
-
-  if (!confirmed) return;
-
-  DefaultService.removeUserFromTenant(id)
-    .then(() => {
-      onRequest({ pagination: pagination.value, getCellValue });
-    })
-    .catch((err) => {
-      handleError(err);
-    });
-};
+const reload = () => onRequest({ pagination: pagination.value, getCellValue });
 
 const deleteUser = async (id: string, name: string) => {
   const confirmed = await dialog({

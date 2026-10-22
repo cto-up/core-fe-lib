@@ -354,34 +354,6 @@ export function useUser() {
       });
   };
 
-  const removeUserFromTenant = async () => {
-    const confirmed = await dialog({
-      message: t("core.user.actions.removeFromTenant.confirm", {
-        name: user.name,
-      }),
-      cancel: t("actions.cancel"),
-      ok: t("actions.remove"),
-    });
-
-    if (!confirmed) return;
-
-    DefaultService.removeUserFromTenant(user.id)
-      .then(() => {
-        toast({
-          title: t("actions.removed"),
-          description: "User removed from tenant",
-          variant: "default",
-        });
-        void router.push({
-          name: "users",
-          query: route.query,
-        });
-      })
-      .catch((e) => {
-        handleError(e);
-      });
-  };
-
   const requestPasswordResetByAdmin = async () => {
     loading.value = true;
     try {
@@ -458,7 +430,6 @@ export function useUser() {
     fetchUser,
     saveUser,
     deleteUser,
-    removeUserFromTenant,
     requestPasswordResetByAdmin,
     backToUserList,
     getSaveButtonText,

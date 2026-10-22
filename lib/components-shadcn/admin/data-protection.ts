@@ -21,6 +21,7 @@ export type DataProtectionSection = {
 
 const ORGANIZATIONS = "/user/me/organizations";
 const PENDING_DELETIONS = "/admin/pending-deletions";
+const USERS = "/users";
 
 /** The lines every app shares; an app concatenates its own sections. */
 export function coreDataProtectionSections(
@@ -29,12 +30,21 @@ export function coreDataProtectionSections(
   const k = (key: string) => t(`core.dataProtection.core.${key}`);
   return [
     {
-      title: k("rights.title"),
-      lines: [
-        { label: k("rights.export"), to: ORGANIZATIONS },
-        { label: k("rights.leave"), to: ORGANIZATIONS },
-        { label: k("rights.close"), to: ORGANIZATIONS },
-      ],
+      title: k("yourself.title"),
+      lines: (["export", "leave", "close"] as const).map((right) => ({
+        label: k(`yourself.${right}`),
+        value: k("yourself.where"),
+        to: ORGANIZATIONS,
+      })),
+    },
+    {
+      title: k("member.title"),
+      lines: (["export", "leave", "close"] as const).map((right) => ({
+        label: k(`member.${right}`),
+        value: k("member.where"),
+        to: USERS,
+        requires: Role.ADMIN,
+      })),
     },
     {
       title: k("lifecycle.title"),

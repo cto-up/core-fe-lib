@@ -271,6 +271,36 @@ export default {
       checkEmail: "Check",
       checking: "Checking...",
     },
+    dataRights: {
+      menu: "Actions for {name}",
+      export: "Export their data",
+      remove: "Remove from the organization",
+      self: "For your own account, use My organizations.",
+      leave: {
+        title: "Remove {name} from the organization?",
+        subtitle:
+          "{name} loses access to this organization now. Their account and their other organizations are untouched.",
+        dormancy:
+          "Unless {name} returns before {date}, their data in this organization is deleted.",
+        confirm: "Remove from the organization",
+        done: "{name} was removed from the organization.",
+      },
+      close: {
+        action: "Close their account",
+        title: "Close {name}'s account?",
+        body: "The account and everything it holds will be deleted on {date}. {name} is emailed and can keep the account by signing in before then.",
+        reason: "Reason (optional, shown in Accounts pending deletion)",
+        confirm: "Close the account",
+        done: "{name}'s account will be deleted on {date}.",
+        failed: "Could not close this account.",
+      },
+      refused: {
+        title: "Not allowed here",
+        otherTenants:
+          "{name} also belongs to another organization; their data there is not yours to export or close. A platform administrator can do it, or {name} can do it from their account.",
+        alreadyScheduled: "{name}'s account is already scheduled for deletion.",
+      },
+    },
     messages: {
       emailPlaceholder: "Enter email to check if user exists",
       userFound: "User Found: {name}",
@@ -381,11 +411,19 @@ export default {
     subtitle:
       "What the platform does with personal data, and where each setting lives.",
     core: {
-      rights: {
-        title: "People's rights",
-        export: "Export one's data",
+      yourself: {
+        title: "For yourself",
+        export: "Export your data",
         leave: "Leave an organization",
-        close: "Close one's account",
+        close: "Close your account",
+        where: "My organizations",
+      },
+      member: {
+        title: "For a member",
+        export: "Export a member's data",
+        leave: "Remove a member from the organization",
+        close: "Close a member's account",
+        where: "Administration → Users",
       },
       lifecycle: {
         title: "Account lifecycle",
@@ -414,6 +452,7 @@ export default {
     tenants: "Organizations",
     closureRequested: "Closure requested",
     closedForInactivity: "Closed for inactivity",
+    closedByAdmin: "Closed by an administrator",
     inactiveSince: "Inactive since {date}",
     inactive: "Inactive",
     requestedOn: "Requested {date}",
