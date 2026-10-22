@@ -376,4 +376,30 @@ export default {
     verifying: "Verifying...",
     invite: "Invite",
   },
+  dataProtection: {
+    title: "Data protection",
+    subtitle:
+      "What the platform does with personal data, and where each setting lives.",
+    core: {
+      rights: {
+        title: "People's rights",
+        export: "Export one's data",
+        leave: "Leave an organization",
+        close: "Close one's account",
+      },
+      lifecycle: {
+        title: "Account lifecycle",
+        leftMembership: "Data kept after leaving an organization",
+        deletionGrace: "Grace period before an account is erased",
+        days90: "90 days",
+        days30: "30 days",
+      },
+      legal: {
+        title: "Legal pages",
+        privacy: "Privacy policy",
+        terms: "Terms of use",
+        cookies: "Cookie policy",
+      },
+    },
+  },
 };

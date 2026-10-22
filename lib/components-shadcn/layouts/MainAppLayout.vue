@@ -348,6 +348,12 @@ const defaultTrailingSections = (): SidebarMenuSection[] => {
       icon: "house",
       link: "/admin/tenant-profile",
     },
+    {
+      title: t("layout.navigation.admin.dataProtection.title"),
+      caption: t("layout.navigation.admin.dataProtection.caption"),
+      icon: "admin_panel_settings",
+      link: "/admin/data-protection",
+    },
   ];
   const adminOnlyItems = userStore.hasPrivilege(Role.ADMIN)
     ? [

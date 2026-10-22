@@ -49,6 +49,10 @@ export default {
         title: "Customize your space",
         caption: "Theme etc.",
       },
+      dataProtection: {
+        title: "Data protection",
+        caption: "Retention, rights and legal pages",
+      },
       tenantConfig: {
         title: "Tenant Configuration",
         caption: "Key-value pairs of your tenant",

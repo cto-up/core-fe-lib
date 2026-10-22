@@ -379,4 +379,31 @@ export default {
     verifying: "Vérification en cours...",
     invite: "Inviter",
   },
+  dataProtection: {
+    title: "Protection des données",
+    subtitle:
+      "Ce que la plateforme fait des données personnelles, et où se règle chaque paramètre.",
+    core: {
+      rights: {
+        title: "Droits des personnes",
+        export: "Exporter ses données",
+        leave: "Quitter une organisation",
+        close: "Fermer son compte",
+      },
+      lifecycle: {
+        title: "Cycle de vie des comptes",
+        leftMembership:
+          "Données conservées après avoir quitté une organisation",
+        deletionGrace: "Délai de grâce avant l'effacement d'un compte",
+        days90: "90 jours",
+        days30: "30 jours",
+      },
+      legal: {
+        title: "Pages légales",
+        privacy: "Politique de confidentialité",
+        terms: "Conditions d'utilisation",
+        cookies: "Politique de cookies",
+      },
+    },
+  },
 };
