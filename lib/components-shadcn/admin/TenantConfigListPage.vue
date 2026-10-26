@@ -41,7 +41,7 @@
                 <TableHead class="text-right"> Actions </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody v-if="!loading && rows.length > 0">
+            <TableBody v-if="!loading && rows?.length">
               <TableRow
                 v-for="row in rows"
                 :key="row.id"
@@ -113,12 +113,6 @@
           </Table>
         </CardContent>
       </Card>
-
-      <!-- Pagination -->
-      <BPagination
-        v-model="pagination"
-        @change="onRequest({ getCellValue, pagination })"
-      />
 
       <!-- Suggested / unset schema entries -->
       <Collapsible v-model:open="suggestionsOpen">
@@ -203,18 +197,10 @@
 </template>
 
 <script lang="ts" setup>
-import {
-  type CancelablePromise,
-  DefaultService,
-  type Config,
-} from "../../openapi/core";
+import { DefaultService, type Config } from "../../openapi/core";
 import { computed, onMounted, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { useRoute, useRouter } from "vue-router";
-import useListService, {
-  getCellValue,
-  type ListService,
-} from "../composables/useListService";
 import { useQueryParams } from "../../composables/useQueryParams";
 import { useErrors } from "../composables/useErrors";
 import { useDialog } from "../composables/useDialog";
@@ -249,7 +235,6 @@ import {
   ChevronsUpDown,
 } from "lucide-vue-next";
 import { Switch } from "../ui/switch";
-import BPagination from "../primitives/BPagination.vue";
 
 const props = withDefaults(
   defineProps<{
@@ -275,36 +260,30 @@ const { handleError } = useErrors();
 
 const rows = ref<Config[]>([]);
 const loading = ref(false);
-const { currentQuery, setQueryParam, pagination } = useQueryParams();
+const { currentQuery, setQueryParam } = useQueryParams();
 const filter = ref("");
 const suggestionsOpen = ref(false);
 const allConfigNames = ref<Set<string>>(new Set());
 
-const listService: ListService<Config> = {
-  listService(
-    page: number,
-    rowsPerPage: number,
-    sortBy: string,
-    order: "asc" | "desc",
-    q?: string
-  ): CancelablePromise<Array<Config>> {
-    return DefaultService.listTenantConfigs(
-      page,
-      rowsPerPage,
-      sortBy,
-      order,
-      q
-    );
-  },
-};
+// Must match the backend's MaxPageSize for tenant configs.
+const ALL_CONFIGS = 1000;
 
-const { onRequest } = useListService<Config>({
-  listService,
-  rows,
-  pagination,
-  loading,
-  filter,
-});
+const loadConfigs = async () => {
+  loading.value = true;
+  try {
+    rows.value = await DefaultService.listTenantConfigs(
+      1,
+      ALL_CONFIGS,
+      "name",
+      "asc",
+      filter.value || undefined
+    );
+  } catch (e) {
+    handleError(e);
+  } finally {
+    loading.value = false;
+  }
+};
 
 const unsetSchemaEntries = computed<TenantConfigSchemaEntry[]>(() =>
   props.schema.filter((e) => !allConfigNames.value.has(e.key))
@@ -320,31 +299,25 @@ const unsetByCategory = (category: string) =>
   unsetSchemaEntries.value.filter((e) => e.category === category);
 
 watch(
-  () => route.query.page,
-  (newPage) => {
-    pagination.value.page = Number.parseInt(newPage as string) || 1;
-    onRequest({ getCellValue, pagination: pagination.value });
-  }
-);
-
-watch(
   () => filter.value,
   (newFilter) => {
     setQueryParam("filter", newFilter);
+    void loadConfigs();
   }
 );
 
 onMounted(async () => {
   filter.value = (route.query.filter as string) || "";
-  onRequest({
-    getCellValue,
-    pagination: pagination.value,
-    filter: filter.value,
-  });
+  if (!filter.value) void loadConfigs();
 
   // Load all config names to compute unset schema entries
   try {
-    const all = await DefaultService.listTenantConfigs(1, 1000, "name", "asc");
+    const all = await DefaultService.listTenantConfigs(
+      1,
+      ALL_CONFIGS,
+      "name",
+      "asc"
+    );
     allConfigNames.value = new Set(all.map((c) => c.name));
   } catch {
     // non-critical — suggestions section is best-effort
@@ -390,7 +363,7 @@ const deleteConfig = async (id: string, name: string) => {
 
   DefaultService.deleteTenantConfig(id)
     .then(() => {
-      onRequest({ pagination: pagination.value, getCellValue });
+      void loadConfigs();
       allConfigNames.value.delete(name);
     })
     .catch((err) => {
