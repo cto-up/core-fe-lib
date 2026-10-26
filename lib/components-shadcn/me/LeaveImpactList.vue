@@ -77,7 +77,9 @@ const props = withDefaults(
   }>(),
   { dormancyKey: "core.organizations.leave.dormancy", name: undefined }
 );
-const decisions = defineModel<LeaveDecision[]>("decisions", { default: [] });
+const decisions = defineModel<LeaveDecision[]>("decisions", {
+  default: () => [],
+});
 const ready = defineModel<boolean>("ready", { default: false });
 
 const { t, te, locale } = useI18n();
