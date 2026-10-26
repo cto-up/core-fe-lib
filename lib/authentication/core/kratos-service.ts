@@ -385,8 +385,6 @@ class KratosService {
       },
       (error) => Promise.reject(error)
     );
-
-    console.log("🔧 Kratos service initialized with baseURL:", baseURL);
   }
 
   /**
@@ -490,7 +488,6 @@ class KratosService {
     } catch (error: unknown) {
       const axiosError = error as AxiosErrorResponse;
       if (axiosError.response?.status === 401) {
-        console.log("ℹ️  No active session (401)");
         return null;
       }
       console.error("❌ Error getting session:", error);

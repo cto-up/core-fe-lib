@@ -181,15 +181,12 @@ export function applyTheme(colors: Record<string, string>) {
     text: "--foreground",
   };
 
-  console.log("🎨 applyTheme called with colors:", colors);
   const isDark = document.documentElement.classList.contains("dark");
-  console.log("🌓 Current dark mode:", isDark);
 
   // Remove existing tenant theme style tag
   const existingStyle = document.getElementById("tenant-theme");
   if (existingStyle) {
     existingStyle.remove();
-    console.log("🗑️ Removed existing tenant theme");
   }
 
   if (colors.primary)
@@ -236,19 +233,5 @@ export function applyTheme(colors: Record<string, string>) {
     const selector = isDark ? ".dark" : ":root";
     styleTag.textContent = `${selector} { ${cssRules.join(" ")} }`;
     document.head.appendChild(styleTag);
-    console.log("📝 Injected style tag:", styleTag.textContent);
   }
-
-  // Test if it works
-  setTimeout(() => {
-    const testDiv = document.createElement("div");
-    testDiv.className = "bg-primary";
-    document.body.appendChild(testDiv);
-    const bgColor = getComputedStyle(testDiv).backgroundColor;
-    const primaryVar = getComputedStyle(testDiv).getPropertyValue("--primary");
-    document.body.removeChild(testDiv);
-    console.log("🎨 Computed bg-primary color:", bgColor);
-    console.log("🎨 Test div --primary var:", primaryVar);
-    console.log("🎨 Expected color (green #10b981):", "rgb(16, 185, 129)");
-  }, 100);
 }
