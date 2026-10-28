@@ -9,86 +9,21 @@
 // pointer-events:none on <body>, which this inherits. User-draggable: once it
 // floats over arbitrary chrome, the user needs a way to push it aside without
 // dismissing it.
-import { computed, onBeforeUnmount, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { GripVertical, RefreshCw, X } from "lucide-vue-next";
 import { Button } from "../ui/button";
+import { useDraggableFloat } from "../composables/useDraggableFloat";
+import { pwaPromptPosition } from "./pwa-prompt-slot";
 
 defineProps<{ open: boolean }>();
 const emit = defineEmits<{ reload: []; dismiss: [] }>();
 
 const { t } = useI18n();
-
-const bannerEl = ref<HTMLElement | null>(null);
-// null = the default bottom-centre placement; set once the user drags it.
-const bannerPos = ref<{ x: number; y: number } | null>(null);
-
-const bannerStyle = computed(() =>
-  bannerPos.value
-    ? {
-        left: `${bannerPos.value.x}px`,
-        top: `${bannerPos.value.y}px`,
-        bottom: "auto",
-        transform: "none",
-      }
-    : {}
-);
-
-const BANNER_MARGIN = 8;
-function clampToViewport(x: number, y: number, w: number, h: number) {
-  const maxX = Math.max(BANNER_MARGIN, window.innerWidth - w - BANNER_MARGIN);
-  const maxY = Math.max(BANNER_MARGIN, window.innerHeight - h - BANNER_MARGIN);
-  return {
-    x: Math.min(Math.max(x, BANNER_MARGIN), maxX),
-    y: Math.min(Math.max(y, BANNER_MARGIN), maxY),
-  };
-}
-
-function startDrag(e: PointerEvent) {
-  const el = bannerEl.value;
-  if (!el) return;
-  // Let the Reload / dismiss buttons keep their click.
-  if ((e.target as HTMLElement).closest("button")) return;
-  e.preventDefault();
-
-  const rect = el.getBoundingClientRect();
-  const offsetX = e.clientX - rect.left;
-  const offsetY = e.clientY - rect.top;
-  // Switch from the centred default to explicit coordinates before moving.
-  bannerPos.value = { x: rect.left, y: rect.top };
-  el.setPointerCapture(e.pointerId);
-
-  const onMove = (ev: PointerEvent) => {
-    bannerPos.value = clampToViewport(
-      ev.clientX - offsetX,
-      ev.clientY - offsetY,
-      rect.width,
-      rect.height
-    );
-  };
-  const onStop = () => {
-    el.removeEventListener("pointermove", onMove);
-    el.removeEventListener("pointerup", onStop);
-    el.removeEventListener("pointercancel", onStop);
-  };
-  el.addEventListener("pointermove", onMove);
-  el.addEventListener("pointerup", onStop);
-  el.addEventListener("pointercancel", onStop);
-}
-
-function keepInView() {
-  const el = bannerEl.value;
-  if (!bannerPos.value || !el) return;
-  const rect = el.getBoundingClientRect();
-  bannerPos.value = clampToViewport(
-    bannerPos.value.x,
-    bannerPos.value.y,
-    rect.width,
-    rect.height
-  );
-}
-onMounted(() => window.addEventListener("resize", keepInView));
-onBeforeUnmount(() => window.removeEventListener("resize", keepInView));
+const {
+  el: bannerEl,
+  style: bannerStyle,
+  startDrag,
+} = useDraggableFloat(pwaPromptPosition);
 </script>
 
 <template>
