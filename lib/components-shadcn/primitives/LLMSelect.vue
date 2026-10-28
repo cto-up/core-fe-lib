@@ -148,6 +148,7 @@ import {
   type Modality,
 } from "./llm-modalities";
 import { readLastUsedLLM } from "./llm-last-used";
+import { priceLabel as formatPrice } from "./llm-price";
 
 export interface LLMStats {
   samples: number;
@@ -165,6 +166,10 @@ export interface LLMRegistryEntry {
   active: boolean;
   price_input_per_million: number;
   price_output_per_million: number;
+  /** Speech models are billed per million characters of text. */
+  price_per_million_chars?: number;
+  /** Transcription models are billed per minute of audio. */
+  price_per_minute?: number;
   stats?: LLMStats;
   /**
    * False when no credential resolves for this model's provider. Such an entry
@@ -350,31 +355,8 @@ function providerLabel(p: string): string {
   return PROVIDER_LABELS[p] ?? p;
 }
 
-const PROVIDER_CURRENCY: Record<string, string> = {
-  ovh: "€",
-  scaleway: "€",
-  googleai: "$",
-  anthropic: "$",
-  openai: "$",
-  mistral: "$",
-};
-
-function fmtPrice(v: number): string {
-  if (v === 0) return "0";
-  return v.toFixed(2).replace(/\.?0+$/, "");
-}
-
 function priceLabel(m: LLMRegistryEntry): string {
-  const isLocal = m.provider === "private" || m.provider === "ollama";
-  if (isLocal) return t("llm.select.price.free");
-  if (m.price_input_per_million === 0 && m.price_output_per_million === 0) {
-    return t("llm.select.price.unknown");
-  }
-  const c = PROVIDER_CURRENCY[m.provider] ?? "";
-  return t("llm.select.price.perMillion", {
-    input: `${c}${fmtPrice(m.price_input_per_million)}`,
-    output: `${c}${fmtPrice(m.price_output_per_million)}`,
-  });
+  return formatPrice(m, t);
 }
 
 // Bumped by every fetch, so a slow answer never overwrites a newer one.

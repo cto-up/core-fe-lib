@@ -14,6 +14,8 @@ export default {
       free: "local · gratis",
       unknown: "—",
       perMillion: "{input} entrada / {output} salida por M",
+      perMillionChars: "{price} por M caracteres",
+      perMinute: "{price} por min",
     },
     modalities: {
       text: "texto",
