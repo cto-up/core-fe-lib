@@ -20,7 +20,14 @@
             :placeholder="`Search ${label.toLowerCase()}...`"
             @update:model-value="onSearch"
           />
-          <CommandEmpty>No results found.</CommandEmpty>
+          <p
+            v-if="searchError"
+            role="alert"
+            class="px-3 py-2 text-sm text-error"
+          >
+            {{ t("common.selector.searchFailed") }}: {{ searchError }}
+          </p>
+          <CommandEmpty v-else>No results found.</CommandEmpty>
           <CommandList>
             <CommandGroup>
               <CommandItem
@@ -51,6 +58,7 @@
 <script lang="ts" setup>
 import { ref, computed } from "vue";
 import axios from "axios";
+import { useI18n } from "vue-i18n";
 import { Button } from "../ui/button";
 import {
   Command,
@@ -63,6 +71,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Label } from "../ui/label";
 import { cn } from "../utils";
+import { errorReason } from "../../utils/errorReason";
 
 interface Option {
   [key: string]: any;
@@ -97,10 +106,13 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue"]);
 
+const { t } = useI18n();
+
 const open = ref(false);
 const options = ref<Option[]>([]);
 const loading = ref(false);
 const searchQuery = ref("");
+const searchError = ref("");
 
 const selectedLabel = computed(() => {
   if (!props.modelValue) return "";
@@ -143,6 +155,7 @@ const onSelect = (option: Option) => {
 
 const onSearch = async (val: string) => {
   searchQuery.value = val;
+  searchError.value = "";
 
   if (val.length < 1) {
     options.value = [];
@@ -157,6 +170,7 @@ const onSearch = async (val: string) => {
   } catch (err) {
     console.error("Error fetching options:", err);
     options.value = [];
+    searchError.value = errorReason(err);
   } finally {
     loading.value = false;
   }
