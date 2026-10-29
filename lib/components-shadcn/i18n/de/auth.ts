@@ -139,6 +139,8 @@ export default {
       resendSuccess:
         "Verifizierungs-E-Mail gesendet! Bitte überprüfen Sie Ihren Posteingang.",
       networkError: "Netzwerkfehler. Bitte versuchen Sie es erneut.",
+      resendFailed:
+        "Die Verifizierungs-E-Mail konnte nicht erneut gesendet werden.",
     },
   },
   passwordReset: {

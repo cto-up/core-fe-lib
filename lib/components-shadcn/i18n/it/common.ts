@@ -174,4 +174,13 @@ export default {
     uploadEndedEarly:
       "Il caricamento si è interrotto prima della conferma del server.",
   },
+  selector: {
+    loadFailed: "Impossibile caricare le opzioni",
+    searchFailed: "La ricerca non è riuscita",
+  },
+  language: {
+    loadFailed: "Impossibile cambiare lingua",
+    loadFailedDesc:
+      "La traduzione {lang} non è stata caricata; l'interfaccia resta com'è.",
+  },
 };

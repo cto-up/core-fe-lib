@@ -234,6 +234,7 @@ withDefaults(defineProps<{ editUserPathPrefix?: string }>(), {
 });
 import { useRoute } from "vue-router";
 import { useToast } from "../ui/toast/use-toast";
+import { useErrors } from "../composables/useErrors";
 import { DefaultService, UserActionSchema } from "../../openapi/core";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -255,6 +256,7 @@ import { useI18n } from "vue-i18n";
 
 const { toast } = useToast();
 const { t } = useI18n();
+const { handleError } = useErrors();
 const {
   user,
   isNew,
@@ -304,10 +306,9 @@ const onEnabledChange = async (enabled: boolean) => {
       user.disabled = !enabled;
     })
     .catch((e) => {
-      toast({
-        title: JSON.stringify(e),
-        variant: "destructive",
-      });
+      // The server's refusal (a privilege, a conflict) as words, not the raw
+      // ApiError serialized into a toast nobody can read.
+      handleError(e);
     })
     .finally(() => {
       disabled.value = false;

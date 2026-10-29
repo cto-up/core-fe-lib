@@ -135,6 +135,7 @@ export default {
       success: "Email verified successfully!",
       resendSuccess: "Verification email sent! Please check your inbox.",
       networkError: "Network error. Please try again.",
+      resendFailed: "Could not resend the verification email.",
     },
   },
   passwordReset: {

@@ -271,6 +271,7 @@ import { onMounted, ref, provide } from "vue";
 import { useRoute } from "vue-router";
 import { useUrl } from "../../composables/useUrl";
 import { useUser } from "../composables/useUser";
+import { useErrors } from "../composables/useErrors";
 
 withDefaults(defineProps<{ editUserPathPrefix?: string }>(), {
   editUserPathPrefix: "/admin/users",
@@ -303,6 +304,7 @@ import { useI18n } from "vue-i18n";
 
 const { toast } = useToast();
 const { t } = useI18n();
+const { handleError } = useErrors();
 const {
   user,
   isNew,
@@ -397,10 +399,9 @@ const onEnabledChange = async (enabled: boolean) => {
       user.disabled = !enabled;
     })
     .catch((e) => {
-      toast({
-        title: JSON.stringify(e),
-        variant: "destructive",
-      });
+      // The server's refusal (a privilege, a conflict) as words, not the raw
+      // ApiError serialized into a toast nobody can read.
+      handleError(e);
     })
     .finally(() => {
       disabled.value = false;

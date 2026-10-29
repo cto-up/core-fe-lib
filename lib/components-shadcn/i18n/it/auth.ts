@@ -136,6 +136,7 @@ export default {
       resendSuccess:
         "Email di verifica inviata! Controlla la tua casella di posta.",
       networkError: "Errore di rete. Riprova.",
+      resendFailed: "Impossibile inviare di nuovo l'e-mail di verifica.",
     },
   },
   passwordReset: {

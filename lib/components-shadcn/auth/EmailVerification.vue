@@ -155,6 +155,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { useToast } from "../ui/toast/use-toast";
+import { serverMessageOf } from "../../utils/server-message";
 import { Loader2, CheckCircle2, XCircle, AlertTriangle } from "lucide-vue-next";
 import AppBackground from "../primitives/AppBackground.vue";
 
@@ -216,8 +217,17 @@ async function verifyEmail(token: string) {
     }
   } catch (error) {
     console.error("Verification error:", error);
-    verificationState.value = "error";
-    errorMessage.value = t("auth.emailVerification.error.network");
+    // An expired token, an invalid one and a dropped connection are three
+    // different failures. Routing the server's own message through the
+    // classifier below shows each as what it is; the network line stays the
+    // fallback for the one failure whose cause we really cannot know.
+    const serverMessage = serverMessageOf(error);
+    if (serverMessage) {
+      handleVerificationError(serverMessage);
+    } else {
+      verificationState.value = "error";
+      errorMessage.value = t("auth.emailVerification.error.network");
+    }
   }
 }
 
@@ -246,8 +256,13 @@ async function resendVerification() {
     startResendCooldown();
   } catch (error) {
     console.error("Resend error:", error);
+    // The server says why it refused (rate limit, no such address); quoting it
+    // beats a network claim that may not be true.
     toast({
-      title: t("auth.emailVerification.toasts.networkError"),
+      title: t("auth.emailVerification.toasts.resendFailed"),
+      description:
+        serverMessageOf(error) ??
+        t("auth.emailVerification.toasts.networkError"),
       variant: "destructive",
     });
   } finally {

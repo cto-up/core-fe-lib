@@ -173,4 +173,13 @@ export default {
     uploadErrorServer: "Upload error",
     uploadEndedEarly: "The upload ended before the server confirmed it.",
   },
+  selector: {
+    loadFailed: "Could not load the options",
+    searchFailed: "The search failed",
+  },
+  language: {
+    loadFailed: "Could not switch the language",
+    loadFailedDesc:
+      "The {lang} translation could not be loaded, so the interface stays as it is.",
+  },
 };

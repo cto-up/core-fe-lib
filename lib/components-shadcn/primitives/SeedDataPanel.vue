@@ -80,6 +80,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Database, FileStack, Loader2 } from "lucide-vue-next";
+import { serverMessageOf } from "../../utils/server-message";
 
 const props = defineProps({
   module: {
@@ -113,6 +114,13 @@ const { toast } = useToast();
 const loadingReference = ref(false);
 const loadingSample = ref(false);
 
+// The server says why it refused (quota, credits, a module that is off); the
+// toast must quote it, or the failure reads as a generic error with no cause.
+function failureDescription(error: unknown, key: string): string {
+  const cause = serverMessageOf(error);
+  return cause ? `${t(key)}: ${cause}` : t(key);
+}
+
 async function seedReferenceData() {
   loadingReference.value = true;
   try {
@@ -126,8 +134,11 @@ async function seedReferenceData() {
   } catch (error) {
     console.error(`Failed to seed reference data (${props.module}):`, error);
     toast({
-      title: "Error",
-      description: t(`layout.navigation.${props.module}.seed.reference.error`),
+      title: t("common.errors.unexpected"),
+      description: failureDescription(
+        error,
+        `layout.navigation.${props.module}.seed.reference.error`
+      ),
       variant: "destructive",
     });
   } finally {
@@ -146,8 +157,11 @@ async function seedSampleData() {
   } catch (error) {
     console.error(`Failed to seed sample data (${props.module}):`, error);
     toast({
-      title: "Error",
-      description: t(`layout.navigation.${props.module}.seed.sample.error`),
+      title: t("common.errors.unexpected"),
+      description: failureDescription(
+        error,
+        `layout.navigation.${props.module}.seed.sample.error`
+      ),
       variant: "destructive",
     });
   } finally {

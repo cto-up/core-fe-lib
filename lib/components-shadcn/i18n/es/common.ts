@@ -177,4 +177,13 @@ export default {
     uploadEndedEarly:
       "La subida terminó antes de que el servidor la confirmara.",
   },
+  selector: {
+    loadFailed: "No se pudieron cargar las opciones",
+    searchFailed: "La búsqueda falló",
+  },
+  language: {
+    loadFailed: "No se pudo cambiar el idioma",
+    loadFailedDesc:
+      "La traducción {lang} no se pudo cargar; la interfaz se queda como está.",
+  },
 };

@@ -174,4 +174,13 @@ export default {
     uploadEndedEarly:
       "Der Upload wurde beendet, bevor der Server ihn bestätigt hat.",
   },
+  selector: {
+    loadFailed: "Die Optionen konnten nicht geladen werden",
+    searchFailed: "Die Suche ist fehlgeschlagen",
+  },
+  language: {
+    loadFailed: "Die Sprache konnte nicht gewechselt werden",
+    loadFailedDesc:
+      "Die Übersetzung {lang} konnte nicht geladen werden; die Oberfläche bleibt, wie sie ist.",
+  },
 };

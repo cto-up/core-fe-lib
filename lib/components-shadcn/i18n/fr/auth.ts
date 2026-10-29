@@ -143,6 +143,7 @@ export default {
       resendSuccess:
         "E-mail de vérification envoyé ! Veuillez consulter votre boîte de réception.",
       networkError: "Erreur réseau. Veuillez réessayer.",
+      resendFailed: "Impossible de renvoyer l'e-mail de vérification.",
     },
   },
   passwordReset: {

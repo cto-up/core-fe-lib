@@ -175,4 +175,13 @@ export default {
     uploadErrorServer: "Erro de carregamento",
     uploadEndedEarly: "O envio terminou antes de o servidor o confirmar.",
   },
+  selector: {
+    loadFailed: "Não foi possível carregar as opções",
+    searchFailed: "A pesquisa falhou",
+  },
+  language: {
+    loadFailed: "Não foi possível mudar o idioma",
+    loadFailedDesc:
+      "A tradução {lang} não pôde ser carregada; a interface fica como está.",
+  },
 };

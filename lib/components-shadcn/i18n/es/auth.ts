@@ -138,6 +138,7 @@ export default {
       resendSuccess:
         "¡Correo de verificación enviado! Por favor, revisa tu bandeja de entrada.",
       networkError: "Error de red. Por favor, inténtalo de nuevo.",
+      resendFailed: "No se pudo reenviar el correo de verificación.",
     },
   },
   passwordReset: {

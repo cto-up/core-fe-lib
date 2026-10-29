@@ -9,14 +9,17 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Languages } from "lucide-vue-next";
+import { useToast } from "../ui/toast/use-toast";
 import {
   getDefaultLocale,
   getSupportedLocales,
 } from "../i18n/supported-locales";
+import { serverMessageOf } from "../../utils/server-message";
 
 const { t, locale, getLocaleMessage, setLocaleMessage } = useI18n({
   useScope: "global",
 });
+const { toast } = useToast();
 
 async function loadLocale(lang: string) {
   // Check if we already have shell messages for this locale
@@ -36,7 +39,16 @@ async function loadLocale(lang: string) {
         ...(messages.default || {}),
       });
     } catch (e) {
+      // Switching anyway would leave the whole interface on raw i18n keys.
+      // Stay on the locale that has messages, and say why the switch failed.
       console.error(`Failed to load i18n messages for ${lang}:`, e);
+      toast({
+        title: t("common.language.loadFailed"),
+        description:
+          serverMessageOf(e) ?? t("common.language.loadFailedDesc", { lang }),
+        variant: "destructive",
+      });
+      return;
     }
   }
   locale.value = lang;

@@ -175,4 +175,13 @@ export default {
     uploadEndedEarly:
       "L'envoi s'est interrompu avant la confirmation du serveur.",
   },
+  selector: {
+    loadFailed: "Impossible de charger les options",
+    searchFailed: "La recherche a échoué",
+  },
+  language: {
+    loadFailed: "Impossible de changer la langue",
+    loadFailedDesc:
+      "La traduction {lang} n'a pas pu être chargée ; l'interface reste telle quelle.",
+  },
 };
