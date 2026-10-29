@@ -121,7 +121,13 @@ export function extractKratosError(error: unknown): ParsedKratosError | null {
       id: anyError?.body?.code || "unknown_error",
       status: (anyError as Record<string, unknown>)?.status,
       reason: "",
-      message: anyError?.body?.message || "Network error",
+      // A thrown Error that is not an HTTP failure keeps its own message:
+      // calling every such failure "Network error" hid the real cause.
+      message:
+        anyError?.body?.message ||
+        anyError?.body?.error ||
+        (error instanceof Error && error.message) ||
+        "Network error",
     };
     return newError as ParsedKratosError;
   }

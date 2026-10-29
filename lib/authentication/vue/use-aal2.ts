@@ -7,6 +7,7 @@ import { inject } from "vue";
 import { notificationServiceKey } from "../../plugins/injection-keys";
 import { useAal2Store } from "./aal2-store";
 import { buildWebAuthnVerifyUrl } from "../core/auth-domain";
+import { aal2FailureReason, isAal2CodeRejected } from "../core/aal2-manager";
 
 /**
  * Same-tab WebAuthn fallback: navigates to the auth subdomain for the ceremony.
@@ -36,6 +37,15 @@ export function useAal2() {
     );
   }
 
+  // "Invalid code" only when Kratos rejected the code; an expired flow, a CSRF
+  // refusal or a dropped connection says what it is.
+  function failureText(error: unknown, invalidCodeKey: string): string {
+    if (isAal2CodeRejected(error)) return t(invalidCodeKey);
+    const reason = aal2FailureReason(error);
+    const title = t("mfa.notifications.verificationError");
+    return reason ? `${title}: ${reason}` : title;
+  }
+
   async function submitTotpVerification() {
     if (!aal2Store.state.flowId || !aal2Store.state.totpCode) {
       aal2Store.updateState({ error: t("mfa.setup.totp.enterCode") });
@@ -51,8 +61,7 @@ export function useAal2() {
     } catch (error: unknown) {
       console.error("TOTP verification failed:", error);
       aal2Store.updateState({
-        error:
-          t("mfa.setup.totp.invalidCode") || "Invalid code. Please try again.",
+        error: failureText(error, "mfa.setup.totp.invalidCode"),
       });
     }
   }
@@ -72,8 +81,7 @@ export function useAal2() {
     } catch (error: unknown) {
       console.error("Lookup verification failed:", error);
       aal2Store.updateState({
-        error:
-          t("mfa.recovery.invalidCode") || "Invalid code. Please try again.",
+        error: failureText(error, "mfa.recovery.invalidCode"),
       });
     }
   }

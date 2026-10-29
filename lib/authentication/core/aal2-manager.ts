@@ -10,8 +10,40 @@ import type {
   LookupSecretLoginFlowData,
 } from "./kratos-service";
 
+import {
+  extractKratosError,
+  getUserFriendlyMessage,
+} from "./kratos-error-processor";
+
 // Re-export types for consumers
 export type { Aal2VerificationState, IStateStore } from "./types/aal2.types";
+
+// Kratos UI text ids that mean the code itself was wrong: 4000008 "the
+// provided authentication code is invalid", 4000016 "the backup recovery code
+// is not valid", 4000017 "this backup recovery code has already been used".
+const CODE_REJECTED_IDS = new Set([4000008, 4000016, 4000017]);
+
+/** True only when Kratos rejected the code itself, not the flow or transport. */
+export function isAal2CodeRejected(error: unknown): boolean {
+  const parsed = extractKratosError(error);
+  return (parsed?.uiMessages ?? []).some(
+    (m) => m.type === "error" && CODE_REJECTED_IDS.has(m.id)
+  );
+}
+
+/** Why a verification failed, in Kratos' words (or the transport's). */
+export function aal2FailureReason(error: unknown): string {
+  return (
+    getUserFriendlyMessage(error) ??
+    (error instanceof Error ? error.message : "")
+  );
+}
+
+function aal2ErrorText(error: unknown, invalidCodeText: string): string {
+  if (isAal2CodeRejected(error)) return invalidCodeText;
+  const reason = aal2FailureReason(error);
+  return reason ? `Verification failed: ${reason}` : "Verification failed";
+}
 
 export class Aal2Manager {
   private verificationResolve: ((success: boolean) => void) | null = null;
@@ -142,7 +174,9 @@ export class Aal2Manager {
       await kratosService.submitLoginFlow(state.flowId, totpData);
       this.resolveVerification(true);
     } catch (error) {
-      this.store.setState({ error: "Invalid code. Please try again." });
+      this.store.setState({
+        error: aal2ErrorText(error, "Invalid code. Please try again."),
+      });
       throw error;
     } finally {
       this.store.setState({ loading: false });
@@ -172,7 +206,9 @@ export class Aal2Manager {
       await kratosService.submitLoginFlow(state.flowId, lookupData);
       this.resolveVerification(true);
     } catch (error) {
-      this.store.setState({ error: "Invalid code. Please try again." });
+      this.store.setState({
+        error: aal2ErrorText(error, "Invalid code. Please try again."),
+      });
       throw error;
     } finally {
       this.store.setState({ loading: false });
