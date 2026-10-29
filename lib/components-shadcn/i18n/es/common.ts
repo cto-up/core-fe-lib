@@ -174,5 +174,7 @@ export default {
     uploadError: "Error en la subida",
     uploadErrorDesc: "Error desconocido",
     uploadErrorServer: "Error de subida",
+    uploadEndedEarly:
+      "La subida terminó antes de que el servidor la confirmara.",
   },
 };

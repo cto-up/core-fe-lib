@@ -284,7 +284,12 @@ import "vue-advanced-cropper/dist/style.css";
 import axios from "axios";
 import { ref, computed, onMounted, onUnmounted, useId, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import { handleSSEProgress } from "../../utils/sseHandler";
+import {
+  flushSSEProgress,
+  handleSSEProgress,
+  type SSEHandlerOptions,
+  uploadFailureReason,
+} from "../../utils/sseHandler";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { Switch } from "../ui/switch";
@@ -563,58 +568,87 @@ const uploadFile = async (file: File) => {
     const fullText = { current: "" };
     const formData = new FormData();
     formData.append("file", file, file.name);
+    // The request resolves 200 even when the server reports an ERROR event,
+    // or when the stream stops before progress 100.
+    let serverError: string | null = null;
+    let completed = false;
 
-    await axios({
+    const sseOptions: SSEHandlerOptions<unknown> = {
+      onMessage: (msg) => {
+        message.value = msg;
+      },
+      onInfo: (msg) => {
+        if (msg.startsWith("uri:")) {
+          let uri = msg.substring(4);
+          if (uri.startsWith("/")) {
+            uri = `${import.meta.env.VITE_HTTP_API ?? ""}${uri}`;
+          }
+          emit("uploaded-with-uri", uri);
+          // if (isImageMode.value) imgTarget.value = uri;
+          // Do NOT overwrite imgTarget with the remote URL here:
+          // imgTarget already holds the local data URL (from crop/readAsDataURL)
+          // which renders reliably. Fetching the remote URL cross-origin in
+          // production fails (no cookies sent on <img> requests) and would
+          // hide the image after a successful upload.
+        }
+        message.value = msg;
+      },
+      onError: (msg) => {
+        serverError ??= msg;
+        message.value = msg;
+        progress.value = 0;
+      },
+      onProgress: (p) => {
+        progress.value = p / 100;
+        if (p === 100 && !serverError && !completed) {
+          completed = true;
+          emit("uploaded");
+        }
+      },
+    };
+
+    const response = await axios({
       url: props.postEndPoint,
       method: "POST",
       data: formData,
       headers: { "Content-Type": "multipart/form-data" },
+      responseType: "text",
       onDownloadProgress: (progressEvent) => {
-        handleSSEProgress(progressEvent, lastPos, fullText, {
-          onMessage: (msg) => {
-            message.value = msg;
-          },
-          onInfo: (msg) => {
-            if (msg.startsWith("uri:")) {
-              let uri = msg.substring(4);
-              if (uri.startsWith("/")) {
-                uri = `${import.meta.env.VITE_HTTP_API ?? ""}${uri}`;
-              }
-              emit("uploaded-with-uri", uri);
-              // if (isImageMode.value) imgTarget.value = uri;
-              // Do NOT overwrite imgTarget with the remote URL here:
-              // imgTarget already holds the local data URL (from crop/readAsDataURL)
-              // which renders reliably. Fetching the remote URL cross-origin in
-              // production fails (no cookies sent on <img> requests) and would
-              // hide the image after a successful upload.
-            }
-            message.value = msg;
-          },
-          onError: (msg) => {
-            toast({
-              title: t("common.uploader.uploadErrorServer"),
-              description: msg,
-              variant: "destructive",
-            });
-            message.value = msg;
-            progress.value = 0;
-          },
-          onProgress: (p) => {
-            progress.value = p / 100;
-            if (p === 100) emit("uploaded");
-          },
-        });
+        handleSSEProgress(progressEvent, lastPos, fullText, sseOptions);
       },
     });
+    flushSSEProgress(
+      String(response.data ?? ""),
+      lastPos,
+      fullText,
+      sseOptions
+    );
 
+    if (!serverError && !completed) {
+      serverError = t("common.uploader.uploadEndedEarly");
+    }
+    if (serverError) {
+      hasError.value = true;
+      errorMessage.value = serverError;
+      toast({
+        title: t("common.uploader.uploadErrorServer"),
+        description: serverError,
+        variant: "fault",
+      });
+      return;
+    }
     toast({ title: t("common.uploader.uploadSuccess") });
   } catch (err: unknown) {
+    const reason = uploadFailureReason(
+      err,
+      t("common.uploader.uploadErrorDesc")
+    );
+    hasError.value = true;
+    errorMessage.value = reason;
     toast({
       title: t("common.uploader.uploadError"),
-      description:
-        (err instanceof Error ? err.message : null) ||
-        t("common.uploader.uploadErrorDesc"),
-      variant: "destructive",
+      description: reason,
+      variant: "fault",
     });
   } finally {
     uploading.value = false;

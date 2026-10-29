@@ -172,5 +172,7 @@ export default {
     uploadError: "Échec du téléchargement",
     uploadErrorDesc: "Erreur inconnue",
     uploadErrorServer: "Erreur de téléchargement",
+    uploadEndedEarly:
+      "L'envoi s'est interrompu avant la confirmation du serveur.",
   },
 };

@@ -102,6 +102,14 @@
             {{ message }}
           </p>
         </div>
+        <p
+          v-else-if="uploadError"
+          role="alert"
+          class="upload-error mx-6 mb-4 flex items-start gap-2 rounded-md border border-error bg-error/5 px-3 py-2 text-sm text-error"
+        >
+          <AlertTriangle class="h-4 w-4 mt-0.5 shrink-0" />
+          {{ uploadError }}
+        </p>
 
         <DialogFooter class="dialog-actions px-6 py-4 border-t">
           <Button
@@ -131,7 +139,12 @@ import { Cropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 import axios from "axios";
 import { defineComponent, onMounted, onUnmounted, ref, computed } from "vue";
-import { handleSSEProgress } from "../../utils/sseHandler";
+import {
+  flushSSEProgress,
+  handleSSEProgress,
+  type SSEHandlerOptions,
+  uploadFailureReason,
+} from "../../utils/sseHandler";
 import BUploaderBase from "./BUploaderBase.vue";
 import {
   Dialog,
@@ -143,7 +156,13 @@ import {
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { useToast } from "../ui/toast/use-toast";
-import { X, Maximize2, Minimize2, Loader2 } from "lucide-vue-next";
+import {
+  X,
+  Maximize2,
+  Minimize2,
+  Loader2,
+  AlertTriangle,
+} from "lucide-vue-next";
 
 interface ChangeEvent {
   coordinates: { x: number; y: number };
@@ -166,6 +185,7 @@ export default defineComponent({
     Maximize2,
     Minimize2,
     Loader2,
+    AlertTriangle,
   },
   props: {
     getEndPoint: {
@@ -206,6 +226,7 @@ export default defineComponent({
     const uploading = ref(false);
     const progress = ref(0.0);
     const message = ref("");
+    const uploadError = ref("");
     const isFullscreen = ref(false);
     const selectedFileName = ref("");
 
@@ -231,6 +252,7 @@ export default defineComponent({
       selectedFileName.value = file.name;
       if (validateFile(file)) {
         imageHasError.value = false;
+        uploadError.value = "";
         revoke();
         uploadDialog.value = true;
         imgSource.value = (await read(file)) as string;
@@ -305,6 +327,7 @@ export default defineComponent({
     const handleUpload = async function () {
       uploading.value = true;
       progress.value = 0;
+      uploadError.value = "";
 
       try {
         let blob: Blob | null = null;
@@ -322,73 +345,99 @@ export default defineComponent({
 
         message.value = "Preparing upload...";
 
-        const lastProcessedPosition = ref({ current: 0 });
-        const fullResponseText = ref({ current: "" });
+        const lastProcessedPosition = { current: 0 };
+        const fullResponseText = { current: "" };
+        // The request resolves 200 even when the server reports an ERROR
+        // event, or when the stream stops before progress 100.
+        let serverError: string | null = null;
+        let completed = false;
 
         const formData: FormData = new FormData();
         formData.append("file", blob, selectedFileName.value);
 
         const endPoint = props.postEndPoint;
 
-        await axios({
+        const sseOptions: SSEHandlerOptions<unknown> = {
+          onMessage: (inmessage) => {
+            message.value = inmessage;
+          },
+          onInfo: (inmessage) => {
+            // if starts with uri: then emit the uri
+            //uri:/public-api/v1/care/circles/48901819-c9b7-49e6-b965-4e6f7714d26d/files/a6c0242e-721d-4791-83a8-758fd8c565c6
+            if (inmessage.startsWith("uri:")) {
+              emitUploadedWithURI(inmessage.substring(4));
+            }
+            message.value = inmessage;
+          },
+          onError: (inmessage) => {
+            serverError ??= inmessage;
+            progress.value = 0;
+            message.value = "Error: " + inmessage;
+          },
+          onProgress: (inProgress) => {
+            progress.value = inProgress / 100;
+            if (inProgress === 100 && !serverError) {
+              completed = true;
+              emitUploaded();
+            }
+          },
+        };
+
+        const response = await axios({
           url: endPoint,
           data: formData,
           headers: {
             "Content-Type": "multipart/form-data",
           },
           method: "POST",
+          responseType: "text",
           onDownloadProgress: (progressEvent) => {
             handleSSEProgress(
               progressEvent,
-              lastProcessedPosition.value,
-              fullResponseText.value,
-              {
-                onMessage: (inmessage) => {
-                  message.value = inmessage;
-                  console.log("onMessage received:", inmessage);
-                },
-                onInfo: (inmessage) => {
-                  // if starts with uri: then emit the uri
-                  //uri:/public-api/v1/care/circles/48901819-c9b7-49e6-b965-4e6f7714d26d/files/a6c0242e-721d-4791-83a8-758fd8c565c6
-                  if (inmessage.startsWith("uri:")) {
-                    emitUploadedWithURI(inmessage.substring(4));
-                  }
-                  message.value = inmessage;
-                },
-                onError: (inmessage) => {
-                  toast({
-                    title: "Upload error",
-                    description: inmessage,
-                    variant: "destructive",
-                  });
-                  progress.value = 0;
-                  message.value = "Error: " + inmessage;
-                },
-                onProgress: (inProgress) => {
-                  progress.value = inProgress / 100;
-                  if (inProgress === 100) {
-                    emitUploaded();
-                  }
-                },
-              }
+              lastProcessedPosition,
+              fullResponseText,
+              sseOptions
             );
           },
         });
+        flushSSEProgress(
+          String(response.data ?? ""),
+          lastProcessedPosition,
+          fullResponseText,
+          sseOptions
+        );
 
+        if (!serverError && !completed) {
+          serverError = "The upload ended before the server confirmed it";
+          message.value = "Error: " + serverError;
+        }
         uploading.value = false;
+        if (serverError) {
+          uploadError.value = serverError;
+          // Keep the dialog open so the reason stays next to the image.
+          toast({
+            title: "Upload failed",
+            description: serverError,
+            variant: "fault",
+          });
+          return;
+        }
         uploadDialog.value = false;
 
         toast({
           title: "Success",
           description: "Image uploaded successfully!",
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error("Error uploading image:", error);
         uploading.value = false;
+        const reason = uploadFailureReason(error, "Failed to upload image");
+        message.value = "Error: " + reason;
+        uploadError.value = reason;
         toast({
           title: "Upload failed",
-          description: error.message || "Failed to upload image",
-          variant: "destructive",
+          description: reason,
+          variant: "fault",
         });
       }
     };
@@ -440,6 +489,7 @@ export default defineComponent({
       cropper,
       progress,
       message,
+      uploadError,
       uploading,
       hasImage,
       isFullscreen,

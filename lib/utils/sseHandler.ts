@@ -382,3 +382,20 @@ export function openLiveStream(
     es = null;
   };
 }
+
+/**
+ * Why an upload request failed: the server's `error`/`message` body when it
+ * sent one, else the transport's message, else `fallback`.
+ */
+export function uploadFailureReason(error: unknown, fallback: string): string {
+  const e = error as {
+    message?: string;
+    response?: { data?: { error?: string; message?: string } | string };
+  };
+  const data = e?.response?.data;
+  if (data && typeof data === "object") {
+    if (data.error) return data.error;
+    if (data.message) return data.message;
+  }
+  return e?.message || fallback;
+}

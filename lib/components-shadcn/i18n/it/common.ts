@@ -171,5 +171,7 @@ export default {
     uploadError: "Caricamento non riuscito",
     uploadErrorDesc: "Errore sconosciuto",
     uploadErrorServer: "Errore di caricamento",
+    uploadEndedEarly:
+      "Il caricamento si è interrotto prima della conferma del server.",
   },
 };

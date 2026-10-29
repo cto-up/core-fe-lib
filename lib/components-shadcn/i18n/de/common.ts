@@ -171,5 +171,7 @@ export default {
     uploadError: "Upload fehlgeschlagen",
     uploadErrorDesc: "Unbekannter Fehler",
     uploadErrorServer: "Upload-Fehler",
+    uploadEndedEarly:
+      "Der Upload wurde beendet, bevor der Server ihn bestätigt hat.",
   },
 };

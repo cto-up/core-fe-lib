@@ -52,6 +52,9 @@
               </Button>
             </div>
           </div>
+          <p v-if="hasError" role="alert" class="text-sm text-error mt-2">
+            {{ errorMessage }}
+          </p>
         </div>
       </template>
 
@@ -112,7 +115,12 @@ import {
   AlertCircle,
 } from "lucide-vue-next";
 import { cn } from "../utils";
-import { handleSSEProgress } from "../../utils/sseHandler";
+import {
+  flushSSEProgress,
+  handleSSEProgress,
+  type SSEHandlerOptions,
+  uploadFailureReason,
+} from "../../utils/sseHandler";
 
 interface Props {
   postEndPoint: string;
@@ -220,7 +228,7 @@ const processFile = (file: File) => {
     errorMessage.value = validation.error || "Invalid file";
     toast({
       title: validation.error,
-      variant: "destructive",
+      variant: "warning",
     });
     return;
   }
@@ -262,8 +270,8 @@ const handleUpload = () => {
   const formData = new FormData();
   formData.append("file", selectedFile.value);
 
-  const lastProcessedPosition = ref({ current: 0 });
-  const fullResponseText = ref({ current: "" });
+  const lastProcessedPosition = { current: 0 };
+  const fullResponseText = { current: "" };
 
   let url = props.postEndPoint;
   if (props.queryParams && Object.keys(props.queryParams).length > 0) {
@@ -276,64 +284,78 @@ const handleUpload = () => {
     url = `${props.postEndPoint}?${params.toString()}`;
   }
 
-  axios({
+  // The request resolves 200 even when the server reports an ERROR event, or
+  // when the stream stops before progress 100: settle on what the stream said.
+  let failed = false;
+  let completed = false;
+  const fail = (reason: string) => {
+    if (failed) return;
+    failed = true;
+    toast({
+      title: "Upload failed",
+      description: reason,
+      variant: "fault",
+    });
+    progress.value = 0;
+    message.value = "Error: " + reason;
+    hasError.value = true;
+    errorMessage.value = reason;
+    uploading.value = false;
+  };
+
+  const sseOptions: SSEHandlerOptions<unknown> = {
+    onMessage: (inmessage: string) => {
+      message.value = inmessage;
+    },
+    onInfo: (inmessage: string) => {
+      message.value = inmessage;
+    },
+    onError: fail,
+    onProgress: (inProgress: number) => {
+      progress.value = inProgress / 100;
+      if (inProgress === 100 && !failed && !completed) {
+        completed = true;
+        emit("uploaded");
+        message.value = "Upload complete!";
+        setTimeout(() => {
+          uploading.value = false;
+          clearFile();
+        }, 2000);
+      }
+    },
+  };
+
+  return axios({
     url,
     data: formData,
     headers: {
       "Content-Type": "multipart/form-data",
     },
     method: "POST",
+    responseType: "text",
     onDownloadProgress: (progressEvent) => {
       handleSSEProgress(
         progressEvent,
-        lastProcessedPosition.value,
-        fullResponseText.value,
-        {
-          onMessage: (inmessage: string) => {
-            message.value = inmessage;
-          },
-          onInfo: (inmessage: string) => {
-            message.value = inmessage;
-          },
-          onError: (inmessage: string) => {
-            toast({
-              title: inmessage,
-              variant: "destructive",
-            });
-            progress.value = 0;
-            message.value = "Error: " + inmessage;
-            hasError.value = true;
-            errorMessage.value = inmessage;
-            uploading.value = false;
-          },
-          onProgress: (inProgress: number) => {
-            progress.value = inProgress / 100;
-            if (inProgress === 100) {
-              emit("uploaded");
-              message.value = "Upload complete!";
-              setTimeout(() => {
-                uploading.value = false;
-                clearFile();
-              }, 2000);
-            }
-          },
-        }
+        lastProcessedPosition,
+        fullResponseText,
+        sseOptions
       );
     },
   })
-    .then(() => {
-      // Handle success if needed
+    .then((response) => {
+      flushSSEProgress(
+        String(response.data ?? ""),
+        lastProcessedPosition,
+        fullResponseText,
+        sseOptions
+      );
+      if (!completed) {
+        fail("The upload ended before the server confirmed it");
+      }
     })
-    .catch((error: Error) => {
+    .catch((error: unknown) => {
       console.error("Error uploading file:", error);
-      uploading.value = false;
-      hasError.value = true;
-      errorMessage.value = error.message;
-      toast({
-        title: "Upload failed",
-        description: error.message,
-        variant: "destructive",
-      });
+      fail(uploadFailureReason(error, "Upload failed"));
     });
 };
 

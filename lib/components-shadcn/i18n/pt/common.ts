@@ -173,5 +173,6 @@ export default {
     uploadError: "Falha no carregamento",
     uploadErrorDesc: "Erro desconhecido",
     uploadErrorServer: "Erro de carregamento",
+    uploadEndedEarly: "O envio terminou antes de o servidor o confirmar.",
   },
 };
