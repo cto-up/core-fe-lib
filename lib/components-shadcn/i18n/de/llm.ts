@@ -1,6 +1,7 @@
 export default {
   select: {
     placeholder: "Modell auswählen…",
+    loadError: "Modelle konnten nicht geladen werden: {reason}",
     loading: "Wird geladen…",
     empty:
       "Kein Modell verfügbar — fügen Sie unter KI-Anbieter einen Schlüssel hinzu",

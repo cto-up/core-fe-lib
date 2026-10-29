@@ -70,4 +70,19 @@ describe("LLMSelect reads its list again when it opens", () => {
       )
     ).toEqual(["openai/gpt-4o-mini"]);
   });
+
+  it("says why a failed load failed instead of offering no model", async () => {
+    const fetcher = vi
+      .fn<(args: LLMFetcherArgs) => Promise<LLMRegistryEntry[]>>()
+      .mockRejectedValueOnce({ body: { error: "registry unreachable" } });
+    const w = mount(LLMSelect, {
+      props: { modelValue: "", fetcher },
+      global: { plugins: [i18n] },
+    });
+    await flushPromises();
+    expect((w.vm as unknown as { loadError: string }).loadError).toBe(
+      "registry unreachable"
+    );
+    expect(w.find("[role=alert]").exists()).toBe(true);
+  });
 });

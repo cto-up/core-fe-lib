@@ -1,6 +1,7 @@
 export default {
   select: {
     placeholder: "Select a model…",
+    loadError: "Couldn't load models: {reason}",
     loading: "Loading…",
     // The list only offers models the workspace holds a credential for, so an
     // empty one is a configuration state with an action, not a failure.

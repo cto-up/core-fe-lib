@@ -1,6 +1,7 @@
 export default {
   select: {
     placeholder: "Seleccionar un modelo…",
+    loadError: "No se pudieron cargar los modelos: {reason}",
     loading: "Cargando…",
     empty: "Ningún modelo disponible — añada una clave en Proveedores de IA",
     noKey: {

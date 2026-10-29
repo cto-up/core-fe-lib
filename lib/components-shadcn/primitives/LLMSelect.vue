@@ -96,6 +96,11 @@
         <SelectGroup v-if="loading">
           <SelectLabel>{{ t("llm.select.loading") }}</SelectLabel>
         </SelectGroup>
+        <SelectGroup v-else-if="loadError && !groups.length">
+          <SelectLabel class="text-error font-normal">
+            {{ t("llm.select.loadError", { reason: loadError }) }}
+          </SelectLabel>
+        </SelectGroup>
         <SelectGroup v-else-if="!groups.length">
           <SelectLabel>{{ t("llm.select.empty") }}</SelectLabel>
         </SelectGroup>
@@ -113,6 +118,9 @@
       class="text-xs text-amber-700 dark:text-amber-400"
     >
       {{ t("llm.select.noKey.selected", { provider: selectedProvider }) }}
+    </p>
+    <p v-if="loadError" role="alert" class="text-xs text-error">
+      {{ t("llm.select.loadError", { reason: loadError }) }}
     </p>
     <p v-if="hint" class="text-xs text-muted-foreground">
       {{ hint }}
@@ -149,6 +157,7 @@ import {
 } from "./llm-modalities";
 import { readLastUsedLLM } from "./llm-last-used";
 import { priceLabel as formatPrice } from "./llm-price";
+import { errorReason } from "../../utils/errorReason";
 
 export interface LLMStats {
   samples: number;
@@ -295,6 +304,9 @@ const selectedUnreachable = computed(
 );
 const selectedProvider = computed(() => selectedEntry.value?.provider ?? "");
 const loading = ref(false);
+// Why the last fetch failed. A failed load must not read as "no model
+// available", whose remedy (add a key) is the wrong one.
+const loadError = ref("");
 
 const PROVIDER_ORDER = [
   "googleai",
@@ -384,8 +396,11 @@ async function fetchEntries(quiet = false) {
     });
     if (seq !== fetchSeq) return;
     entries.value = Array.isArray(fetched) ? fetched : [];
-  } catch {
-    if (seq === fetchSeq && !quiet) entries.value = [];
+    loadError.value = "";
+  } catch (e) {
+    if (seq !== fetchSeq) return;
+    loadError.value = errorReason(e);
+    if (!quiet) entries.value = [];
   } finally {
     if (seq === fetchSeq) loading.value = false;
   }
