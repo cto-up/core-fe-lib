@@ -7,7 +7,7 @@ export type PersonalDataAccess = {
     actorUserId: string;
     subjectUserId: string;
     /**
-     * what was read, as "<module>.<kind>", e.g. "aiemployee.run"
+     * what was read, as "<module>.<kind>", e.g. "agent.run"
      */
     resource: string;
     resourceId?: string | null;

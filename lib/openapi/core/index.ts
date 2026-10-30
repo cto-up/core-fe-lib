@@ -54,6 +54,7 @@ export type { Translation } from './models/Translation';
 export type { User } from './models/User';
 export { UserActionSchema } from './models/UserActionSchema';
 export type { UserDataExport } from './models/UserDataExport';
+export type { UserDataExportFailure } from './models/UserDataExportFailure';
 export type { UserProfileSchema } from './models/UserProfileSchema';
 
 export { AuthService } from './services/AuthService';

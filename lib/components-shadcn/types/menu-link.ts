@@ -10,8 +10,8 @@ export interface MenuItem {
   icon?: string;
   link?: string;
   /** Extra route prefixes that count as this item for the active highlight,
-   *  for pages that live outside `link` (e.g. `/aiemployee/employees` for a
-   *  list at `/aiemployee/list`). */
+   *  for pages that live outside `link` (e.g. `/agents/employees` for a
+   *  list at `/agents/list`). */
   activePaths?: string[];
   requiredPrivilege?: Role;
   linkType?: string;
