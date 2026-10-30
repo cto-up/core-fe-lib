@@ -34,7 +34,7 @@ export function visibleItems(
  * Without this, a module can only put an item in a shared section by
  * re-declaring the whole section, and the sidebar renders two sections with
  * the same name — which is what "Settings" did once connections moved out of
- * aiemployee-fe-lib (ADR 054).
+ * agent-fe-lib (ADR 054).
  *
  * Two orderings, deliberately independent:
  *   - the section sits where its FIRST contributor sits in registration order,
