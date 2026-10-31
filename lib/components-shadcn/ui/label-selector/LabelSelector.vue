@@ -22,7 +22,11 @@
             :placeholder="searchPlaceholder"
             @update:model-value="onSearch"
           />
-          <CommandEmpty>{{ emptyText }}</CommandEmpty>
+          <!-- A failed search must not wear the empty list's clothes: "no
+               results" and "could not search" are different situations. -->
+          <CommandEmpty>
+            {{ loadFailed ? failedText : emptyText }}
+          </CommandEmpty>
           <CommandList>
             <CommandGroup>
               <CommandItem
@@ -88,6 +92,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { Check, ChevronsUpDown, X } from "lucide-vue-next";
 import { cn } from "../../utils";
 import { useToast } from "../toast";
+import { serverMessageOf } from "../../../utils/server-message";
+import { useI18n } from "vue-i18n";
 
 interface Props {
   modelValue?: string | string[];
@@ -116,10 +122,14 @@ const emit = defineEmits<{
 }>();
 
 const { toast } = useToast();
+const { t } = useI18n();
 
 const open = ref(false);
 const loading = ref(false);
 const options = ref<string[]>([]);
+/** The last search failed; the empty state must say so, not "no results". */
+const loadFailed = ref(false);
+const failedText = ref("");
 const selectedLabels = ref<string[]>([]);
 const searchTimeout = ref<NodeJS.Timeout>();
 
@@ -143,6 +153,8 @@ const loadOptions = async (query?: string) => {
   }
 
   loading.value = true;
+  loadFailed.value = false;
+  failedText.value = "";
   try {
     let url = props.url;
     if (query) {
@@ -150,11 +162,21 @@ const loadOptions = async (query?: string) => {
     }
 
     const { data } = await axios.get(url);
-    options.value = data.map((option: any) => option[props.optionLabel]);
+    options.value = data.map(
+      (option: Record<string, string>) => option[props.optionLabel]
+    );
   } catch (err) {
     console.error("Failed to load options:", err);
+    loadFailed.value = true;
+    // The server's refusal quoted where the user is looking, and in the toast
+    // too: a search that failed is not "no results".
+    const cause = serverMessageOf(err);
+    failedText.value = cause
+      ? `${t("common.selector.searchFailed")}: ${cause}`
+      : t("common.selector.searchFailed");
     toast({
-      title: "Failed to load options",
+      title: t("common.selector.loadFailed"),
+      description: cause ?? undefined,
       variant: "destructive",
     });
   } finally {

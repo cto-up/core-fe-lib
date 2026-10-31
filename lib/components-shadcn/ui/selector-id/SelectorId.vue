@@ -22,7 +22,11 @@
             :placeholder="searchPlaceholder"
             @update:model-value="onSearch"
           />
-          <CommandEmpty>{{ emptyText }}</CommandEmpty>
+          <!-- A failed search must not wear the empty list's clothes: "no
+               results" and "could not search" are different situations. -->
+          <CommandEmpty>
+            {{ loadFailed ? failedText : emptyText }}
+          </CommandEmpty>
           <CommandList>
             <CommandGroup>
               <CommandItem
@@ -70,6 +74,7 @@ import { cn } from "../../utils";
 // consumers pass :use-i18n — so the import is what moves.
 import { useI18n as useVueI18n } from "vue-i18n";
 import { useToast } from "../toast";
+import { serverMessageOf } from "../../../utils/server-message";
 
 interface Props {
   modelValue?: string | string[];
@@ -99,14 +104,19 @@ const emit = defineEmits<{
   "update:extra": [value: string];
 }>();
 
-const { locale } = useVueI18n();
+const { locale, t } = useVueI18n();
 const { toast } = useToast();
 
 const open = ref(false);
 const loading = ref(false);
-const options = ref<any[]>([]);
-const internalModel = ref<any>(null);
+type Option = Record<string, unknown>;
+
+const options = ref<Option[]>([]);
+const internalModel = ref<Option | Option[] | null>(null);
 const searchQuery = ref("");
+/** The last search failed; the empty state must say so, not "no results". */
+const loadFailed = ref(false);
+const failedText = ref("");
 const searchTimeout = ref<NodeJS.Timeout>();
 
 const displayValue = computed(() => {
@@ -175,7 +185,8 @@ const loadOne = async (newValue: string | string[] | undefined) => {
   } catch (err) {
     console.error("Failed to load option:", err);
     toast({
-      title: "Failed to load option",
+      title: t("common.selector.loadFailed"),
+      description: serverMessageOf(err) ?? undefined,
       variant: "destructive",
     });
   } finally {
@@ -185,13 +196,23 @@ const loadOne = async (newValue: string | string[] | undefined) => {
 
 const loadOptions = async (query?: string) => {
   loading.value = true;
+  loadFailed.value = false;
+  failedText.value = "";
   try {
     const { data } = await axios.get(buildUrl(props.url, undefined, query));
     options.value = data ?? [];
   } catch (err) {
     console.error("Failed to load options:", err);
+    loadFailed.value = true;
+    // The server's refusal quoted where the user is looking, and in the toast
+    // too: a search that failed is not "no results".
+    const cause = serverMessageOf(err);
+    failedText.value = cause
+      ? `${t("common.selector.searchFailed")}: ${cause}`
+      : t("common.selector.searchFailed");
     toast({
-      title: "Failed to load options",
+      title: t("common.selector.loadFailed"),
+      description: cause ?? undefined,
       variant: "destructive",
     });
   } finally {
@@ -211,7 +232,7 @@ const onSearch = (value: string) => {
   }, 500);
 };
 
-const isSelected = (option: any) => {
+const isSelected = (option: Option) => {
   if (!internalModel.value) return false;
   if (Array.isArray(internalModel.value)) {
     return internalModel.value.some(
@@ -221,7 +242,7 @@ const isSelected = (option: any) => {
   return internalModel.value[props.optionValue] === option[props.optionValue];
 };
 
-const onSelect = (option: any) => {
+const onSelect = (option: Option) => {
   if (props.multiple) {
     if (!Array.isArray(internalModel.value)) {
       internalModel.value = [];
