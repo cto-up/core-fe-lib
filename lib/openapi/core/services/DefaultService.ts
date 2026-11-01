@@ -9,6 +9,9 @@ import type { APITokenCreated } from '../models/APITokenCreated';
 import type { APITokenRevoke } from '../models/APITokenRevoke';
 import type { ClientApplication } from '../models/ClientApplication';
 import type { Config } from '../models/Config';
+import type { EmailDelivery } from '../models/EmailDelivery';
+import type { EmailDeliveryCount } from '../models/EmailDeliveryCount';
+import type { EmailDeliveryStatus } from '../models/EmailDeliveryStatus';
 import type { LeaveTenantPreview } from '../models/LeaveTenantPreview';
 import type { LeaveTenantRequest } from '../models/LeaveTenantRequest';
 import type { MemberAccountDeletionRequest } from '../models/MemberAccountDeletionRequest';
@@ -1955,6 +1958,63 @@ export class DefaultService {
             query: {
                 'page': page,
                 'pageSize': pageSize,
+            },
+        });
+    }
+    /**
+     * Lists what the host tenant's email sends did, one row per recipient, newest first (ADR 090 §5). Addresses are masked; an exact address can be searched but never listed. Tenant administrators only.
+     *
+     * @param status
+     * @param kind only sends of this kind, e.g. "agent.send_email"
+     * @param from sent at or after
+     * @param to sent before
+     * @param address only sends to exactly this address (matched by its keyed hash)
+     * @param page page number
+     * @param pageSize maximum number of results to return (at most 100)
+     * @returns EmailDelivery email deliveries, newest first
+     * @throws ApiError
+     */
+    public static listEmailDeliveries(
+        status?: EmailDeliveryStatus,
+        kind?: string,
+        from?: string,
+        to?: string,
+        address?: string,
+        page?: number,
+        pageSize?: number,
+    ): CancelablePromise<Array<EmailDelivery>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin-api/v1/email-deliveries',
+            query: {
+                'status': status,
+                'kind': kind,
+                'from': from,
+                'to': to,
+                'address': address,
+                'page': page,
+                'pageSize': pageSize,
+            },
+        });
+    }
+    /**
+     * Counts every tenant's email sends by kind and status over a window (ADR 090 §5). No rows, no addresses, no tenant ids. SUPER_ADMIN only.
+     *
+     * @param from sent at or after (default 7 days ago)
+     * @param to sent before (default now)
+     * @returns EmailDeliveryCount counts by kind and status
+     * @throws ApiError
+     */
+    public static summarizeEmailDeliveries(
+        from?: string,
+        to?: string,
+    ): CancelablePromise<Array<EmailDeliveryCount>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/superadmin-api/v1/email-deliveries/summary',
+            query: {
+                'from': from,
+                'to': to,
             },
         });
     }

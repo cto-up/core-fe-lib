@@ -21,6 +21,7 @@ export type DataProtectionSection = {
 
 const ORGANIZATIONS = "/user/me/organizations";
 const PENDING_DELETIONS = "/admin/pending-deletions";
+const EMAIL_ACTIVITY = "/admin/email-activity";
 const USERS = "/users";
 
 /** The lines every app shares; an app concatenates its own sections. */
@@ -54,6 +55,12 @@ export function coreDataProtectionSections(
         {
           label: k("lifecycle.pendingDeletions"),
           to: PENDING_DELETIONS,
+          requires: Role.ADMIN,
+        },
+        {
+          label: k("lifecycle.emailActivity"),
+          value: k("lifecycle.days90"),
+          to: EMAIL_ACTIVITY,
           requires: Role.ADMIN,
         },
       ],
