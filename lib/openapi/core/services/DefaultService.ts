@@ -1998,6 +1998,24 @@ export class DefaultService {
         });
     }
     /**
+     * Erases every delivery row for one exact address in the host tenant — how a tenant administrator answers an erasure request from someone who is not a member (ADR 090 §4). Tenant administrators only.
+     *
+     * @param address the exact address whose rows go
+     * @returns void
+     * @throws ApiError
+     */
+    public static eraseEmailDeliveries(
+        address: string,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/admin-api/v1/email-deliveries',
+            query: {
+                'address': address,
+            },
+        });
+    }
+    /**
      * Counts every tenant's email sends by kind and status over a window (ADR 090 §5). No rows, no addresses, no tenant ids. SUPER_ADMIN only.
      *
      * @param from sent at or after (default 7 days ago)
