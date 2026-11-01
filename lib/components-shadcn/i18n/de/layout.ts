@@ -61,6 +61,10 @@ export default {
         title: "Client-Anwendungen",
         caption: "Anwendungs-Token verwalten",
       },
+      emailActivity: {
+        title: "E-Mail-Aktivität",
+        caption: "Wer angeschrieben wurde, ob es versendet wurde",
+      },
     },
     superAdmin: {
       title: "Globale Administration",

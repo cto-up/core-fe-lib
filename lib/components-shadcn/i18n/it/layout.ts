@@ -61,6 +61,10 @@ export default {
         title: "Applicazioni client",
         caption: "Gestisci i token dell'applicazione",
       },
+      emailActivity: {
+        title: "Attività email",
+        caption: "A chi è stata scritta e se è partita",
+      },
     },
     superAdmin: {
       title: "Amministrazione globale",

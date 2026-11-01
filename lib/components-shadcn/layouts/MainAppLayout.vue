@@ -369,6 +369,12 @@ const defaultTrailingSections = (): SidebarMenuSection[] => {
           icon: "key",
           link: "/token/client-applications",
         },
+        {
+          title: t("layout.navigation.admin.emailActivity.title"),
+          caption: t("layout.navigation.admin.emailActivity.caption"),
+          icon: "mail",
+          link: "/admin/email-activity",
+        },
       ]
     : [];
   return [

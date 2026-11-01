@@ -65,6 +65,10 @@ export default {
         title: "Client Applications",
         caption: "Manage application tokens",
       },
+      emailActivity: {
+        title: "Email activity",
+        caption: "Who was mailed, whether it left",
+      },
     },
     superAdmin: {
       title: "Global Administration",
