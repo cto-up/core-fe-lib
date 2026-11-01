@@ -148,7 +148,7 @@ function stageLabel(row: PendingDeletion): string {
     : t("core.pendingDeletions.closureRequested");
 }
 
-// core-be-lib's AdminClosureReason, optionally followed by ": <admin's reason>".
+// core-lib's AdminClosureReason, optionally followed by ": <admin's reason>".
 const ADMIN_CLOSURE_REASON = "closed by an administrator";
 
 const holderReason = (row: PendingDeletion) => {

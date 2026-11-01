@@ -6,7 +6,7 @@ The frontend uses **Ory Kratos** for authentication and session management, with
 
 ## Development
 
-**_Default kratos configuration in core-be-lib uses domain_**:
+**_Default kratos configuration in core-lib uses domain_**:
 
 ```
 ctoup.localhost

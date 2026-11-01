@@ -67,7 +67,7 @@ import {
   type Member,
 } from "./member-data-rights";
 
-// The server's grace period (core-be-lib DeletionGrace): the date shown before
+// The server's grace period (core-lib DeletionGrace): the date shown before
 // confirming. The confirmation reports the server's own date.
 const GRACE_DAYS = 30;
 
