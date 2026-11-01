@@ -18,8 +18,12 @@ export default {
     menu: "Menu",
     home: "Início",
     login: "Entrar",
-    themeDark: "Mudar para o tema escuro",
-    themeLight: "Mudar para o tema claro",
+    theme: "Tema",
+    themeOptions: {
+      light: "Claro",
+      dark: "Escuro",
+      system: "Sistema",
+    },
   },
   userPanel: {
     roles: "Função(ões)",

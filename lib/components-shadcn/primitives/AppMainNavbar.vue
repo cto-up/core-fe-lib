@@ -44,10 +44,10 @@
     <template #right>
       <slot name="right-leading" />
       <LanguageSwitcher v-if="showLanguageSwitcher" />
-      <DarkModeSwitch
+      <ThemeSwitch
         v-if="showThemeToggle"
-        :model-value="!!isDark"
-        @update:model-value="$emit('toggle-theme')"
+        :model-value="themePreference"
+        @update:model-value="$emit('update:themePreference', $event)"
       />
       <div v-if="isLoggedIn" class="border-l h-6 mx-2" />
       <AppUserMenu
@@ -103,7 +103,8 @@ onUnmounted(() => {
 import AppNavbar from "./AppNavbar.vue";
 import AppUserMenu, { type UserMenuItem } from "./AppUserMenu.vue";
 import LanguageSwitcher from "./LanguageSwitcher.vue";
-import DarkModeSwitch from "./DarkModeSwitch.vue";
+import ThemeSwitch from "./ThemeSwitch.vue";
+import type { ThemePreference } from "../theme-preference";
 import { Button } from "../ui/button";
 import {
   Menu,
@@ -132,13 +133,13 @@ export interface AppMainNavbarLabels {
  *     :show-home="!userStore.isLogged"
  *     :mobile-sidebar-open="mobileOpen"
  *     :is-logged-in="userStore.isLogged"
- *     :is-dark="appStore.isDark"
+ *     :theme-preference="appStore.themePreference"
  *     :user-email="userStore.user?.email"
  *     :user-roles="userStore.user?.roles"
  *     :user-menu-items="[...]"
  *     :labels="{ menu, home, login, signout }"
  *     @toggle-mobile-sidebar="..."
- *     @toggle-theme="appStore.toggleTheme()"
+ *     @update:theme-preference="appStore.setThemePreference($event)"
  *     @go-home="router.push('/home')"
  *     @go-signin="router.push('/signin')"
  *     @sign-out="signMeOut"
@@ -166,7 +167,7 @@ withDefaults(
     showThemeToggle?: boolean;
     mobileSidebarOpen?: boolean;
     isLoggedIn?: boolean;
-    isDark?: boolean;
+    themePreference?: ThemePreference;
     userEmail?: string;
     userRoles?: string[];
     userMenuItems?: UserMenuItem[];
@@ -184,7 +185,7 @@ withDefaults(
     showThemeToggle: true,
     mobileSidebarOpen: false,
     isLoggedIn: false,
-    isDark: false,
+    themePreference: "system",
     userEmail: undefined,
     userRoles: () => [],
     userMenuItems: () => [],
@@ -197,7 +198,7 @@ defineEmits<{
   "toggle-mobile-sidebar": [];
   "go-home": [];
   "go-signin": [];
-  "toggle-theme": [];
+  "update:themePreference": [value: ThemePreference];
   "sign-out": [];
 }>();
 </script>

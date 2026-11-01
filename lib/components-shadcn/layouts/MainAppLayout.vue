@@ -61,7 +61,7 @@
         :home-works-offline="homeWorksOffline"
         :mobile-sidebar-open="mobileSidebarOpen"
         :is-logged-in="userStore.isLogged"
-        :is-dark="appStore.isDark"
+        :theme-preference="appStore.themePreference"
         :user-email="userStore.user?.email"
         :user-roles="userStore.user?.roles"
         :user-menu-items="userMenu.items.value"
@@ -76,7 +76,7 @@
         @toggle-mobile-sidebar="mobileSidebarOpen = !mobileSidebarOpen"
         @go-home="router.push(homePath)"
         @go-signin="router.push(signinPath)"
-        @toggle-theme="appStore.toggleTheme()"
+        @update:theme-preference="appStore.setThemePreference($event)"
         @sign-out="signMeOut"
       >
         <template #avatar>

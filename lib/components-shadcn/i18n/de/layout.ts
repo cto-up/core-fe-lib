@@ -18,8 +18,12 @@ export default {
     menu: "Menü",
     home: "Startseite",
     login: "Anmelden",
-    themeDark: "Zum dunklen Design wechseln",
-    themeLight: "Zum hellen Design wechseln",
+    theme: "Design",
+    themeOptions: {
+      light: "Hell",
+      dark: "Dunkel",
+      system: "System",
+    },
   },
   userPanel: {
     roles: "Rolle(n)",

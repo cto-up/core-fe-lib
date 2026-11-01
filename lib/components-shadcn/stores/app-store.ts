@@ -1,8 +1,16 @@
 import { defineStore } from "pinia";
 import { applyTheme } from "../themes";
+import {
+  type ThemePreference,
+  onSystemDarkChange,
+  readThemePreference,
+  systemPrefersDark,
+  writeThemePreference,
+} from "../theme-preference";
 
 interface IAppStore {
-  themeMode: "light" | "dark";
+  themePreference: ThemePreference;
+  systemDark: boolean;
   sidebarExpand: boolean;
   wrapperWidth: number;
   wrapperLeftOffset: number;
@@ -16,18 +24,23 @@ const EXPAND = 252;
 // full-width; the navbar toggle brings the sidebar back.
 const SHRINKED = 0;
 
+let systemListenerAttached = false;
+
 export const useAppStore = defineStore("app", {
   state: () =>
     <IAppStore>{
-      themeMode: LIGHT,
+      themePreference: "system",
+      systemDark: false,
       sidebarExpand: true,
       wrapperWidth: 0,
       wrapperLeftOffset: 0,
       navWidth: "100%",
     },
   getters: {
-    theme: (state) => state.themeMode,
-    isDark: (state) => state.themeMode === DARK,
+    isDark: (state) =>
+      state.themePreference === "system"
+        ? state.systemDark
+        : state.themePreference === DARK,
     sidebarExpanded: (state) => state.sidebarExpand,
   },
   actions: {
@@ -55,26 +68,31 @@ export const useAppStore = defineStore("app", {
       }
     },
     async initTheme() {
-      // Check both keys for backward compatibility with useDark.ts
-      const cache = localStorage.getItem("dark-mode") === "true" ? DARK : LIGHT;
+      this.themePreference = readThemePreference();
+      this.systemDark = systemPrefersDark();
 
-      if (cache) {
-        this.themeMode = cache as "light" | "dark";
+      if (!systemListenerAttached) {
+        systemListenerAttached = true;
+        // Attached once for the page, so it looks the store up when it fires
+        // rather than holding the instance that happened to attach it.
+        onSystemDarkChange((dark) => {
+          const store = useAppStore();
+          store.systemDark = dark;
+          if (store.themePreference === "system") void store.refreshTheme();
+        });
       }
 
       window.addEventListener("resize", this.initWrapper);
-      this.applyTheme();
       this.initWrapper();
-
-      // Re-apply tenant colors if available
-      await this.applyTenantTheme();
+      await this.refreshTheme();
     },
-    async toggleTheme() {
-      this.themeMode = this.themeMode === LIGHT ? DARK : LIGHT;
+    async setThemePreference(preference: ThemePreference) {
+      this.themePreference = preference;
+      writeThemePreference(preference);
+      await this.refreshTheme();
+    },
+    async refreshTheme() {
       this.applyTheme();
-      localStorage.setItem("dark-mode", (this.themeMode === DARK).toString());
-
-      // Re-apply tenant colors for the new mode
       await this.applyTenantTheme();
     },
     async applyTenantTheme() {
@@ -97,7 +115,10 @@ export const useAppStore = defineStore("app", {
       window.removeEventListener("resize", this.initWrapper);
     },
     applyTheme() {
-      const isDark = this.themeMode === DARK;
+      const isDark = this.isDark;
+      // Lets the browser draw its own UI (scrollbars, form controls and, on
+      // Android, the system bars of an installed app) in the matching scheme.
+      document.documentElement.style.colorScheme = isDark ? DARK : LIGHT;
       document.documentElement.classList.toggle(DARK, isDark);
       document.body.classList.toggle(DARK, isDark);
       document.documentElement.classList.toggle(LIGHT, !isDark);
