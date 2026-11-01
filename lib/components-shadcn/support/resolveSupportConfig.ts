@@ -1,5 +1,5 @@
 /**
- * Derives the support desk from the deployment's own domain, so a single
+ * Derives the support mailbox from the deployment's own domain, so a single
  * implementation serves every app and every domain an app is deployed to.
  *
  * One app can serve several domains (hub ships to ctoup, taskfactory-eu and
@@ -17,7 +17,7 @@
  * Step 3 is guarded because deriving an address from a host you do not own
  * mails a stranger the screenshot, console log, user email and tenant id that
  * a report carries. `*.pages.dev` is the live example: it is where the
- * frontend is hosted, and `support@pages.dev` is Cloudflare's mailbox.
+ * frontend is hosted, and `contact@pages.dev` is Cloudflare's mailbox.
  */
 import { useUrl } from "../../composables/useUrl";
 import type { SupportConfig, SupportConfigInput } from "./types";
@@ -61,7 +61,7 @@ function isDev(): boolean {
 /**
  * True when an address at this domain could plausibly reach the team that
  * operates the deployment. Skipped in dev, where the derived
- * `support@<something>.localhost` is obviously fake, harmless, and lets the
+ * `contact@<something>.localhost` is obviously fake, harmless, and lets the
  * whole flow be exercised locally.
  */
 function isUsableDomain(domain: string): boolean {
@@ -107,7 +107,7 @@ function appNameFromDomain(domain: string): string {
 }
 
 /**
- * Resolves the mailboxes for the "Help & contact" dialog.
+ * Resolves the mailbox for the "Help & contact" dialog.
  *
  * Returns `undefined` when no domain can be trusted — the caller then renders
  * no support entry, which is the safe outcome: silence beats mailing a
@@ -119,23 +119,15 @@ export function resolveSupportConfig(
   if (input === false) return undefined;
   const overrides: Partial<SupportConfig> = input === true ? {} : input;
 
-  // A fully-specified config needs no derivation at all.
-  if (overrides.contactEmail && overrides.supportEmail) {
-    return overrides as SupportConfig;
-  }
+  if (overrides.contactEmail) return overrides as SupportConfig;
 
   const domain =
     overrides.domain ?? domainFromBaseUrl() ?? domainFromRuntimeHost();
 
-  if (!domain) {
-    // Nothing trustworthy to derive from: honour an explicit contact address
-    // if one was given, otherwise render nothing.
-    return overrides.contactEmail ? (overrides as SupportConfig) : undefined;
-  }
+  if (!domain) return undefined;
 
   return {
-    contactEmail: overrides.contactEmail ?? `contact@${domain}`,
-    supportEmail: overrides.supportEmail ?? `support@${domain}`,
+    contactEmail: `contact@${domain}`,
     appName: overrides.appName ?? appNameFromDomain(domain),
   };
 }

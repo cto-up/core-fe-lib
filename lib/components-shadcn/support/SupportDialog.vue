@@ -279,11 +279,7 @@ const providerOptions = computed(() =>
   }))
 );
 
-const recipient = computed(() =>
-  topic.value === "technical"
-    ? props.config.supportEmail || props.config.contactEmail
-    : props.config.contactEmail
-);
+const recipient = computed(() => props.config.contactEmail);
 
 const appName = computed(() => props.config.appName ?? "App");
 const subjectPrefix = computed(() => {

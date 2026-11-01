@@ -18,19 +18,18 @@ afterEach(() => {
 });
 
 describe("resolveSupportConfig", () => {
-  it("derives both mailboxes from the deployment domain", () => {
+  it("derives the mailbox from the deployment domain", () => {
     vi.stubEnv("VITE_APP_BASE_URL", "https://sparkmeee.com");
     expect(resolveSupportConfig(true)).toEqual({
       contactEmail: "contact@sparkmeee.com",
-      supportEmail: "support@sparkmeee.com",
       appName: "Sparkmeee",
     });
   });
 
   it("strips the tenant subdomain", () => {
     vi.stubEnv("VITE_APP_BASE_URL", "https://acme.sparkmeee.com");
-    expect(resolveSupportConfig(true)?.supportEmail).toBe(
-      "support@sparkmeee.com"
+    expect(resolveSupportConfig(true)?.contactEmail).toBe(
+      "contact@sparkmeee.com"
     );
   });
 
@@ -47,8 +46,8 @@ describe("resolveSupportConfig", () => {
     asProduction();
     atHost("a1b2c3.lms.pages.dev");
     vi.stubEnv("VITE_APP_BASE_URL", "https://sparkmeee.com");
-    expect(resolveSupportConfig(true)?.supportEmail).toBe(
-      "support@sparkmeee.com"
+    expect(resolveSupportConfig(true)?.contactEmail).toBe(
+      "contact@sparkmeee.com"
     );
   });
 
@@ -71,16 +70,15 @@ describe("resolveSupportConfig", () => {
     vi.stubEnv("DEV", true);
     vi.stubEnv("VITE_APP_BASE_URL", "");
     atHost("corpa.ctoup.localhost");
-    expect(resolveSupportConfig(true)?.supportEmail).toBe(
-      "support@ctoup.localhost"
+    expect(resolveSupportConfig(true)?.contactEmail).toBe(
+      "contact@ctoup.localhost"
     );
   });
 
-  it("keeps a brand's inner capital while still deriving the mailboxes", () => {
+  it("keeps a brand's inner capital while still deriving the mailbox", () => {
     vi.stubEnv("VITE_APP_BASE_URL", "https://sparkmeee.com");
     expect(resolveSupportConfig({ appName: "SparkMeee" })).toEqual({
       contactEmail: "contact@sparkmeee.com",
-      supportEmail: "support@sparkmeee.com",
       appName: "SparkMeee",
     });
   });
@@ -91,7 +89,6 @@ describe("resolveSupportConfig", () => {
     expect(
       resolveSupportConfig({
         contactEmail: "hi@acme.test",
-        supportEmail: "help@acme.test",
       })?.contactEmail
     ).toBe("hi@acme.test");
   });

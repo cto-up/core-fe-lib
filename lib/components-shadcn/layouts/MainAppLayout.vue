@@ -238,8 +238,8 @@ const props = withDefaults(
     /** Optional transform applied to the assembled module nav links. Host
      *  apps use this to wrap several modules into a single grouped section. */
     menuLinksTransform?: (links: MenuLink[]) => MenuLink[];
-    /** The "Help & contact" desk. `true` derives both mailboxes from the
-     *  deployment's own domain (`contact@` / `support@`), so one app deployed
+    /** The "Help & contact" desk. `true` derives its mailbox from the
+     *  deployment's own domain (`contact@`), so one app deployed
      *  to several domains reaches the right desk on each. Pass an object to
      *  override individual fields. Omit and no entry is rendered — apps
      *  without a support desk stay unchanged. */

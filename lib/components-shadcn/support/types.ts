@@ -1,4 +1,4 @@
-/** Which desk a message goes to. `technical` is the only one that collects
+/** What a message is about. `technical` is the only one that collects
  *  diagnostics (screenshot + recent console lines). */
 export type SupportTopic = "technical" | "sales" | "enterprise" | "other";
 
@@ -6,10 +6,8 @@ export type SupportTopic = "technical" | "sales" | "enterprise" | "other";
 export type SupportProvider = "mailto" | "gmail" | "outlook";
 
 export interface SupportConfig {
-  /** Mailbox for everything that isn't a technical problem. */
+  /** The one mailbox every topic goes to, technical reports included. */
   contactEmail: string;
-  /** Mailbox for technical problems. Falls back to `contactEmail`. */
-  supportEmail?: string;
   /** Product name used in the subject tag, e.g. `[Acme support]`. */
   appName?: string;
   /** Explicit domain to derive the mailboxes from. Overrides every other
