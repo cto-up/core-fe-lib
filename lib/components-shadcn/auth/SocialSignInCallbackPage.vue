@@ -38,6 +38,10 @@ import { useI18n } from "vue-i18n";
 import { AuthService, ApiError } from "../../openapi/core";
 import { kratosService, useKratosAuth } from "../../authentication/vue";
 import {
+  followTarget,
+  safeFromQuery,
+} from "../../authentication/core/safe-redirect";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -83,9 +87,8 @@ const message = computed(() =>
 );
 
 function safeDestination(): string {
-  const from = typeof route.query.from === "string" ? route.query.from : "";
-  // Only same-origin absolute paths — `//evil.com` is protocol-relative.
-  return from.startsWith("/") && !from.startsWith("//") ? from : "/";
+  // An app path, or a page on the base domain (a docs site): never another site.
+  return safeFromQuery(route.query.from) || "/";
 }
 
 async function backToSignIn() {
@@ -111,6 +114,6 @@ onMounted(async () => {
   kratosService.invalidateSession();
   await getCurrentSession();
 
-  void router.replace(safeDestination());
+  followTarget(safeDestination(), (path) => router.replace(path));
 });
 </script>

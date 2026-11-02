@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { safeFromQuery, safeRedirectTarget, withFrom } from "./safe-redirect";
+import {
+  safeFromQuery,
+  followTarget,
+  safeRedirectTarget,
+  withFrom,
+} from "./safe-redirect";
 
 const here = "https://acme.sparkmeee.com/signin?from=x";
 const api = ["https://api.sparkmeee.io"];
@@ -85,5 +90,35 @@ describe("handing the destination on between auth pages", () => {
 
   it("leaves the link alone when there is nowhere to go back to", () => {
     expect(withFrom("/signup", "")).toBe("/signup");
+  });
+});
+
+describe("following a safe target", () => {
+  it("routes an app path and loads an absolute URL", () => {
+    const routed: string[] = [];
+    const loaded: string[] = [];
+    followTarget(
+      "/lms/courses",
+      (p) => routed.push(p),
+      (h) => loaded.push(h)
+    );
+    followTarget(
+      "https://docs.sparkmeee.com/customer-admin/",
+      (p) => routed.push(p),
+      (h) => loaded.push(h)
+    );
+    expect(routed).toEqual(["/lms/courses"]);
+    expect(loaded).toEqual(["https://docs.sparkmeee.com/customer-admin/"]);
+  });
+
+  it("lets a docs page on the base domain through", () => {
+    expect(
+      safeRedirectTarget(
+        "https://docs.sparkmeee.com/user/",
+        "/",
+        "https://acme.sparkmeee.com/signin",
+        []
+      )
+    ).toBe("https://docs.sparkmeee.com/user/");
   });
 });

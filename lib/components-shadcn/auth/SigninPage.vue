@@ -211,6 +211,7 @@ import {
   type KratosUiMessage,
 } from "../../authentication/core/kratos-service";
 import {
+  followTarget,
   safeFromQuery,
   withFrom,
 } from "../../authentication/core/safe-redirect";
@@ -421,11 +422,9 @@ async function loadOidcProviders(): Promise<void> {
 
 async function handleProviderSignIn(provider: string): Promise<void> {
   socialPending.value = provider;
-  const from = typeof route.query.from === "string" ? route.query.from : "";
+  const from = safeFromQuery(route.query.from);
   const returnTo = new URL(props.socialReturnPath, globalThis.location.origin);
-  if (from.startsWith("/") && !from.startsWith("//")) {
-    returnTo.searchParams.set("from", from);
-  }
+  if (from) returnTo.searchParams.set("from", from);
   try {
     await signInWithProvider(provider, {
       returnTo: returnTo.toString(),
@@ -438,11 +437,10 @@ async function handleProviderSignIn(provider: string): Promise<void> {
 }
 
 function continueToApp() {
-  const from = typeof route.query.from === "string" ? route.query.from : "";
-  // Only same-origin absolute paths — `//evil.com` is protocol-relative.
-  const target =
-    from.startsWith("/") && !from.startsWith("//") ? from : props.continuePath;
-  void router.push(target);
+  // An app path, or a page on the base domain (a docs site): never another site.
+  followTarget(safeFromQuery(route.query.from) || props.continuePath, (path) =>
+    router.push(path)
+  );
 }
 
 async function useAnotherAccount() {

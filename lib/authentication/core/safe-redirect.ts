@@ -68,3 +68,16 @@ export function withFrom(path: string, from: string): string {
   url.searchParams.set("from", from);
   return url.pathname + url.search + url.hash;
 }
+
+/**
+ * Go to a target from safeRedirectTarget: an app path through the router, an
+ * absolute URL (another subdomain, such as docs.<domain>) by a full page load.
+ */
+export function followTarget(
+  target: string,
+  navigate: (path: string) => unknown,
+  assign: (href: string) => void = (href) => globalThis.location.assign(href)
+): void {
+  if (/^https?:\/\//.test(target)) assign(target);
+  else void navigate(target);
+}
