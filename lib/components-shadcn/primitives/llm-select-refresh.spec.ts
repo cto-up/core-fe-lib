@@ -86,3 +86,30 @@ describe("LLMSelect reads its list again when it opens", () => {
     expect(w.find("[role=alert]").exists()).toBe(true);
   });
 });
+
+// A field whose empty value means something ("same as the agent's model")
+// must let a picked model be taken back.
+describe("LLMSelect clearable", () => {
+  const fetcher = async () => [entry("mistral/mistral-small-2603")];
+
+  it("emits an empty value when the none item is picked", async () => {
+    const w = mount(LLMSelect, {
+      props: {
+        modelValue: "mistral/mistral-small-2603",
+        fetcher,
+        clearable: true,
+      },
+      global: { plugins: [i18n] },
+    });
+    await flushPromises();
+    w.findComponent(Select).vm.$emit("update:modelValue", "__none__");
+    expect(w.emitted("update:modelValue")?.at(-1)).toEqual([""]);
+    w.findComponent(Select).vm.$emit(
+      "update:modelValue",
+      "mistral/mistral-small-2603"
+    );
+    expect(w.emitted("update:modelValue")?.at(-1)).toEqual([
+      "mistral/mistral-small-2603",
+    ]);
+  });
+});

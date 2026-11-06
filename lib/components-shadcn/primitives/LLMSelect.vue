@@ -3,7 +3,7 @@
     <Label v-if="label" :for="id">{{ label }}</Label>
     <Select
       :model-value="modelValue"
-      @update:model-value="$emit('update:modelValue', $event)"
+      @update:model-value="onPick"
       @update:open="onOpen"
     >
       <SelectTrigger :id="id" class="w-full">
@@ -12,6 +12,14 @@
         />
       </SelectTrigger>
       <SelectContent>
+        <SelectItem
+          v-if="clearable"
+          :value="NO_MODEL"
+          class="text-muted-foreground"
+          data-test="llm-option-none"
+        >
+          {{ placeholder ?? t("llm.select.none") }}
+        </SelectItem>
         <SelectGroup v-for="group in groups" :key="group.provider">
           <SelectLabel>{{ providerLabel(group.provider) }}</SelectLabel>
           <SelectItem
@@ -269,6 +277,13 @@ const props = withDefaults(
      * the record's, and must not be filled in behind the user's back.
      */
     autoSelect?: boolean;
+    /**
+     * Offer an item, labelled with the placeholder, that empties the value —
+     * for a field whose empty value means something ("same as the agent's
+     * model", "no fallback"). Without it a value, once picked, cannot be
+     * taken back.
+     */
+    clearable?: boolean;
   }>(),
   {
     id: "llm_key",
@@ -284,6 +299,7 @@ const props = withDefaults(
     outputModalities: undefined,
     providerEndpoint: undefined,
     autoSelect: false,
+    clearable: false,
   }
 );
 
@@ -292,6 +308,14 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
+
+// radix-vue's Select throws on an empty-string item, so "no model" needs a
+// value of its own; it is emitted as "".
+const NO_MODEL = "__none__";
+
+function onPick(v: unknown) {
+  emit("update:modelValue", v === NO_MODEL ? "" : String(v ?? ""));
+}
 
 const entries = ref<LLMRegistryEntry[]>([]);
 
