@@ -20,7 +20,7 @@
           :src="logoFailed ? platformLogo : logoUrl"
           alt=""
           data-test="welcome-logo"
-          class="h-10 w-auto max-w-[8rem] rounded-xl object-contain"
+          class="h-10 w-auto max-w-[8rem] object-contain"
           @error="logoFailed = true"
         />
         <span class="text-lg">{{ displayName }}</span>
