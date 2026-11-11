@@ -2,7 +2,10 @@
   <div class="flex items-center justify-center min-h-screen bg-background/50">
     <AppBackground />
     <div class="relative z-10 max-w-md w-full mx-4">
-      <div class="text-center space-y-6">
+      <div v-if="lookingForTenant" class="flex justify-center">
+        <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+      <div v-else class="text-center space-y-6">
         <!-- Icon -->
         <div class="flex justify-center">
           <div
@@ -102,18 +105,32 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, onMounted, ref } from "vue";
+import { Loader2 } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
+import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "../../stores/user-store";
 import { useTenantStore } from "../../stores/tenant-store";
-import { useKratosAuth } from "../../authentication/vue";
+import {
+  kratosService,
+  updateUserFromSession,
+  useKratosAuth,
+} from "../../authentication/vue";
 import { Button } from "../ui/button";
 import AppBackground from "../primitives/AppBackground.vue";
+import { MeService } from "../../openapi/core/services/MeService";
+import { DefaultService } from "../../openapi/core";
+import {
+  enterableTenantSubdomain,
+  tenantOrigin,
+} from "../../router/tenant-host";
 
 const { t } = useI18n();
 const userStore = useUserStore();
 const tenantStore = useTenantStore();
 const { signMeOut } = useKratosAuth();
+const route = useRoute();
+const router = useRouter();
 
 const userEmail = computed(() => userStore.user?.email || "Unknown");
 const tenantName = computed(
@@ -136,6 +153,55 @@ const contactEmail = computed(() => {
     return anyProfile.contact_email;
   }
   return undefined;
+});
+
+// The guard decided on what it had at page load; before telling the user they
+// are locked out, re-read the session and the tenant. Someone who does hold a
+// role here (a super admin, a member just granted access) goes on to where
+// they were headed; a member of another organization is sent there. Only a
+// user with nowhere to go sees the card.
+const lookingForTenant = ref(true);
+
+async function refreshRoles(): Promise<void> {
+  const session = await kratosService.getSession({ force: true });
+  if (!tenantStore.tenant?.tenant_id) {
+    tenantStore.setTenant(await DefaultService.getPublicTenant());
+  }
+  await updateUserFromSession(session);
+}
+
+async function memberTenantSubdomain(): Promise<string | null> {
+  const claimed = (
+    userStore.session?.identity.metadata_public?.tenant_memberships ?? []
+  ).map((m) => m.tenant_id);
+  return enterableTenantSubdomain(
+    await MeService.listMyTenants(),
+    claimed,
+    tenantStore.tenant?.tenant_id
+  );
+}
+
+onMounted(async () => {
+  try {
+    await refreshRoles();
+    if (!userStore.isLogged) {
+      await router.replace({ name: "signin" });
+      return;
+    }
+    if (userStore.hasRole) {
+      const back = route.redirectedFrom?.fullPath;
+      await router.replace(back && back !== route.fullPath ? back : "/");
+      return;
+    }
+    const subdomain = await memberTenantSubdomain();
+    if (subdomain) {
+      globalThis.location.replace(tenantOrigin(subdomain) + "/");
+      return;
+    }
+  } catch (err) {
+    console.warn("⚠️  Could not re-check access to this tenant:", err);
+  }
+  lookingForTenant.value = false;
 });
 
 const handleSignOut = async () => {

@@ -39,6 +39,38 @@ export function isTenantLessHost(): boolean {
   return !isTenantSubdomain() && hasRegistrableDomain(getDomain());
 }
 
+/** Absolute origin of a tenant on the current domain, e.g. `https://acme.taskfactory.eu`. */
+export function tenantOrigin(subdomain: string): string {
+  const { getDomain } = useUrl();
+  const { protocol, port } = globalThis.location;
+  return `${protocol}//${subdomain}.${getDomain()}${port ? `:${port}` : ""}`;
+}
+
+/**
+ * The subdomain of a tenant the user can actually enter, for a signed-in user
+ * who has no role on the current one — the newest membership first, as listed.
+ * Only a tenant whose membership is also in the session's claim qualifies:
+ * the claim is what grants roles there, so a membership row without it would
+ * land the user on another "Access Required" page and bounce between the two.
+ */
+export function enterableTenantSubdomain(
+  memberships: ReadonlyArray<{
+    tenant_id: string;
+    subdomain: string;
+    status: string;
+  }>,
+  claimedTenantIds: ReadonlyArray<string>,
+  currentTenantId: string | undefined
+): string | null {
+  const found = memberships.find(
+    (m) =>
+      m.status === "active" &&
+      m.tenant_id !== currentTenantId &&
+      claimedTenantIds.includes(m.tenant_id)
+  );
+  return found?.subdomain ?? null;
+}
+
 export function createTenantHost(defaultTenantSubdomain: string): TenantHost {
   /**
    * True on the brand's front door — the apex and `www`, the only hosts with no
@@ -60,11 +92,7 @@ export function createTenantHost(defaultTenantSubdomain: string): TenantHost {
 
   /** Absolute origin of the default tenant, e.g. `https://app.taskfactory.eu`. */
   function defaultTenantOrigin(): string {
-    const { getDomain } = useUrl();
-    const { protocol, port } = globalThis.location;
-    return `${protocol}//${defaultTenantSubdomain}.${getDomain()}${
-      port ? `:${port}` : ""
-    }`;
+    return tenantOrigin(defaultTenantSubdomain);
   }
 
   /**
