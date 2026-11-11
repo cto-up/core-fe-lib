@@ -51,6 +51,11 @@ export default {
     },
     backToSignIn: "Torna all'accesso",
   },
+  welcome: {
+    title: "Benvenuto in {name}",
+    askInvite: "Sei nuovo? Chiedi un invito al tuo amministratore.",
+    poweredBy: "Realizzato con",
+  },
   signIn: {
     title: "Accesso",
     subtitle: "Accedi per accedere al tuo account",

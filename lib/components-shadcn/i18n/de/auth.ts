@@ -52,6 +52,11 @@ export default {
     },
     backToSignIn: "Zurück zur Anmeldung",
   },
+  welcome: {
+    title: "Willkommen bei {name}",
+    askInvite: "Neu hier? Bitten Sie Ihre Administration um eine Einladung.",
+    poweredBy: "Bereitgestellt von",
+  },
   signIn: {
     title: "Anmelden",
     subtitle: "Melden Sie sich an, um auf Ihr Konto zuzugreifen",

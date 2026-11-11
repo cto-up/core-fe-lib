@@ -49,6 +49,11 @@ export default {
     },
     backToSignIn: "Back to sign-in",
   },
+  welcome: {
+    title: "Welcome to {name}",
+    askInvite: "New here? Ask your administrator for an invitation.",
+    poweredBy: "Powered by",
+  },
   signIn: {
     title: "Sign In",
     subtitle: "Sign in to access your account",

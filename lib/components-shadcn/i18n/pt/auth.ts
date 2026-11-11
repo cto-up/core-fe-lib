@@ -51,6 +51,11 @@ export default {
     },
     backToSignIn: "Voltar ao início de sessão",
   },
+  welcome: {
+    title: "Bem-vindo a {name}",
+    askInvite: "É novo aqui? Peça um convite ao seu administrador.",
+    poweredBy: "Desenvolvido por",
+  },
   signIn: {
     title: "Iniciar sessão",
     subtitle: "Inicie sessão para aceder à sua conta",

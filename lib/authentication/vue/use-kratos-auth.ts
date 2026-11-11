@@ -126,7 +126,15 @@ export const useKratosAuth = () => {
     if (target.startsWith("http")) {
       globalThis.location.href = target;
     } else {
-      void router.push(target);
+      // Signing in from the page the target names (a tenant's welcome page at
+      // `/`) is a duplicate navigation vue-router would skip, and with it the
+      // guard that sends a signed-in visitor on into the app.
+      const loc = router.resolve(target);
+      void router.push(
+        loc.fullPath === route.fullPath
+          ? { path: loc.path, query: loc.query, hash: loc.hash, force: true }
+          : target
+      );
     }
   }
 
