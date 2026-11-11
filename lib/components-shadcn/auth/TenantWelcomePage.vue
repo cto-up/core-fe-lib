@@ -37,7 +37,13 @@
     <main
       class="welcome-side relative flex flex-1 flex-col justify-start px-6 pt-14 sm:items-center sm:justify-center sm:px-10 lg:px-16 pb-[max(2rem,env(safe-area-inset-bottom))]"
     >
-      <LanguageSwitcher class="welcome-lang absolute right-4 top-4" />
+      <div class="absolute right-4 top-4 flex items-center gap-1">
+        <LanguageSwitcher class="welcome-lang" />
+        <ThemeSwitch
+          :model-value="appStore.themePreference"
+          @update:model-value="appStore.setThemePreference($event)"
+        />
+      </div>
 
       <div class="flex w-full max-w-sm flex-col gap-6">
         <h1
@@ -81,12 +87,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import { useTenantStore } from "../../stores/tenant-store";
 import { useUserStore } from "../../stores/user-store";
+import { useAppStore } from "../stores/app-store";
 import { useTenant } from "../../authentication/vue";
 import LanguageSwitcher from "../primitives/LanguageSwitcher.vue";
+import ThemeSwitch from "../primitives/ThemeSwitch.vue";
 import SigninForm from "./SigninForm.vue";
 
 /**
@@ -117,6 +125,9 @@ const tOr = (
 
 const tenantStore = useTenantStore();
 const userStore = useUserStore();
+const appStore = useAppStore();
+// The page sits outside the app layout, which is what loads the stored choice.
+onMounted(() => void appStore.initTheme());
 const { canSignUp } = useTenant();
 
 const api = import.meta.env.VITE_HTTP_API ?? "";
