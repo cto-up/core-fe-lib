@@ -1,11 +1,17 @@
 /**
- * Shadcn CSS variables — light (:root) and dark (.dark).
- * Consumer apps import this once in their entry stylesheet, after `@tailwind base`.
+ * The shared token contract: every semantic token, light (:root) and dark
+ * (.dark), with neutral defaults. A consumer imports it first and states only
+ * what its product changes in src/brand/identity.css, imported right after:
  *
+ *   @import "../../../core-fe-lib/lib/components-shadcn/styles/shadcn.css";
+ *   @import "../../brand/identity.css";
  *   @tailwind base;
  *   @tailwind components;
  *   @tailwind utilities;
- *   @import "core-fe-lib/components-shadcn/styles/shadcn.css";
+ *
+ * Identity tokens with no default here (--signal, --font-*, --label-*,
+ * --shadow-ambient, --card-rail, --dot-color) fall back in
+ * tailwind.preset.cjs and in the components that read them.
  */
 @layer base {
   :root {

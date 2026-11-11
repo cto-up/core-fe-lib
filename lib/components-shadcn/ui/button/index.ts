@@ -18,6 +18,9 @@ export const buttonVariants = cva(
         success: "bg-success text-success-foreground hover:bg-success/90",
         info: "bg-info text-info-foreground hover:bg-info/90",
         warning: "bg-warning text-warning-foreground hover:bg-warning/90",
+        // A sign-off: approve, apply. The product's --signal (falls back to
+        // the primary), so a sign-off never borrows the error orange.
+        signal: "bg-signal text-signal-foreground hover:bg-signal/90",
         outline:
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
