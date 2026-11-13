@@ -34,9 +34,9 @@ describe("resolveSupportConfig", () => {
   });
 
   it("serves each domain an app is deployed to", () => {
-    vi.stubEnv("VITE_APP_BASE_URL", "https://taskfactory.eu");
+    vi.stubEnv("VITE_APP_BASE_URL", "https://tessellion.com");
     expect(resolveSupportConfig(true)?.contactEmail).toBe(
-      "contact@taskfactory.eu"
+      "contact@tessellion.com"
     );
   });
 

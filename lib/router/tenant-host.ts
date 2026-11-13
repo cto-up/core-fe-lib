@@ -39,7 +39,7 @@ export function isTenantLessHost(): boolean {
   return !isTenantSubdomain() && hasRegistrableDomain(getDomain());
 }
 
-/** Absolute origin of a tenant on the current domain, e.g. `https://acme.taskfactory.eu`. */
+/** Absolute origin of a tenant on the current domain, e.g. `https://acme.tessellion.com`. */
 export function tenantOrigin(subdomain: string): string {
   const { getDomain } = useUrl();
   const { protocol, port } = globalThis.location;
@@ -90,7 +90,7 @@ export function createTenantHost(defaultTenantSubdomain: string): TenantHost {
     );
   }
 
-  /** Absolute origin of the default tenant, e.g. `https://app.taskfactory.eu`. */
+  /** Absolute origin of the default tenant, e.g. `https://app.tessellion.com`. */
   function defaultTenantOrigin(): string {
     return tenantOrigin(defaultTenantSubdomain);
   }

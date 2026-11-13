@@ -2,8 +2,8 @@
  * Derives the support mailbox from the deployment's own domain, so a single
  * implementation serves every app and every domain an app is deployed to.
  *
- * One app can serve several domains (hub ships to ctoup, taskfactory-eu and
- * taskfactory-cloud), so a hardcoded address would be wrong on all but one of
+ * One app can serve several domains (hub ships to tessellion.com and
+ * tessellion.fr), so a hardcoded address would be wrong on all but one of
  * them. The domain is therefore resolved, in order:
  *
  *   1. an explicit `domain` override,
