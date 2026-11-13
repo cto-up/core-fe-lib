@@ -16,11 +16,14 @@ import { useToast } from "../ui/toast/use-toast";
 import { useDialog } from "../composables/useDialog";
 
 // Kratos tenant roles (stored in database)
+// ADMIN and SUPER_ADMIN are global-only: the backend refuses them here.
 const TENANT_ROLES = {
   CUSTOMER_ADMIN: "CUSTOMER_ADMIN",
-  ADMIN: "ADMIN",
   USER: "USER",
 } as const;
+
+const isTenantRole = (role: string) =>
+  (Object.values(TENANT_ROLES) as string[]).includes(role);
 
 export function useUser() {
   const route = useRoute();
@@ -118,21 +121,6 @@ export function useUser() {
     },
   });
 
-  const isAdmin = computed({
-    get: () => selectedRoles.value.includes(TENANT_ROLES.ADMIN),
-    set: (value: boolean) => {
-      if (value) {
-        if (!selectedRoles.value.includes(TENANT_ROLES.ADMIN)) {
-          selectedRoles.value.push(TENANT_ROLES.ADMIN);
-        }
-      } else {
-        selectedRoles.value = selectedRoles.value.filter(
-          (r) => r !== TENANT_ROLES.ADMIN
-        );
-      }
-    },
-  });
-
   const isUser = computed({
     get: () => selectedRoles.value.includes(TENANT_ROLES.USER),
     set: (value: boolean) => {
@@ -200,7 +188,8 @@ export function useUser() {
         Object.assign(user, response);
 
         // Initialize selected roles from user's tenant membership
-        selectedRoles.value = [...(user.roles || [])];
+        // A legacy ADMIN membership is dropped, or saving would be refused.
+        selectedRoles.value = (user.roles || []).filter(isTenantRole);
 
         // Set email input for display
         emailInput.value = user.email;
@@ -388,7 +377,6 @@ export function useUser() {
     user,
     isNew,
     isCustomerAdmin,
-    isAdmin,
     isUser,
     selectedRoles,
     loading,

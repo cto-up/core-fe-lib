@@ -140,6 +140,17 @@
                 {{ $t("core.user.roleDescriptions.superAdmin") }}
               </Label>
             </div>
+            <div class="flex items-center space-x-2">
+              <Checkbox
+                id="roleAdmin"
+                v-model:checked="isAdmin"
+                :disabled="disabled"
+              />
+              <Label for="roleAdmin" class="font-normal">
+                {{ $t("core.role.admin") }} -
+                {{ $t("core.user.roleDescriptions.admin") }}
+              </Label>
+            </div>
           </div>
 
           <!-- Tenant Roles (Multiple Selection) -->
@@ -151,17 +162,6 @@
           >
             <Label>{{ $t("core.user.fields.tenantRoles") }}</Label>
             <div class="space-y-2">
-              <div class="flex items-center space-x-2">
-                <Checkbox
-                  id="roleAdmin"
-                  v-model:checked="isAdmin"
-                  :disabled="disabled"
-                />
-                <Label for="roleAdmin" class="font-normal">
-                  {{ $t("core.role.admin") }} -
-                  {{ $t("core.user.roleDescriptions.admin") }}
-                </Label>
-              </div>
               <div class="flex items-center space-x-2">
                 <Checkbox
                   id="roleCustomerAdmin"

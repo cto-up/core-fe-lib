@@ -17,13 +17,15 @@ import { useToast } from "../ui/toast/use-toast";
 import { useDialog } from "../composables/useDialog";
 
 // Kratos roles
+// Global roles live in Kratos metadata; the backend refuses them as a tenant
+// membership, so they are offered only on the admin/root host.
 const GLOBAL_ROLES = {
-  SUPER_ADMIN: "SUPER_ADMIN", // Global role in Kratos metadata
+  SUPER_ADMIN: "SUPER_ADMIN",
+  ADMIN: "ADMIN",
 } as const;
 
 const TENANT_ROLES = {
   CUSTOMER_ADMIN: "CUSTOMER_ADMIN",
-  ADMIN: "ADMIN",
   USER: "USER",
 } as const;
 
@@ -87,15 +89,15 @@ export function useUser() {
   });
 
   const isAdmin = computed({
-    get: () => selectedRoles.value.includes(TENANT_ROLES.ADMIN),
+    get: () => selectedRoles.value.includes(GLOBAL_ROLES.ADMIN),
     set: (value: boolean) => {
       if (value) {
-        if (!selectedRoles.value.includes(TENANT_ROLES.ADMIN)) {
-          selectedRoles.value.push(TENANT_ROLES.ADMIN);
+        if (!selectedRoles.value.includes(GLOBAL_ROLES.ADMIN)) {
+          selectedRoles.value.push(GLOBAL_ROLES.ADMIN);
         }
       } else {
         selectedRoles.value = selectedRoles.value.filter(
-          (r) => r !== TENANT_ROLES.ADMIN
+          (r) => r !== GLOBAL_ROLES.ADMIN
         );
       }
     },
@@ -251,11 +253,13 @@ export function useUser() {
       selectedRoles.value.push(TENANT_ROLES.USER);
     }
 
-    // SUPER_ADMIN is a global role. Only fold it into the outgoing role set on
-    // the admin/root host, where the backend treats `roles` as the global set.
-    // On a tenant subdomain it must never leak through as a tenant role.
+    // On a tenant subdomain `roles` is the membership, which refuses a global
+    // role — even one left in it by legacy data. On the admin/root host it is
+    // the global set itself.
     const roles = selectedRoles.value.filter(
-      (role) => role !== GLOBAL_ROLES.SUPER_ADMIN
+      (role) =>
+        role !== GLOBAL_ROLES.SUPER_ADMIN &&
+        (!isTenantSubdomain() || role !== GLOBAL_ROLES.ADMIN)
     );
     if (!isTenantSubdomain() && isSuperAdmin.value) {
       roles.push(GLOBAL_ROLES.SUPER_ADMIN);
