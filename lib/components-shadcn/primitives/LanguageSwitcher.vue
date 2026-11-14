@@ -9,91 +9,25 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Languages } from "lucide-vue-next";
-import { useToast } from "../ui/toast/use-toast";
-import {
-  getDefaultLocale,
-  getSupportedLocales,
-} from "../i18n/supported-locales";
-import { serverMessageOf } from "../../utils/server-message";
+import { getDefaultLocale } from "../i18n/supported-locales";
+import { useLocaleSwitch } from "../composables/useLocaleSwitch";
 
-const { t, locale, getLocaleMessage, setLocaleMessage } = useI18n({
-  useScope: "global",
-});
-const { toast } = useToast();
+const { t } = useI18n({ useScope: "global" });
+const { locale, localeOptions, loadLocale, initialLocale, switchLocale } =
+  useLocaleSwitch();
 
-async function loadLocale(lang: string) {
-  // Check if we already have shell messages for this locale
-  // Modules might have already registered this locale, but shell keys (like 'common') might be missing
-  const currentMessages = (getLocaleMessage(lang) || {}) as Record<
-    string,
-    unknown
-  >;
-  const hasShellMessages = !!currentMessages.common;
-
-  if (!hasShellMessages) {
-    try {
-      const messages = await import(`@/i18n/${lang}/index.ts`);
-      // Merge shell messages with existing module messages
-      setLocaleMessage(lang, {
-        ...currentMessages,
-        ...(messages.default || {}),
-      });
-    } catch (e) {
-      // Switching anyway would leave the whole interface on raw i18n keys.
-      // Stay on the locale that has messages, and say why the switch failed.
-      console.error(`Failed to load i18n messages for ${lang}:`, e);
-      toast({
-        title: t("common.language.loadFailed"),
-        description:
-          serverMessageOf(e) ?? t("common.language.loadFailedDesc", { lang }),
-        variant: "destructive",
-      });
-      return;
-    }
-  }
-  locale.value = lang;
-}
-
-// Initialize locale from localStorage or browser preference. Map the browser's
-// language tag onto a locale the app actually ships, so e.g. a German browser
-// lands on German only where German exists — otherwise on the default.
-const localeOptions = getSupportedLocales();
-
-function isSupported(value: string | null): value is string {
-  return !!value && localeOptions.some((option) => option.value === value);
-}
-
-function detectBrowserLocale(): string {
-  const nav = (navigator.language || "").toLowerCase();
-  const match = localeOptions.find((option) =>
-    nav.startsWith(option.value.slice(0, 2).toLowerCase())
-  );
-  return match?.value ?? getDefaultLocale();
-}
-
-// A stored locale the app no longer offers (a narrowed list, a shared
-// `.localhost` cookie jar) must not strand the user on a language with no
-// messages — fall back to detection.
-const savedLocale = localStorage.getItem("user-locale");
-const initialLocale = isSupported(savedLocale)
-  ? savedLocale
-  : detectBrowserLocale();
-
-if (initialLocale !== getDefaultLocale()) {
-  // Load non-default locale asynchronously on startup
-  void loadLocale(initialLocale);
+// The navbar stays mounted on every page, even where a route slides it away,
+// so the startup locale is applied here.
+const startLocale = initialLocale();
+if (startLocale !== getDefaultLocale()) {
+  void loadLocale(startLocale);
 } else {
-  locale.value = initialLocale;
+  locale.value = startLocale;
 }
-
-const updateLocale = async (newLocale: string) => {
-  localStorage.setItem("user-locale", newLocale);
-  await loadLocale(newLocale);
-};
 
 const currentLocale = computed({
   get: () => locale.value,
-  set: (value) => void updateLocale(value),
+  set: (value) => void switchLocale(value),
 });
 </script>
 

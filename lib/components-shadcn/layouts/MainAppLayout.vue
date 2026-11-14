@@ -7,7 +7,7 @@
        empty band under the hidden bar. -->
   <div
     class="min-h-screen"
-    :style="{ '--app-nav-shift': navCollapsed ? '-4rem' : '0px' }"
+    :style="{ '--app-nav-shift': navHidden ? '-4rem' : '0px' }"
   >
     <AppBackground />
 
@@ -46,7 +46,8 @@
     >
       <!-- Top Navbar -->
       <AppMainNavbar
-        :collapsed="navCollapsed"
+        :collapsed="navHidden"
+        :inert="navHiddenByRoute || undefined"
         :nav-width="
           userStore.isLogged && userStore.hasRole ? appStore.navWidth : '100%'
         "
@@ -483,6 +484,15 @@ const navAutoHideDisabled = computed(
 const { collapsed: navCollapsed } = useHideOnScroll({
   disabled: navAutoHideDisabled,
 });
+
+// A surface that carries its own phone header (the classroom's lesson bar)
+// opts out of the app bar with `meta.hideMobileNavbar`. The bar stays mounted
+// — it applies the startup locale — but is slid away and inert, and
+// `--app-nav-shift` lets a viewport-filling pane reclaim its strip.
+const navHiddenByRoute = computed(
+  () => isMobile.value && !!route.meta?.hideMobileNavbar
+);
+const navHidden = computed(() => navCollapsed.value || navHiddenByRoute.value);
 
 // Toggle the navigation sidebar with ⌘B (mac) / Ctrl+B (win/linux), like VS Code.
 // Skipped only inside rich-text editors (contenteditable), where Ctrl/⌘+B is
