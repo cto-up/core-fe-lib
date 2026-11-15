@@ -50,6 +50,9 @@ export default {
   colourMatched: "Les couleurs suivent maintenant le thème du cours",
   tooComplex:
     "Ce dessin est très complexe ({detail}). Simplifiez-le avant d'enregistrer.",
+  contrast: "Contraste",
+  contrastOk: "Tous les textes et traits sont lisibles dans ce thème.",
+  useRole: "Utiliser {role}",
   roles: {
     "accent-1": "Principale",
     "accent-2": "Deuxième",

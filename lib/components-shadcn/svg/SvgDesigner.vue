@@ -289,9 +289,53 @@
 
         <!-- Properties -->
         <div v-if="panelTab === 'properties'" class="space-y-4 p-4 text-sm">
-          <p v-if="!selectedShapes.length" class="text-muted-foreground">
-            {{ t("svgDesigner.noSelection") }}
-          </p>
+          <template v-if="!selectedShapes.length">
+            <p class="text-muted-foreground">
+              {{ t("svgDesigner.noSelection") }}
+            </p>
+            <section
+              v-if="shapes.length"
+              :aria-label="t('svgDesigner.contrast')"
+            >
+              <h3 class="mb-1 font-medium">{{ t("svgDesigner.contrast") }}</h3>
+              <p
+                v-if="!contrastIssues.length"
+                class="flex items-center gap-1 text-muted-foreground"
+              >
+                <Check class="h-4 w-4" aria-hidden="true" />{{
+                  t("svgDesigner.contrastOk")
+                }}
+              </p>
+              <ul v-else class="space-y-1">
+                <li v-for="iss in contrastIssues" :key="iss.id">
+                  <button
+                    type="button"
+                    class="flex min-h-11 w-full items-center gap-2 rounded px-2 text-left text-error hover:bg-error/10"
+                    @click="selectOnly(iss.id)"
+                  >
+                    <TriangleAlert
+                      class="h-4 w-4 shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span class="min-w-0 flex-1 truncate">{{ iss.name }}</span>
+                    <span class="font-mono text-xs"
+                      >{{ iss.ratio.toFixed(1) }}:1</span
+                    >
+                  </button>
+                  <button
+                    v-if="iss.fix"
+                    type="button"
+                    class="ml-8 text-xs underline underline-offset-2"
+                    @click="applyContrastFix(iss.id, iss.fix)"
+                  >
+                    {{
+                      t("svgDesigner.useRole", { role: roleLabels[iss.fix] })
+                    }}
+                  </button>
+                </li>
+              </ul>
+            </section>
+          </template>
           <template v-else>
             <div v-if="single && single.type === 'text'">
               <label class="mb-1 block font-medium" :for="`${scopeId}-text`">{{
@@ -625,7 +669,7 @@ import {
   type Shape,
   type ShapeType,
 } from "./designer/model";
-import { parseColor } from "./contrast";
+import { contrastRatio, parseColor, passes } from "./contrast";
 import { exceededLimit } from "./svgLimits";
 import { scopeCss } from "./svgSanitize";
 import {
@@ -937,6 +981,9 @@ function hitPad(s: Shape): number {
 
 function onCanvasDown(e: PointerEvent) {
   if (props.readonly) return;
+  // The canvas manages focus itself: the browser's mousedown focus would land
+  // after a just-opened label input took focus, and blank it.
+  e.preventDefault();
   stage.value?.focus();
   const p = toSvg(e);
   if (tool.value === "select" || tool.value === "icon") {
@@ -964,6 +1011,7 @@ function onCanvasDown(e: PointerEvent) {
 
 function onShapeDown(e: PointerEvent, s: Shape) {
   if (props.readonly) return;
+  e.preventDefault();
   stage.value?.focus();
   if (tool.value !== "select") {
     onCanvasDown(e);
@@ -1398,6 +1446,83 @@ function insertIcon(ic: { name: string; icon: LucideIcon }) {
   );
   tool.value = "select";
   selectOnly(s.id);
+}
+
+// ---------- contrast (#274) ----------
+
+interface ContrastIssue {
+  id: string;
+  name: string;
+  ratio: number;
+  fix: SvgRole | null;
+}
+const contrastIssues = ref<ContrastIssue[]>([]);
+
+function cardColour(): { r: number; g: number; b: number } | null {
+  return svgEl.value
+    ? parseColor(getComputedStyle(svgEl.value).backgroundColor)
+    : null;
+}
+
+/** Text must reach 4.5:1 and lines 3:1 against what is behind them, in the previewed theme. */
+function computeContrast() {
+  const roles = resolvedRoles();
+  const card = cardColour();
+  if (!card) return;
+  const out: ContrastIssue[] = [];
+  const list = visibleShapes.value;
+  for (const [i, s] of list.entries()) {
+    const role =
+      s.type === "text" ? s.fill : s.type === "line" ? s.stroke : "none";
+    if (role === "none" || !roles[role]) continue;
+    const cx = s.x + s.w / 2;
+    const cy = s.y + s.h / 2;
+    const under = list
+      .slice(0, i)
+      .reverse()
+      .find(
+        (b) =>
+          b.type !== "text" &&
+          b.type !== "line" &&
+          b.fill !== "none" &&
+          cx >= b.x &&
+          cx <= b.x + b.w &&
+          cy >= b.y &&
+          cy <= b.y + b.h
+      );
+    const bg =
+      under && under.fill !== "none" ? (roles[under.fill] ?? card) : card;
+    const kind = s.type === "text" ? "text" : "shape";
+    const ratio = contrastRatio(roles[role]!, bg);
+    if (passes(ratio, kind)) continue;
+    const fix =
+      (["ink", "surface", "accent-1", "muted"] as SvgRole[]).find(
+        (r) => roles[r] && passes(contrastRatio(roles[r]!, bg), kind)
+      ) ?? null;
+    out.push({
+      id: s.id,
+      name: s.type === "text" && s.text ? s.text : s.name,
+      ratio,
+      fix,
+    });
+  }
+  contrastIssues.value = out;
+}
+
+watch([shapes, themeId, previewDark], () => void nextTick(computeContrast), {
+  immediate: true,
+});
+
+function applyContrastFix(id: string, role: SvgRole) {
+  commit(
+    shapes.value.map((s) =>
+      s.id !== id
+        ? s
+        : s.type === "line"
+          ? { ...s, stroke: role }
+          : { ...s, fill: role }
+    )
+  );
 }
 
 // ---------- save ----------
