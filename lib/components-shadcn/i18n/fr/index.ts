@@ -10,6 +10,7 @@ import llm from "./llm";
 import editor from "./editor";
 import svgDesigner from "./svgDesigner";
 import theme from "./theme";
+import mathEditor from "./mathEditor";
 
 /**
  * Shared SaaS i18n dictionary (fr) for components-shadcn.
@@ -28,4 +29,5 @@ export default {
   editor,
   svgDesigner,
   theme,
+  mathEditor,
 };
