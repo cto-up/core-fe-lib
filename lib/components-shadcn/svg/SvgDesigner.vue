@@ -141,6 +141,7 @@
         class="relative min-h-0 flex-1 overflow-auto bg-muted/40 p-3 outline-none sm:p-6"
         :class="previewDark ? 'dark' : ''"
         tabindex="0"
+        role="application"
         :aria-label="t('svgDesigner.title')"
         @keydown="onKeydown"
         @paste="onPaste"

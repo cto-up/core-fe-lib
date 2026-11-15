@@ -5,7 +5,12 @@
   appears inline under it. Long display formulas scroll inside their own box.
 -->
 <template>
-  <span v-if="!display" class="math-tex math-inline" :aria-label="label">
+  <span
+    v-if="!display"
+    class="math-tex math-inline"
+    :role="label ? 'img' : undefined"
+    :aria-label="label"
+  >
     <span
       v-if="html"
       style="color: var(--math-ink, currentColor)"
@@ -17,6 +22,7 @@
     <div
       class="overflow-x-auto py-1"
       style="color: var(--math-ink, currentColor)"
+      :role="label ? 'img' : undefined"
       :aria-label="label"
     >
       <div v-if="html" class="text-center" v-html="html" />

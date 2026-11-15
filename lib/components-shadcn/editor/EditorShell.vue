@@ -7,6 +7,7 @@
 -->
 <template>
   <div
+    data-editor-shell
     class="flex h-full min-h-0 w-full flex-col bg-background"
     @keydown="onKeydown"
   >

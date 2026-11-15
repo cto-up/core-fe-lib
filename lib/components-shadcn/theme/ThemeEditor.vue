@@ -395,8 +395,17 @@ function tripletColour(v: string | undefined): string {
   return /^[\d.]+\s+[\d.]+%\s+[\d.]+%$/.test(v.trim()) ? `hsl(${v})` : v;
 }
 
+/** The app's own value of a token, for display when no tier sets it. */
+function platformValue(name: string): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  const v = getComputedStyle(document.documentElement)
+    .getPropertyValue(name)
+    .trim();
+  return v || undefined;
+}
+
 function effective(name: string): string | undefined {
-  const v = light.value[name] ?? inheritedValue(name);
+  const v = light.value[name] ?? inheritedValue(name) ?? platformValue(name);
   return v === undefined ? undefined : tripletColour(v);
 }
 
