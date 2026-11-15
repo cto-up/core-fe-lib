@@ -8,6 +8,7 @@ import core from "./core";
 import support from "./support";
 import llm from "./llm";
 import editor from "./editor";
+import svgDesigner from "./svgDesigner";
 
 /**
  * Shared SaaS i18n dictionary (fr) for components-shadcn.
@@ -24,4 +25,5 @@ export default {
   support,
   llm,
   editor,
+  svgDesigner,
 };
