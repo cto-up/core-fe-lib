@@ -1,0 +1,20 @@
+export default {
+  discardTitle: "Abandonner les modifications ?",
+  discardMessage: "Vos modifications non enregistrées seront perdues.",
+  discard: "Abandonner",
+  keepEditing: "Continuer l'édition",
+  leaveTitle: "Quitter sans enregistrer ?",
+  leaveMessage: "Cette page contient des modifications non enregistrées.",
+  leave: "Quitter",
+  unsaved: "Modifications non enregistrées",
+  saving: "Enregistrement…",
+  panel: "Propriétés",
+  hidePanel: "Masquer les propriétés",
+  previewTheme: "Thème d'aperçu",
+  darkMode: "Mode sombre",
+  lightMode: "Mode clair",
+  restoreDraftTitle: "Restaurer le travail non enregistré ?",
+  restoreDraftMessage:
+    "Vous avez quitté cet éditeur avec des modifications non enregistrées. Les restaurer ?",
+  restore: "Restaurer",
+};

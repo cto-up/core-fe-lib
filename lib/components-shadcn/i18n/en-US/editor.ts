@@ -1,0 +1,20 @@
+export default {
+  discardTitle: "Discard changes?",
+  discardMessage: "Your unsaved changes will be lost.",
+  discard: "Discard",
+  keepEditing: "Keep editing",
+  leaveTitle: "Leave without saving?",
+  leaveMessage: "You have unsaved changes on this page.",
+  leave: "Leave",
+  unsaved: "Unsaved changes",
+  saving: "Saving…",
+  panel: "Properties",
+  hidePanel: "Hide properties",
+  previewTheme: "Preview theme",
+  darkMode: "Dark mode",
+  lightMode: "Light mode",
+  restoreDraftTitle: "Restore unsaved work?",
+  restoreDraftMessage:
+    "You left this editor with unsaved changes. Restore them?",
+  restore: "Restore",
+};

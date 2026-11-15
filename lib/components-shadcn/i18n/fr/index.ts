@@ -7,6 +7,7 @@ import layout from "./layout";
 import core from "./core";
 import support from "./support";
 import llm from "./llm";
+import editor from "./editor";
 
 /**
  * Shared SaaS i18n dictionary (fr) for components-shadcn.
@@ -22,4 +23,5 @@ export default {
   core,
   support,
   llm,
+  editor,
 };
