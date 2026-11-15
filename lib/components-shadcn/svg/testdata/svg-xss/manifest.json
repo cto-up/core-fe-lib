@@ -1,0 +1,308 @@
+[
+ {
+  "file": "script-plain.svg",
+  "expect": "blocked",
+  "bad": "<script",
+  "why": "script element"
+ },
+ {
+  "file": "script-cdata.svg",
+  "expect": "blocked",
+  "bad": "<script|alert",
+  "why": "script with CDATA"
+ },
+ {
+  "file": "script-xlink-src.svg",
+  "expect": "blocked",
+  "bad": "<script|evil",
+  "why": "external script"
+ },
+ {
+  "file": "onload-root.svg",
+  "expect": "blocked",
+  "bad": "onload",
+  "why": "handler on root"
+ },
+ {
+  "file": "onclick.svg",
+  "expect": "blocked",
+  "bad": "onclick",
+  "why": "click handler"
+ },
+ {
+  "file": "onmouseover.svg",
+  "expect": "blocked",
+  "bad": "onmouseover",
+  "why": "hover handler"
+ },
+ {
+  "file": "onbegin.svg",
+  "expect": "blocked",
+  "bad": "onbegin",
+  "why": "SMIL handler attr"
+ },
+ {
+  "file": "onfocusin-upper.svg",
+  "expect": "blocked",
+  "bad": "(?i)onfocusin",
+  "why": "upper-case handler"
+ },
+ {
+  "file": "foreignobject-html.svg",
+  "expect": "blocked",
+  "bad": "foreignObject|onerror|<img",
+  "why": "HTML via foreignObject"
+ },
+ {
+  "file": "iframe.svg",
+  "expect": "blocked",
+  "bad": "iframe|evil",
+  "why": "iframe in svg"
+ },
+ {
+  "file": "embed.svg",
+  "expect": "blocked",
+  "bad": "embed|evil",
+  "why": "embed"
+ },
+ {
+  "file": "object.svg",
+  "expect": "blocked",
+  "bad": "<object|evil",
+  "why": "object"
+ },
+ {
+  "file": "a-javascript.svg",
+  "expect": "blocked",
+  "bad": "javascript:",
+  "why": "javascript link"
+ },
+ {
+  "file": "a-javascript-entity.svg",
+  "expect": "blocked",
+  "bad": "(?i)javascript|jav",
+  "why": "entity-obfuscated scheme"
+ },
+ {
+  "file": "a-javascript-space.svg",
+  "expect": "blocked",
+  "bad": "javascript:",
+  "why": "leading-space scheme"
+ },
+ {
+  "file": "a-xlink-javascript.svg",
+  "expect": "blocked",
+  "bad": "javascript:",
+  "why": "xlink javascript link"
+ },
+ {
+  "file": "a-vbscript.svg",
+  "expect": "blocked",
+  "bad": "vbscript",
+  "why": "vbscript link"
+ },
+ {
+  "file": "a-data-html.svg",
+  "expect": "blocked",
+  "bad": "data:text/html",
+  "why": "data html link"
+ },
+ {
+  "file": "a-https.svg",
+  "expect": "blocked",
+  "bad": "evil",
+  "why": "external link (navigation away)"
+ },
+ {
+  "file": "use-external.svg",
+  "expect": "blocked",
+  "bad": "evil",
+  "why": "external use"
+ },
+ {
+  "file": "use-xlink-external.svg",
+  "expect": "blocked",
+  "bad": "evil",
+  "why": "external xlink use"
+ },
+ {
+  "file": "use-data.svg",
+  "expect": "blocked",
+  "bad": "data:image/svg",
+  "why": "use with data svg"
+ },
+ {
+  "file": "image-external.svg",
+  "expect": "blocked",
+  "bad": "evil",
+  "why": "tracking image"
+ },
+ {
+  "file": "image-data-svg.svg",
+  "expect": "blocked",
+  "bad": "data:image/svg",
+  "why": "nested svg via data uri"
+ },
+ {
+  "file": "image-data-html.svg",
+  "expect": "blocked",
+  "bad": "data:text/html",
+  "why": "html via image"
+ },
+ {
+  "file": "feimage-external.svg",
+  "expect": "blocked",
+  "bad": "evil|feImage",
+  "why": "feImage remote"
+ },
+ {
+  "file": "set-href.svg",
+  "expect": "blocked",
+  "bad": "<set|javascript",
+  "why": "SMIL set rewrites href"
+ },
+ {
+  "file": "animate-href.svg",
+  "expect": "blocked",
+  "bad": "<animate|javascript",
+  "why": "SMIL animate rewrites href"
+ },
+ {
+  "file": "animate-motion.svg",
+  "expect": "blocked",
+  "bad": "animateMotion",
+  "why": "SMIL motion"
+ },
+ {
+  "file": "style-import.svg",
+  "expect": "blocked",
+  "bad": "@import|evil",
+  "why": "remote stylesheet"
+ },
+ {
+  "file": "style-url.svg",
+  "expect": "blocked",
+  "bad": "evil",
+  "why": "css beacon"
+ },
+ {
+  "file": "style-escape-url.svg",
+  "expect": "blocked",
+  "bad": "evil",
+  "why": "css escape url"
+ },
+ {
+  "file": "style-fontface.svg",
+  "expect": "blocked",
+  "bad": "evil|font-face",
+  "why": "remote font"
+ },
+ {
+  "file": "style-expression.svg",
+  "expect": "blocked",
+  "bad": "expression",
+  "why": "IE expression"
+ },
+ {
+  "file": "style-moz-binding.svg",
+  "expect": "blocked",
+  "bad": "binding|evil",
+  "why": "moz-binding"
+ },
+ {
+  "file": "style-breakout.svg",
+  "expect": "blocked",
+  "bad": "onerror|<img",
+  "why": "closes host style element"
+ },
+ {
+  "file": "style-attr-url.svg",
+  "expect": "blocked",
+  "bad": "evil",
+  "why": "style attribute beacon"
+ },
+ {
+  "file": "style-attr-expression.svg",
+  "expect": "blocked",
+  "bad": "expression",
+  "why": "style attribute expression"
+ },
+ {
+  "file": "doctype-entity.svg",
+  "expect": "blocked",
+  "bad": "aaaa|ENTITY",
+  "why": "entity declaration"
+ },
+ {
+  "file": "xxe.svg",
+  "expect": "blocked",
+  "bad": "passwd|root:",
+  "why": "external entity"
+ },
+ {
+  "file": "billion-laughs.svg",
+  "expect": "blocked",
+  "bad": "aaaaaaaaaa",
+  "why": "entity expansion"
+ },
+ {
+  "file": "html-root.svg",
+  "expect": "blocked",
+  "bad": "script|html",
+  "why": "not an svg"
+ },
+ {
+  "file": "svg-no-namespace.svg",
+  "expect": "blocked",
+  "bad": "script",
+  "why": "svg without namespace"
+ },
+ {
+  "file": "handler-in-text-tspan.svg",
+  "expect": "blocked",
+  "bad": "onclick",
+  "why": "nested handler"
+ },
+ {
+  "file": "allowed-gradient.svg",
+  "expect": "allowed",
+  "keep": "linearGradient",
+  "why": "local gradient"
+ },
+ {
+  "file": "allowed-use-local.svg",
+  "expect": "allowed",
+  "keep": "href=\"#c\"",
+  "why": "local use"
+ },
+ {
+  "file": "allowed-image-png.svg",
+  "expect": "allowed",
+  "keep": "data:image/png",
+  "why": "embedded png"
+ },
+ {
+  "file": "allowed-filter.svg",
+  "expect": "allowed",
+  "keep": "feGaussianBlur",
+  "why": "blur filter"
+ },
+ {
+  "file": "allowed-style-local.svg",
+  "expect": "allowed",
+  "keep": "url(#g)",
+  "why": "css local reference"
+ },
+ {
+  "file": "allowed-roles.svg",
+  "expect": "allowed",
+  "keep": "t-fill-accent-1",
+  "why": "role classes"
+ },
+ {
+  "file": "allowed-marker.svg",
+  "expect": "allowed",
+  "keep": "marker",
+  "why": "arrowhead marker"
+ }
+]
