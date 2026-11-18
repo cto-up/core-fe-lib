@@ -55,6 +55,9 @@ export default {
     title: "Bienvenido a {name}",
     askInvite: "¿Eres nuevo? Pide una invitación a tu administrador.",
     poweredBy: "Con la tecnología de",
+    privacy: "Privacidad",
+    terms: "Términos",
+    legal: "Aviso legal",
   },
   signIn: {
     title: "Iniciar sesión",

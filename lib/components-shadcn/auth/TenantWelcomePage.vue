@@ -77,10 +77,35 @@
           }}
         </p>
 
-        <p class="welcome-powered text-xs text-muted-foreground">
-          {{ tOr("auth.welcome.poweredBy", "Powered by") }}
-          <b class="font-semibold text-foreground/75">{{ platformName }}</b>
-        </p>
+        <div
+          class="welcome-powered flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
+        >
+          <p>
+            {{ tOr("auth.welcome.poweredBy", "Powered by") }}
+            <b class="font-semibold text-foreground/75">{{ platformName }}</b>
+          </p>
+          <nav
+            v-if="privacyPath || termsPath"
+            data-test="welcome-legal"
+            class="flex gap-3"
+            :aria-label="tOr('auth.welcome.legal', 'Legal')"
+          >
+            <RouterLink
+              v-if="privacyPath"
+              :to="privacyPath"
+              class="underline-offset-4 hover:text-foreground hover:underline"
+            >
+              {{ tOr("auth.welcome.privacy", "Privacy") }}
+            </RouterLink>
+            <RouterLink
+              v-if="termsPath"
+              :to="termsPath"
+              class="underline-offset-4 hover:text-foreground hover:underline"
+            >
+              {{ tOr("auth.welcome.terms", "Terms") }}
+            </RouterLink>
+          </nav>
+        </div>
       </div>
     </main>
   </div>
@@ -89,6 +114,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { RouterLink } from "vue-router";
 import { useTenantStore } from "../../stores/tenant-store";
 import { useUserStore } from "../../stores/user-store";
 import { useAppStore } from "../stores/app-store";
@@ -114,6 +140,9 @@ const props = defineProps<{
   continuePath?: string;
   socialReturnPath?: string;
   socialPrompt?: string;
+  /** Linked under the form when set; OAuth app verification wants both on the home page. */
+  privacyPath?: string;
+  termsPath?: string;
 }>();
 
 const { t, te } = useI18n();

@@ -56,6 +56,9 @@ export default {
     title: "Willkommen bei {name}",
     askInvite: "Neu hier? Bitten Sie Ihre Administration um eine Einladung.",
     poweredBy: "Bereitgestellt von",
+    privacy: "Datenschutz",
+    terms: "Nutzungsbedingungen",
+    legal: "Rechtliches",
   },
   signIn: {
     title: "Anmelden",
