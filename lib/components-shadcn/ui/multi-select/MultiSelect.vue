@@ -23,7 +23,7 @@
             </template>
           </div>
           <div v-else class="text-muted-foreground py-0.5 select-none">
-            {{ placeholder || "Select items..." }}
+            {{ placeholder || t("common.selector.selectItems") }}
           </div>
           <div
             class="ml-auto opacity-40 group-hover:opacity-100 transition-opacity"
@@ -38,7 +38,7 @@
       >
         <Command v-model:search-term="searchQuery">
           <CommandInput
-            :placeholder="placeholder || 'Search or add...'"
+            :placeholder="placeholder || t('common.selector.searchOrAdd')"
             @keydown.enter="handleEnter"
             @keydown.delete="handleBackspace"
           />
@@ -49,7 +49,7 @@
                 class="flex flex-col items-center gap-3 px-4"
               >
                 <p class="text-sm text-muted-foreground">
-                  No matches found for "{{ searchQuery }}"
+                  {{ t("common.selector.noMatches", { query: searchQuery }) }}
                 </p>
                 <Button
                   v-if="allowNew"
@@ -59,17 +59,17 @@
                   @click="addNewOption"
                 >
                   <Plus class="mr-2 h-3.5 w-3.5" />
-                  Create "{{ searchQuery }}"
+                  {{ t("common.selector.create", { query: searchQuery }) }}
                 </Button>
               </div>
-              <span v-else class="text-sm text-muted-foreground"
-                >Type to search or add...</span
-              >
+              <span v-else class="text-sm text-muted-foreground">{{
+                t("common.selector.typeToSearch")
+              }}</span>
             </CommandEmpty>
 
             <CommandGroup
               v-if="filteredOptions.length > 0"
-              heading="Suggestions"
+              :heading="t('common.selector.suggestions')"
             >
               <CommandItem
                 v-for="option in filteredOptions"
@@ -104,6 +104,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from "vue";
+import { useI18n } from "vue-i18n";
 import { Badge } from "../badge";
 import { Button } from "../button";
 import {
@@ -136,7 +137,7 @@ const props = defineProps({
   },
   placeholder: {
     type: String,
-    default: "Select options...",
+    default: undefined,
   },
   allowNew: {
     type: Boolean,
@@ -145,6 +146,7 @@ const props = defineProps({
 });
 
 const emit = defineEmits(["update:modelValue"]);
+const { t } = useI18n();
 
 const open = ref(false);
 const searchQuery = ref("");
@@ -202,7 +204,7 @@ function handleEnter(e: KeyboardEvent) {
   }
 }
 
-function handleBackspace(e: KeyboardEvent) {
+function handleBackspace() {
   if (!searchQuery.value && internalValue.value.length > 0) {
     const current = [...internalValue.value];
     current.pop();

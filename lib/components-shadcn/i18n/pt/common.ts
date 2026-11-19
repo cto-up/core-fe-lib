@@ -178,6 +178,12 @@ export default {
   selector: {
     loadFailed: "Não foi possível carregar as opções",
     searchFailed: "A pesquisa falhou",
+    selectItems: "Selecionar itens…",
+    searchOrAdd: "Pesquisar ou adicionar…",
+    noMatches: "Nenhum resultado para «{query}»",
+    create: "Criar «{query}»",
+    typeToSearch: "Digite para pesquisar ou adicionar…",
+    suggestions: "Sugestões",
   },
   language: {
     loadFailed: "Não foi possível mudar o idioma",

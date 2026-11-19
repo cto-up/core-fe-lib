@@ -176,6 +176,12 @@ export default {
   selector: {
     loadFailed: "Could not load the options",
     searchFailed: "The search failed",
+    selectItems: "Select options...",
+    searchOrAdd: "Search or add...",
+    noMatches: 'No matches found for "{query}"',
+    create: 'Create "{query}"',
+    typeToSearch: "Type to search or add...",
+    suggestions: "Suggestions",
   },
   language: {
     loadFailed: "Could not switch the language",
