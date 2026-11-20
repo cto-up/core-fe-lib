@@ -14,6 +14,6 @@ export interface Brand {
   themeColor: string;
   /** Tint of the Safari pinned-tab mask, as hex. */
   maskColor: string;
-  /** The Google Fonts stylesheet the product's faces load from. */
+  /** The stylesheet the product's faces load from: a self-hosted CSS (e.g. "/fonts/fonts.css") with @font-face rules and metric-matched fallbacks. */
   fontsHref: string;
 }
