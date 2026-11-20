@@ -10,6 +10,7 @@ import {
 } from "radix-vue";
 import { SelectScrollDownButton, SelectScrollUpButton } from ".";
 import { cn } from "../../utils";
+import { usePortalTarget } from "../../composables/usePortalTarget";
 
 defineOptions({
   inheritAttrs: false,
@@ -24,16 +25,18 @@ const props = withDefaults(
 const emits = defineEmits<SelectContentEmits>();
 
 const delegatedProps = computed(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops class
   const { class: _, ...delegated } = props;
 
   return delegated;
 });
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+const portalTarget = usePortalTarget();
 </script>
 
 <template>
-  <SelectPortal>
+  <SelectPortal :to="portalTarget">
     <SelectContent
       v-bind="{ ...forwarded, ...$attrs }"
       :class="

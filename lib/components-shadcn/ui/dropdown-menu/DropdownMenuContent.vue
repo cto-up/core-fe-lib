@@ -8,6 +8,7 @@ import {
   useForwardPropsEmits,
 } from "radix-vue";
 import { cn } from "../../utils";
+import { usePortalTarget } from "../../composables/usePortalTarget";
 
 const props = withDefaults(
   defineProps<DropdownMenuContentProps & { class?: HTMLAttributes["class"] }>(),
@@ -18,16 +19,18 @@ const props = withDefaults(
 const emits = defineEmits<DropdownMenuContentEmits>();
 
 const delegatedProps = computed(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops class
   const { class: _, ...delegated } = props;
 
   return delegated;
 });
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+const portalTarget = usePortalTarget();
 </script>
 
 <template>
-  <DropdownMenuPortal>
+  <DropdownMenuPortal :to="portalTarget">
     <DropdownMenuContent
       v-bind="forwarded"
       :class="

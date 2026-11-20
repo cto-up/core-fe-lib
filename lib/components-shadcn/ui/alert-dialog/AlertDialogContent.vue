@@ -9,6 +9,7 @@ import {
   useForwardPropsEmits,
 } from "radix-vue";
 import { cn } from "../../utils";
+import { usePortalTarget } from "../../composables/usePortalTarget";
 
 defineOptions({
   inheritAttrs: false,
@@ -20,16 +21,18 @@ const props = defineProps<
 const emits = defineEmits<AlertDialogContentEmits>();
 
 const delegatedProps = computed(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops class
   const { class: _, ...delegated } = props;
 
   return delegated;
 });
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+const portalTarget = usePortalTarget();
 </script>
 
 <template>
-  <AlertDialogPortal>
+  <AlertDialogPortal :to="portalTarget">
     <AlertDialogOverlay
       class="fixed inset-0 z-[100] bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
     />

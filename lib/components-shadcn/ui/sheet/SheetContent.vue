@@ -13,6 +13,7 @@ import { X } from "lucide-vue-next";
 import { useI18n } from "vue-i18n";
 import { type SheetVariants, sheetVariants } from ".";
 import { cn } from "../../utils";
+import { usePortalTarget } from "../../composables/usePortalTarget";
 
 interface SheetContentProps extends DialogContentProps {
   class?: HTMLAttributes["class"];
@@ -33,21 +34,24 @@ const { t } = useI18n();
 const emits = defineEmits<DialogContentEmits>();
 
 const delegatedProps = computed(() => {
+  /* eslint-disable @typescript-eslint/no-unused-vars -- drops class, side, showClose */
   const {
     class: _class,
     side: _side,
     showClose: _showClose,
     ...delegated
   } = props;
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   return delegated;
 });
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+const portalTarget = usePortalTarget();
 </script>
 
 <template>
-  <DialogPortal>
+  <DialogPortal :to="portalTarget">
     <DialogOverlay
       class="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
     />

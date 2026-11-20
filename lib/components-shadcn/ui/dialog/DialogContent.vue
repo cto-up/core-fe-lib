@@ -11,6 +11,7 @@ import {
 } from "radix-vue";
 import { X } from "lucide-vue-next";
 import { cn } from "../../utils";
+import { usePortalTarget } from "../../composables/usePortalTarget";
 
 const props = defineProps<
   DialogContentProps & {
@@ -38,10 +39,11 @@ const delegatedProps = computed(
 );
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+const portalTarget = usePortalTarget();
 </script>
 
 <template>
-  <DialogPortal>
+  <DialogPortal :to="portalTarget">
     <DialogOverlay
       data-dialog-overlay
       :class="

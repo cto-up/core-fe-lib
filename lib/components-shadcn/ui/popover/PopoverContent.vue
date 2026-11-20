@@ -8,6 +8,7 @@ import {
   useForwardPropsEmits,
 } from "radix-vue";
 import { cn } from "../../utils";
+import { usePortalTarget } from "../../composables/usePortalTarget";
 
 defineOptions({
   inheritAttrs: false,
@@ -23,16 +24,18 @@ const props = withDefaults(
 const emits = defineEmits<PopoverContentEmits>();
 
 const delegatedProps = computed(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops class
   const { class: _, ...delegated } = props;
 
   return delegated;
 });
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits);
+const portalTarget = usePortalTarget();
 </script>
 
 <template>
-  <PopoverPortal>
+  <PopoverPortal :to="portalTarget">
     <PopoverContent
       v-bind="{ ...forwarded, ...$attrs }"
       :class="

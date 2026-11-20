@@ -1,5 +1,7 @@
+<!-- eslint-disable vue/multi-word-component-names -- shadcn primitive name -->
 <script setup lang="ts">
 import { ref } from "vue";
+import { useEventListener } from "@vueuse/core";
 import { Check, CircleAlert, TriangleAlert } from "lucide-vue-next";
 import { useToast } from "./use-toast";
 import Toast from "./Toast.vue";
@@ -8,6 +10,12 @@ import ToastDescription from "./ToastDescription.vue";
 import ToastClose from "./ToastClose.vue";
 
 const { toasts, dismiss } = useToast();
+
+// Only the full-screen element's subtree is drawn while one is full screen.
+const target = ref<string | Element>(document.fullscreenElement ?? "body");
+useEventListener(document, "fullscreenchange", () => {
+  target.value = document.fullscreenElement ?? "body";
+});
 
 // With the solid fill gone, the icon is what carries severity at a glance.
 const ICONS = {
@@ -33,7 +41,7 @@ async function copyReference(id: string, reference: string) {
 </script>
 
 <template>
-  <Teleport to="body">
+  <Teleport :to="target">
     <!--
       pointer-events-none on the VIEWPORT (toasts themselves keep
       pointer-events-auto) so the empty/padded container never swallows taps.
