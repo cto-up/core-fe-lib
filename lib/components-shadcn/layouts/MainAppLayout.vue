@@ -355,15 +355,15 @@ const defaultTrailingSections = (): SidebarMenuSection[] => {
       icon: "admin_panel_settings",
       link: "/admin/data-protection",
     },
+    {
+      title: t("layout.navigation.admin.tenantConfig.title"),
+      caption: t("layout.navigation.admin.tenantConfig.caption"),
+      icon: "data_array",
+      link: "/tenant-configs",
+    },
   ];
   const adminOnlyItems = userStore.hasPrivilege(Role.ADMIN)
     ? [
-        {
-          title: t("layout.navigation.admin.tenantConfig.title"),
-          caption: t("layout.navigation.admin.tenantConfig.caption"),
-          icon: "data_array",
-          link: "/tenant-configs",
-        },
         {
           title: t("layout.navigation.admin.clientApps.title"),
           caption: t("layout.navigation.admin.clientApps.caption"),
