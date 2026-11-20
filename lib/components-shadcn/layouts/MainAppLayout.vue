@@ -30,7 +30,7 @@
         version: t('layout.version'),
         help: t('support.fab'),
       }"
-      @navigate="mobileSidebarOpen = false"
+      @navigate="onNavigate"
       @help="openSupport"
     />
 
@@ -102,7 +102,9 @@
            margin: a margin collapses out through min-h-screen and leaves every
            page 4rem taller than the window. -->
       <main
-        class="pt-16 mx-auto flex flex-col items-center"
+        ref="mainEl"
+        :tabindex="autoCloseNav ? -1 : undefined"
+        class="pt-16 mx-auto flex flex-col items-center focus:outline-none"
         :class="
           showMobileTabs
             ? 'pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0'
@@ -251,6 +253,10 @@ const props = withDefaults(
      *  render as a bottom tab bar below `md`, with `main` padded to clear it.
      *  Omit and nothing changes — apps without one keep the drawer alone. */
     mobileTabs?: MobileTab[];
+    /** Opt-in: collapse the desktop sidebar once a leaf link is activated, and
+     *  move focus to the page. Omit and the sidebar stays open as before. The
+     *  phone drawer closes on navigation either way. */
+    autoCloseNav?: boolean;
   }>(),
   {
     brandingText: "App",
@@ -270,6 +276,7 @@ const props = withDefaults(
     support: undefined,
     supportTopics: () => ["technical", "sales", "other"] as SupportTopic[],
     mobileTabs: undefined,
+    autoCloseNav: false,
   }
 );
 
@@ -419,6 +426,16 @@ const nav = useAppNav({
 
 // ── Mobile/viewport ─────────────────────────────────────────────────────────
 const mobileSidebarOpen = ref(false);
+const mainEl = ref<HTMLElement | null>(null);
+
+// The clicked link ends up inside a zero-width sidebar, so focus moves to the
+// page rather than staying on something the user can no longer see.
+function onNavigate() {
+  mobileSidebarOpen.value = false;
+  if (!props.autoCloseNav || isMobile.value || !appStore.sidebarExpand) return;
+  appStore.toggleSidebar();
+  mainEl.value?.focus({ preventScroll: true });
+}
 
 // Help & contact dialog, opened from the sidebar's utility entry or from the
 // Report action on an error toast. On mobile the sidebar is a Sheet, so close
