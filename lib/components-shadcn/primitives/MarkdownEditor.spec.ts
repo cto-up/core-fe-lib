@@ -327,7 +327,7 @@ describe("MarkdownEditor", () => {
     const editor = editorOf(w);
     editor.commands.focus("start");
     await nextTick();
-    expect(w.find('[data-test="md-table-add-column"]').exists()).toBe(false);
+    expect(w.find('[data-test="md-table-menu"]').exists()).toBe(false);
     let inCell = 0;
     editor.state.doc.descendants((n, pos) => {
       if (n.isText && n.text === "2") inCell = pos;
@@ -336,10 +336,34 @@ describe("MarkdownEditor", () => {
     await nextTick();
     expect(editor.isActive("table")).toBe(true);
     await vi.waitFor(() =>
-      expect(w.find('[data-test="md-table-add-column"]').exists()).toBe(true)
+      expect(w.find('[data-test="md-table-menu"]').exists()).toBe(true)
     );
-    await w.get('[data-test="md-table-add-column"]').trigger("click");
-    await w.get('[data-test="md-table-add-row"]').trigger("click");
+    // The Table menu lists each action in words, Delete the table last.
+    const choose = async (name: string) => {
+      const trigger = w.get('[data-test="md-table-menu"]');
+      await trigger.trigger("pointerdown", { button: 0, ctrlKey: false });
+      await trigger.trigger("keydown", { key: "Enter" });
+      let item: HTMLElement | null = null;
+      await vi.waitFor(() => {
+        item = document.querySelector(`[data-test="md-table-${name}"]`);
+        expect(item).not.toBeNull();
+      });
+      return item as unknown as HTMLElement;
+    };
+    const first = await choose("add-column");
+    const labels = [
+      ...document.querySelectorAll('[data-test^="md-table-"][role="menuitem"]'),
+    ].map((e) => e.textContent?.trim());
+    expect(labels).toEqual([
+      "Add a row below",
+      "Add a column to the right",
+      "Delete this row",
+      "Delete this column",
+      "Delete the table",
+    ]);
+    first.click();
+    await nextTick();
+    (await choose("add-row")).click();
     await nextTick();
     const table = editor.getJSON().content?.[1];
     expect(table?.content).toHaveLength(3);

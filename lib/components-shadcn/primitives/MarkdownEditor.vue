@@ -94,28 +94,41 @@
       </Button>
       <template v-if="markdown && editor?.isActive('table')">
         <span class="mx-1 h-5 w-px bg-border" aria-hidden="true" />
-        <span class="px-1 text-xs text-muted-foreground">{{
-          t("editor.table.label")
-        }}</span>
-        <Button
-          v-for="action in tableActions"
-          :key="action.name"
-          size="sm"
-          variant="ghost"
-          class="h-7 px-1.5 text-xs"
-          :class="
-            action.danger
-              ? 'text-destructive hover:bg-destructive/10 hover:text-destructive'
-              : ''
-          "
-          :title="action.label"
-          :aria-label="action.label"
-          :data-test="`md-table-${action.name}`"
-          @mousedown.prevent
-          @click="action.run()"
-        >
-          <component :is="action.icon" class="h-4 w-4" />
-        </Button>
+        <DropdownMenu :modal="false">
+          <DropdownMenuTrigger as-child>
+            <Button
+              size="sm"
+              variant="ghost"
+              class="h-7 gap-1 px-2 text-xs"
+              data-test="md-table-menu"
+              @mousedown.prevent
+            >
+              <TableIcon class="h-4 w-4" />
+              {{ t("editor.table.label") }}
+              <ChevronDown class="h-3 w-3 opacity-60" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="start"
+            @close-auto-focus.prevent="refocus"
+          >
+            <template v-for="action in tableActions" :key="action.name">
+              <DropdownMenuSeparator v-if="action.danger" />
+              <DropdownMenuItem
+                :class="
+                  action.danger
+                    ? 'text-destructive focus:bg-destructive/10 focus:text-destructive'
+                    : ''
+                "
+                :data-test="`md-table-${action.name}`"
+                @select="action.run()"
+              >
+                <component :is="action.icon" class="mr-2 h-4 w-4" />
+                {{ action.label }}
+              </DropdownMenuItem>
+            </template>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </template>
       <slot name="toolbar-end" :editor="editor" />
     </div>
@@ -194,12 +207,14 @@ import {
 import { useI18n } from "vue-i18n";
 import {
   CircleHelp,
+  BetweenHorizontalEnd,
+  BetweenVerticalEnd,
+  ChevronDown,
   Columns3,
   GripVertical,
-  Minus,
   Plus,
   Rows3,
-  SquareMinus,
+  Table as TableIcon,
   Trash2,
 } from "lucide-vue-next";
 import { CodeBlock, type CodeBlockOptions } from "@tiptap/extension-code-block";
@@ -212,6 +227,13 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { Button } from "../ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import { fromMarkdown, toMarkdown } from "../../markdown";
 import CodeBlockView from "./markdown-editor/CodeBlockView.vue";
 import RawMarkdownView from "./markdown-editor/RawMarkdownView.vue";
@@ -299,32 +321,33 @@ const slashMenu = useSlashMenu(() => [
   ...formatSlashItems(t, t("editor.slash.format")),
   ...props.slashItems,
 ]);
-// While the caret is in a table, the toolbar offers to change its shape.
+// While the caret is in a table, the toolbar's Table menu changes its shape,
+// each action in words (office#181).
 const tableActions = computed(() => {
   const chain = () => editor.value!.chain().focus();
   return [
     {
       name: "add-row",
       label: t("editor.slash.addRow"),
-      icon: Rows3,
+      icon: BetweenHorizontalEnd,
       run: () => chain().addRowAfter().run(),
     },
     {
       name: "add-column",
       label: t("editor.slash.addColumn"),
-      icon: Columns3,
+      icon: BetweenVerticalEnd,
       run: () => chain().addColumnAfter().run(),
     },
     {
       name: "delete-row",
       label: t("editor.slash.deleteRow"),
-      icon: Minus,
+      icon: Rows3,
       run: () => chain().deleteRow().run(),
     },
     {
       name: "delete-column",
       label: t("editor.slash.deleteColumn"),
-      icon: SquareMinus,
+      icon: Columns3,
       run: () => chain().deleteColumn().run(),
     },
     {
@@ -336,6 +359,13 @@ const tableActions = computed(() => {
     },
   ];
 });
+// Back to the cell once the Table menu has closed and given focus away.
+function refocus() {
+  setTimeout(() => {
+    if (editor.value && !editor.value.isDestroyed)
+      editor.value.commands.focus();
+  });
+}
 const helpOpen = ref(false);
 // The ? list: what the editor itself offers, then the consumer's tips.
 const allTips = computed(() => [
