@@ -92,6 +92,31 @@
         <Icon v-if="action.icon" :name="action.icon" class="h-4 w-4" />
         <span v-else class="text-xs font-semibold">{{ action.label }}</span>
       </Button>
+      <template v-if="markdown && editor?.isActive('table')">
+        <span class="mx-1 h-5 w-px bg-border" aria-hidden="true" />
+        <span class="px-1 text-xs text-muted-foreground">{{
+          t("editor.table.label")
+        }}</span>
+        <Button
+          v-for="action in tableActions"
+          :key="action.name"
+          size="sm"
+          variant="ghost"
+          class="h-7 px-1.5 text-xs"
+          :class="
+            action.danger
+              ? 'text-destructive hover:bg-destructive/10 hover:text-destructive'
+              : ''
+          "
+          :title="action.label"
+          :aria-label="action.label"
+          :data-test="`md-table-${action.name}`"
+          @mousedown.prevent
+          @click="action.run()"
+        >
+          <component :is="action.icon" class="h-4 w-4" />
+        </Button>
+      </template>
       <slot name="toolbar-end" :editor="editor" />
     </div>
 
@@ -167,7 +192,16 @@ import {
   type Ref,
 } from "vue";
 import { useI18n } from "vue-i18n";
-import { CircleHelp, GripVertical, Plus } from "lucide-vue-next";
+import {
+  CircleHelp,
+  Columns3,
+  GripVertical,
+  Minus,
+  Plus,
+  Rows3,
+  SquareMinus,
+  Trash2,
+} from "lucide-vue-next";
 import { CodeBlock, type CodeBlockOptions } from "@tiptap/extension-code-block";
 import type { AnyExtension, JSONContent } from "@tiptap/core";
 import { Editor, EditorContent, VueNodeViewRenderer } from "@tiptap/vue-3";
@@ -265,6 +299,43 @@ const slashMenu = useSlashMenu(() => [
   ...formatSlashItems(t, t("editor.slash.format")),
   ...props.slashItems,
 ]);
+// While the caret is in a table, the toolbar offers to change its shape.
+const tableActions = computed(() => {
+  const chain = () => editor.value!.chain().focus();
+  return [
+    {
+      name: "add-row",
+      label: t("editor.slash.addRow"),
+      icon: Rows3,
+      run: () => chain().addRowAfter().run(),
+    },
+    {
+      name: "add-column",
+      label: t("editor.slash.addColumn"),
+      icon: Columns3,
+      run: () => chain().addColumnAfter().run(),
+    },
+    {
+      name: "delete-row",
+      label: t("editor.slash.deleteRow"),
+      icon: Minus,
+      run: () => chain().deleteRow().run(),
+    },
+    {
+      name: "delete-column",
+      label: t("editor.slash.deleteColumn"),
+      icon: SquareMinus,
+      run: () => chain().deleteColumn().run(),
+    },
+    {
+      name: "delete-table",
+      label: t("editor.slash.deleteTable"),
+      icon: Trash2,
+      danger: true,
+      run: () => chain().deleteTable().run(),
+    },
+  ];
+});
 const helpOpen = ref(false);
 // The ? list: what the editor itself offers, then the consumer's tips.
 const allTips = computed(() => [

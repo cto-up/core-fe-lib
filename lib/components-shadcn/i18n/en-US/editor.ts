@@ -49,4 +49,7 @@ export default {
     move: "Move the block with the caret",
     tableTab: "In a table's last cell: add a row",
   },
+  table: {
+    label: "Table",
+  },
 };

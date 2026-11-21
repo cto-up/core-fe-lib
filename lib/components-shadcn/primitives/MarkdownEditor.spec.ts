@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { mount } from "@vue/test-utils";
 import { nextTick } from "vue";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Editor } from "@tiptap/vue-3";
 import { createI18n } from "vue-i18n";
 import { EditorView } from "@codemirror/view";
@@ -310,6 +310,40 @@ describe("MarkdownEditor", () => {
     editor.commands.insertContent(" /");
     await nextTick();
     expect(menu()).not.toBeNull();
+    w.unmount();
+  });
+
+  it("shows table actions in the toolbar only while the caret is in a table", async () => {
+    const w = mount(MarkdownEditor, {
+      props: {
+        initialContent: "Intro\n\n| A | B |\n| --- | --- |\n| 1 | 2 |",
+        format: "markdown",
+        variant: "document",
+      },
+      global: { stubs, plugins: [i18n()] },
+      attachTo: document.body,
+    });
+    await nextTick();
+    const editor = editorOf(w);
+    editor.commands.focus("start");
+    await nextTick();
+    expect(w.find('[data-test="md-table-add-column"]').exists()).toBe(false);
+    let inCell = 0;
+    editor.state.doc.descendants((n, pos) => {
+      if (n.isText && n.text === "2") inCell = pos;
+    });
+    editor.chain().focus().setTextSelection(inCell).run();
+    await nextTick();
+    expect(editor.isActive("table")).toBe(true);
+    await vi.waitFor(() =>
+      expect(w.find('[data-test="md-table-add-column"]').exists()).toBe(true)
+    );
+    await w.get('[data-test="md-table-add-column"]').trigger("click");
+    await w.get('[data-test="md-table-add-row"]').trigger("click");
+    await nextTick();
+    const table = editor.getJSON().content?.[1];
+    expect(table?.content).toHaveLength(3);
+    expect(table?.content?.[0].content).toHaveLength(3);
     w.unmount();
   });
 });

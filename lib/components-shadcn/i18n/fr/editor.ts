@@ -49,4 +49,7 @@ export default {
     move: "Déplacer le bloc du curseur",
     tableTab: "Dans la dernière cellule d'un tableau : ajouter une ligne",
   },
+  table: {
+    label: "Tableau",
+  },
 };
