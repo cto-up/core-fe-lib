@@ -17,7 +17,7 @@ const FIXTURE = [
   "```sql\nSELECT 1;\n```",
   "---",
   "#### Fine print",
-  "Line one\\\nline two",
+  "Line one\nline two",
 ].join("\n\n");
 
 describe("Markdown round trip", () => {
@@ -25,12 +25,13 @@ describe("Markdown round trip", () => {
     expect(roundTrip(FIXTURE)).toBe(FIXTURE);
   });
 
-  it("is stable once normalised", () => {
+  it("is stable once normalised, a single newline kept as a line break", () => {
+    expect(roundTrip("Hello\\\nThere")).toBe("Hello\nThere");
     const loose =
       "Intro\nwrapped line\n\n* star list\n* second\n\n__bold__ and _em_";
     const once = roundTrip(loose);
     expect(once).toBe(
-      "Intro wrapped line\n\n- star list\n- second\n\n**bold** and *em*"
+      "Intro\nwrapped line\n\n- star list\n- second\n\n**bold** and *em*"
     );
     expect(roundTrip(once)).toBe(once);
   });
@@ -99,5 +100,21 @@ describe("fromMarkdown", () => {
       type: "codeBlock",
       attrs: { language: "ts" },
     });
+  });
+
+  it("leaves out the empty paragraph the editor keeps after a closing block", () => {
+    expect(
+      toMarkdown({
+        type: "doc",
+        content: [
+          {
+            type: "codeBlock",
+            attrs: { language: "sql" },
+            content: [{ type: "text", text: "SELECT 1;" }],
+          },
+          { type: "paragraph" },
+        ],
+      })
+    ).toBe("```sql\nSELECT 1;\n```");
   });
 });

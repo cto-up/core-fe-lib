@@ -48,7 +48,8 @@ function inline(nodes: JSONContent[] = [], inTable = false): string {
   for (const node of nodes) {
     if (node.type === "hardBreak") {
       closeTo(0);
-      out += "\\\n";
+      // A line break inside a paragraph is a plain newline, as typed.
+      out += "\n";
       continue;
     }
     const marks = (node.marks ?? []) as Mark[];
@@ -165,7 +166,16 @@ function itemBlocks(nodes: JSONContent[]): string {
 
 /** toMarkdown serializes an editor document (editor.getJSON()). */
 export function toMarkdown(doc: JSONContent): string {
-  return blocks(doc.content ?? []);
+  const content = [...(doc.content ?? [])];
+  // The editor keeps an empty paragraph after a closing block (a code block,
+  // a table) so the caret can leave it; it is not part of the text.
+  while (content.length > 1 && isEmptyParagraph(content[content.length - 1]))
+    content.pop();
+  return blocks(content);
+}
+
+function isEmptyParagraph(node: JSONContent): boolean {
+  return node.type === "paragraph" && !(node.content ?? []).length;
 }
 
 const md = markdownit({ html: false, linkify: false });
@@ -278,9 +288,9 @@ function inlineNodes(children: Token[]): JSONContent[] {
       case "text":
         text(tok.content);
         break;
+      // A single newline is a line break, as the author typed it (Notion,
+      // chat), not a space as CommonMark would have it.
       case "softbreak":
-        text(" ");
-        break;
       case "hardbreak":
         out.push({ type: "hardBreak" });
         break;
