@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { AccountDeletion } from '../models/AccountDeletion';
+import type { ActivityEntry } from '../models/ActivityEntry';
 import type { APIToken } from '../models/APIToken';
 import type { APITokenAuditLog } from '../models/APITokenAuditLog';
 import type { APITokenCreated } from '../models/APITokenCreated';
@@ -1904,6 +1905,79 @@ export class DefaultService {
             query: {
                 'page': page,
                 'pageSize': pageSize,
+            },
+        });
+    }
+    /**
+     * One thing's activity, or one scope's (a notebook, a board), newest first: who did what, through which door (office#199). The kind that owns the thing decides whether the caller may read it; otherwise 404, as for a thing that does not exist. Exactly one of target or scope.
+     *
+     * @param targetKind
+     * @param targetId
+     * @param scopeKind
+     * @param scopeId
+     * @param before the id of the last row of the previous page
+     * @param limit at most 100
+     * @returns ActivityEntry newest first
+     * @throws ApiError
+     */
+    public static listActivity(
+        targetKind?: string,
+        targetId?: string,
+        scopeKind?: string,
+        scopeId?: string,
+        before?: string,
+        limit?: number,
+    ): CancelablePromise<Array<ActivityEntry>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/v1/activity',
+            query: {
+                'targetKind': targetKind,
+                'targetId': targetId,
+                'scopeKind': scopeKind,
+                'scopeId': scopeId,
+                'before': before,
+                'limit': limit,
+            },
+            errors: {
+                400: `neither or both of target and scope`,
+                404: `the caller cannot read it, or its kind is unknown`,
+            },
+        });
+    }
+    /**
+     * The host tenant's activity, every kind, newest first (office#199). Tenant administrators only.
+     *
+     * @param kind only things of this kind, e.g. "page"
+     * @param action only this action, e.g. "page.moved"
+     * @param actorId
+     * @param from at or after
+     * @param to before
+     * @param before the id of the last row of the previous page
+     * @param limit at most 100
+     * @returns ActivityEntry newest first
+     * @throws ApiError
+     */
+    public static listTenantActivity(
+        kind?: string,
+        action?: string,
+        actorId?: string,
+        from?: string,
+        to?: string,
+        before?: string,
+        limit?: number,
+    ): CancelablePromise<Array<ActivityEntry>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/admin-api/v1/activity',
+            query: {
+                'kind': kind,
+                'action': action,
+                'actorId': actorId,
+                'from': from,
+                'to': to,
+                'before': before,
+                'limit': limit,
             },
         });
     }

@@ -377,6 +377,18 @@ const defaultTrailingSections = (): SidebarMenuSection[] => {
           icon: "key",
           link: "/token/client-applications",
         },
+        // The audit log (office#201) where the app routes it: its backend
+        // must record and serve core-lib's activity log.
+        ...(router.hasRoute("audit-log")
+          ? [
+              {
+                title: t("layout.navigation.admin.auditLog.title"),
+                caption: t("layout.navigation.admin.auditLog.caption"),
+                icon: "history",
+                link: "/admin/audit",
+              },
+            ]
+          : []),
         {
           title: t("layout.navigation.admin.emailActivity.title"),
           caption: t("layout.navigation.admin.emailActivity.caption"),

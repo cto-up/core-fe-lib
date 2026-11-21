@@ -61,6 +61,10 @@ export default {
         title: "Aplicações cliente",
         caption: "Gerir tokens de aplicação",
       },
+      auditLog: {
+        title: "Registo de auditoria",
+        caption: "Quem fez o quê, e como",
+      },
       emailActivity: {
         title: "Atividade de e-mail",
         caption: "A quem se escreveu e se foi enviado",

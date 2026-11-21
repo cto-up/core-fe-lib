@@ -10,6 +10,8 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { AccountClosurePreview } from './models/AccountClosurePreview';
 export { AccountDeletion } from './models/AccountDeletion';
 export type { AccountDeletionRequest } from './models/AccountDeletionRequest';
+export type { ActivityEntry } from './models/ActivityEntry';
+export type { ActivityRef } from './models/ActivityRef';
 export { APIToken } from './models/APIToken';
 export { APITokenAuditLog } from './models/APITokenAuditLog';
 export type { APITokenCreated } from './models/APITokenCreated';
