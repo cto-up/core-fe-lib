@@ -22,7 +22,15 @@
 </template>
 
 <script lang="ts" setup>
-import { onBeforeUnmount, onMounted, ref, computed, type Ref } from "vue";
+import {
+  onBeforeUnmount,
+  onMounted,
+  shallowRef,
+  computed,
+  type PropType,
+  type Ref,
+} from "vue";
+import type { AnyExtension, JSONContent } from "@tiptap/core";
 import { Editor, EditorContent } from "@tiptap/vue-3";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -31,6 +39,7 @@ import { TableRow } from "@tiptap/extension-table-row";
 import { TableCell } from "@tiptap/extension-table-cell";
 import { TableHeader } from "@tiptap/extension-table-header";
 import { Button } from "../ui/button";
+import { fromMarkdown, toMarkdown } from "../../markdown";
 
 const props = defineProps({
   initialContent: {
@@ -42,11 +51,36 @@ const props = defineProps({
     type: Array as () => string[],
     default: () => ["bold", "italic"],
   },
+  // "markdown": initialContent is Markdown, the editor offers only what
+  // Markdown can carry, and it emits update:markdown. "html" is unchanged.
+  format: {
+    type: String as PropType<"html" | "markdown">,
+    default: "html",
+  },
+  // Markdown mode: start from this editor document instead of parsing
+  // initialContent, so editors edited together share one starting point.
+  initialDoc: {
+    type: Object as PropType<JSONContent | null>,
+    default: null,
+  },
+  // More Tiptap extensions, appended (a collaboration plugin, a page link).
+  extensions: {
+    type: Array as PropType<AnyExtension[]>,
+    default: () => [],
+  },
 });
 
-const emit = defineEmits(["update"]);
+const emit = defineEmits<{
+  update: [html: string];
+  "update:markdown": [markdown: string, doc: JSONContent];
+}>();
+const markdown = computed(() => props.format === "markdown");
+// Underline has no Markdown form.
+const NOT_IN_MARKDOWN = ["underline"];
 
-const editor = ref<Editor | null>(null) as Ref<Editor | null>;
+// shallowRef: a deep ref would wrap ProseMirror's state in proxies, which
+// breaks plugins that compare it by identity (collaboration).
+const editor = shallowRef<Editor | null>(null) as Ref<Editor | null>;
 
 const toolbarActions = computed(() => [
   {
@@ -145,33 +179,58 @@ const toolbarActions = computed(() => [
 ]);
 
 const activeToolbarActions = computed(() => {
-  return toolbarActions.value.filter((btn) =>
-    props.activeButtons.includes(btn.name)
+  return toolbarActions.value.filter(
+    (btn) =>
+      props.activeButtons.includes(btn.name) &&
+      !(markdown.value && NOT_IN_MARKDOWN.includes(btn.name))
   );
 });
 
 onMounted(() => {
-  editor.value = new Editor({
-    content: props.initialContent,
-    extensions: [
-      StarterKit,
-      Underline,
-      Table.configure({
-        resizable: true,
-      }),
-      TableRow,
-      TableCell,
-      TableHeader,
-    ],
-    onUpdate: () => {
-      emit("update", editor.value?.getHTML() ?? "");
-    },
-  });
+  editor.value = markdown.value
+    ? new Editor({
+        content: props.initialDoc ?? fromMarkdown(props.initialContent),
+        extensions: [
+          StarterKit.configure({
+            heading: { levels: [1, 2, 3, 4] },
+            underline: false,
+            link: { openOnClick: false },
+          }),
+          Table,
+          TableRow,
+          TableCell,
+          TableHeader,
+          ...props.extensions,
+        ],
+        onUpdate: () => {
+          const doc = editor.value?.getJSON() ?? { type: "doc" };
+          emit("update:markdown", toMarkdown(doc), doc);
+        },
+      })
+    : new Editor({
+        content: props.initialContent,
+        extensions: [
+          StarterKit,
+          Underline,
+          Table.configure({
+            resizable: true,
+          }),
+          TableRow,
+          TableCell,
+          TableHeader,
+          ...props.extensions,
+        ],
+        onUpdate: () => {
+          emit("update", editor.value?.getHTML() ?? "");
+        },
+      });
 });
 
 onBeforeUnmount(() => {
   editor.value?.destroy();
 });
+
+defineExpose({ editor });
 </script>
 
 <style>
