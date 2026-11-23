@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from "vue";
+import { ref, reactive, onMounted, onUnmounted, type Component } from "vue";
 import {
   Collapsible,
   CollapsibleContent,
@@ -100,7 +100,10 @@ const iconMap: Record<string, string> = {
 
 function getIconComponent(iconName: string) {
   const lucideIconName = iconMap[iconName] || iconName;
-  return (LucideIcons as any)[lucideIconName] || LucideIcons.Circle;
+  return (
+    (LucideIcons as unknown as Record<string, Component>)[lucideIconName] ||
+    LucideIcons.Circle
+  );
 }
 
 const startDrag = (event: MouseEvent) => {

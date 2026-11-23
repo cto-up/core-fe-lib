@@ -127,7 +127,7 @@ interface Props {
   accept: string;
   showText?: boolean;
   maxFileSize?: number;
-  queryParams?: Record<string, any>;
+  queryParams?: Record<string, unknown>;
 }
 
 const props = withDefaults(defineProps<Props>(), {

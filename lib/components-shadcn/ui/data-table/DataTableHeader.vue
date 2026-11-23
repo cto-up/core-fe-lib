@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="TData, TValue">
 import type { Column } from "@tanstack/vue-table";
 import { ref } from "vue";
 import { cn } from "../../utils";
@@ -12,7 +12,7 @@ import {
 } from "../dropdown-menu";
 
 interface DataTableColumnHeaderProps {
-  column: Column<any, any>;
+  column: Column<TData, TValue>;
   title: string;
 }
 

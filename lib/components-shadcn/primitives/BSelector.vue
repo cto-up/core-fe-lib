@@ -74,6 +74,8 @@ import { cn } from "../utils";
 import { errorReason } from "../../utils/errorReason";
 
 interface Option {
+  // Callers pass their own row types; `unknown` would refuse them.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 

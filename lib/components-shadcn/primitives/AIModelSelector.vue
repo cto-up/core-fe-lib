@@ -42,7 +42,7 @@ const emit = defineEmits(["update:modelValue"]);
 const selectedModel = ref(props.modelValue);
 
 const availableModels = computed(() => {
-  return (providerModels as any)[props.provider] || [];
+  return (providerModels as Record<string, string[]>)[props.provider] || [];
 });
 
 watch(

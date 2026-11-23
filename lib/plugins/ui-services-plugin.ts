@@ -195,7 +195,7 @@ export function createTestDialogService(
   return {
     lastPrompt: undefined,
     async confirm(options) {
-      (this as any).lastPrompt = options;
+      (this as { lastPrompt?: ConfirmDialogOptions }).lastPrompt = options;
       return defaultResult;
     },
   };

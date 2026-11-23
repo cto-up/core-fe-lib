@@ -9,8 +9,6 @@ import { onMounted, ref, watch } from "vue";
 
 const [emblaNode, emblaApi] = emblaCarouselVue();
 
-const INJECTION_KEY = Symbol("carousel");
-
 export function useProvideCarousel(props: CarouselProps, emits: CarouselEmits) {
   const carouselRef = emblaNode;
   const carouselApi = emblaApi;

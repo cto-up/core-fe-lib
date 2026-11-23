@@ -117,7 +117,6 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "../popover";
 import { Calendar as CalendarIcon, Clock } from "lucide-vue-next";
 import { cn } from "../../utils";
-import { useI18n } from "vue-i18n";
 
 interface Props {
   fromDate: string;
@@ -137,8 +136,6 @@ const emit = defineEmits<{
   "update:fromDate": [value: string];
   "update:toDate": [value: string];
 }>();
-
-const { t } = useI18n();
 
 const fromDateTime = ref("");
 const hours = ref("08");

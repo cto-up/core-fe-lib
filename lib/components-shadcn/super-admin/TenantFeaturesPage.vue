@@ -94,7 +94,7 @@ const loading = ref(false);
 
 const displayKeys = computed(() => {
   const stored = Object.keys(features).filter(
-    (k) => typeof (features as any)[k] === "boolean"
+    (k) => typeof (features as Record<string, unknown>)[k] === "boolean"
   );
   const extras = stored.filter((k) => !props.featureKeys.includes(k));
   return [...props.featureKeys, ...extras];
@@ -112,8 +112,8 @@ onMounted(() => {
     .then((data) => {
       Object.assign(features, data);
       for (const key of props.featureKeys) {
-        if (typeof (features as any)[key] !== "boolean") {
-          (features as any)[key] = false;
+        if (typeof (features as Record<string, unknown>)[key] !== "boolean") {
+          (features as Record<string, unknown>)[key] = false;
         }
       }
     })

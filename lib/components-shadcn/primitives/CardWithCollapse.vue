@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, type Component } from "vue";
 import {
   Card,
   CardContent,
@@ -115,6 +115,8 @@ const iconComponent = computed(() => {
   const name = props.icon;
   const lucideName =
     iconMap[name] || name.charAt(0).toUpperCase() + name.slice(1);
-  return (LucideIcons as any)[lucideName] || Circle;
+  return (
+    (LucideIcons as unknown as Record<string, Component>)[lucideName] || Circle
+  );
 });
 </script>

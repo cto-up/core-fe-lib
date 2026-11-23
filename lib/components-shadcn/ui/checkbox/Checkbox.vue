@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- shadcn primitive name -->
 <script setup lang="ts">
 import { type HTMLAttributes, computed } from "vue";
 import type { CheckboxRootEmits, CheckboxRootProps } from "radix-vue";
@@ -15,6 +16,7 @@ const props = defineProps<
 const emits = defineEmits<CheckboxRootEmits>();
 
 const delegatedProps = computed(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops class
   const { class: _, ...delegated } = props;
 
   return delegated;

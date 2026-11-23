@@ -9,11 +9,13 @@ import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 
 const props = defineProps<{
-  modelValue: any;
+  modelValue: unknown;
 }>();
 
 const { t } = useI18n();
-const formattedDate = computed(() => formatDate(props.modelValue));
+const formattedDate = computed(() =>
+  formatDate(props.modelValue as string | undefined)
+);
 
 const formatDate = (dateString: string | undefined): string => {
   if (!dateString) return "";
@@ -24,7 +26,7 @@ const formatDate = (dateString: string | undefined): string => {
       month: "long",
       day: "numeric",
     }).format(date);
-  } catch (error) {
+  } catch {
     return dateString;
   }
 };

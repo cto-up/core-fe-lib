@@ -20,7 +20,7 @@ const { toast } = useToast();
 
 const loading = ref(false);
 const error = ref(false);
-const theModel = ref<Record<string, any>>({
+const theModel = ref<Record<string, unknown>>({
   [props.optionValue]: props.modelValue,
   [props.optionLabel]: "",
 });

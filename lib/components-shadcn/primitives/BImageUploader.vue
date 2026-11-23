@@ -174,12 +174,15 @@ export default defineComponent({
   components: {
     Cropper,
     BUploaderBase,
+    // eslint-disable-next-line vue/no-reserved-component-names -- shadcn primitive, <Dialog> as across the lib
     Dialog,
     DialogContent,
     DialogHeader,
     DialogTitle,
     DialogFooter,
+    // eslint-disable-next-line vue/no-reserved-component-names -- shadcn primitive, <Button> as across the lib
     Button,
+    // eslint-disable-next-line vue/no-reserved-component-names -- shadcn primitive, <Progress> as across the lib
     Progress,
     X,
     Maximize2,

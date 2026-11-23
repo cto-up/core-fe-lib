@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- consumers import it by this name -->
 <template>
   <div class="relative py-4">
     <div class="absolute left-[22px] top-0 bottom-0 w-0.5 bg-border" />
@@ -63,7 +64,7 @@ const sortedItems = computed(() => {
 
 const getKey = (item: T, index: number) => {
   if (props.keyField) return item[props.keyField] as unknown as string;
-  if ("id" in item) return (item as any).id;
+  if ("id" in item) return (item as { id: string | number }).id;
   return index;
 };
 </script>

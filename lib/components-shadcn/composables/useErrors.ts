@@ -127,6 +127,9 @@ export function useErrors() {
     });
   };
 
+  // A caught value of any shape (ApiError, axios error, Error, string); the
+  // branches below narrow it.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleError = (error: any, skip404 = false) => {
     if (error?.name === "CancelError" || error?.isCancelled === true) return;
 

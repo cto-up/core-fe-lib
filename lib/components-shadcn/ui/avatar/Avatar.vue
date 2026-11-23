@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- shadcn primitive name -->
 <script setup lang="ts">
 import type { HTMLAttributes } from "vue";
 import { AvatarRoot } from "radix-vue";

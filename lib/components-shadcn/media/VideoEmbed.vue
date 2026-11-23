@@ -79,15 +79,47 @@ function onNativeTimeUpdate() {
 }
 
 // ---------- provider SDK loaders (shared, cached) ----------
-function loadYT(): Promise<any> {
-  const w = window as any;
+// The slice of the YouTube IFrame and Vimeo Player SDKs used here. Both load
+// from a <script> tag at runtime, so neither ships types to this package.
+interface YTPlayer {
+  mute?(): void;
+  getDuration?(): number;
+  getCurrentTime?(): number;
+  destroy?(): void;
+}
+interface YTNamespace {
+  Player: new (el: HTMLElement, options: object) => YTPlayer;
+  PlayerState: { ENDED: number };
+}
+interface VimeoPlayer {
+  setCurrentTime(seconds: number): Promise<unknown>;
+  on(
+    event: "timeupdate",
+    cb: (d: { seconds: number; percent: number }) => void
+  ): void;
+  on(event: "ended", cb: () => void): void;
+  unload?(): void;
+}
+interface VimeoNamespace {
+  Player: new (el: HTMLElement, options: object) => VimeoPlayer;
+}
+interface SdkWindow {
+  YT?: YTNamespace;
+  __ytReady?: Promise<YTNamespace>;
+  onYouTubeIframeAPIReady?: () => void;
+  Vimeo?: VimeoNamespace;
+  __vimeoReady?: Promise<VimeoNamespace>;
+}
+
+function loadYT(): Promise<YTNamespace> {
+  const w = window as unknown as SdkWindow;
   if (w.YT?.Player) return Promise.resolve(w.YT);
   if (w.__ytReady) return w.__ytReady;
-  w.__ytReady = new Promise((resolve) => {
+  w.__ytReady = new Promise<YTNamespace>((resolve) => {
     const prev = w.onYouTubeIframeAPIReady;
     w.onYouTubeIframeAPIReady = () => {
       prev?.();
-      resolve(w.YT);
+      resolve(w.YT as YTNamespace);
     };
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
@@ -95,20 +127,20 @@ function loadYT(): Promise<any> {
   });
   return w.__ytReady;
 }
-function loadVimeo(): Promise<any> {
-  const w = window as any;
+function loadVimeo(): Promise<VimeoNamespace> {
+  const w = window as unknown as SdkWindow;
   if (w.Vimeo?.Player) return Promise.resolve(w.Vimeo);
   if (w.__vimeoReady) return w.__vimeoReady;
-  w.__vimeoReady = new Promise((resolve) => {
+  w.__vimeoReady = new Promise<VimeoNamespace>((resolve) => {
     const tag = document.createElement("script");
     tag.src = "https://player.vimeo.com/api/player.js";
-    tag.onload = () => resolve(w.Vimeo);
+    tag.onload = () => resolve(w.Vimeo as VimeoNamespace);
     document.head.appendChild(tag);
   });
   return w.__vimeoReady;
 }
 
-let player: any = null;
+let player: (YTPlayer & { unload?(): void }) | null = null;
 let pollTimer: ReturnType<typeof setInterval> | undefined;
 
 function clearPoll() {
@@ -133,7 +165,7 @@ async function mountYouTube() {
     },
     events: {
       onReady: () => {
-        if (props.muted) player.mute?.();
+        if (props.muted) player!.mute?.();
         clearPoll();
         pollTimer = setInterval(() => {
           if (!player?.getDuration) return;
@@ -142,7 +174,7 @@ async function mountYouTube() {
           if (dur) emit("timeupdate", cur, (cur / dur) * 100);
         }, 1000);
       },
-      onStateChange: (e: any) => {
+      onStateChange: (e: { data: number }) => {
         if (e.data === YT.PlayerState.ENDED) emit("ended");
       },
     },
@@ -152,7 +184,7 @@ async function mountYouTube() {
 async function mountVimeo() {
   const Vimeo = await loadVimeo();
   if (!frameHost.value) return;
-  player = new Vimeo.Player(frameHost.value, {
+  const vimeo = new Vimeo.Player(frameHost.value, {
     id: Number(vimeoId.value),
     autoplay: props.autoplay,
     muted: props.muted,
@@ -160,12 +192,10 @@ async function mountVimeo() {
     controls: props.controls,
     responsive: true,
   });
-  if (props.startAt)
-    player.setCurrentTime(props.startAt).catch(() => undefined);
-  player.on("timeupdate", (d: any) =>
-    emit("timeupdate", d.seconds, d.percent * 100)
-  );
-  player.on("ended", () => emit("ended"));
+  player = vimeo;
+  if (props.startAt) vimeo.setCurrentTime(props.startAt).catch(() => undefined);
+  vimeo.on("timeupdate", (d) => emit("timeupdate", d.seconds, d.percent * 100));
+  vimeo.on("ended", () => emit("ended"));
 }
 
 onMounted(() => {

@@ -14,6 +14,7 @@ const props = defineProps<
 const emits = defineEmits<RadioGroupRootEmits>();
 
 const delegatedProps = computed(() => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops class
   const { class: _, ...delegated } = props;
 
   return delegated;

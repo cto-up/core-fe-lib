@@ -32,6 +32,7 @@ watch(
 );
 </script>
 
+<!-- eslint-disable-next-line vue/valid-template-root -- renderless on purpose -->
 <template>
   <!-- Renderless -->
 </template>

@@ -22,7 +22,7 @@
 <script lang="ts" setup>
 import { cn } from "../utils";
 
-const props = defineProps({
+defineProps({
   panelStyle: {
     type: String,
     required: false,

@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- consumers import it by this name -->
 <script setup lang="ts">
 import { RouterLink, useRoute } from "vue-router";
 import { computed } from "vue";

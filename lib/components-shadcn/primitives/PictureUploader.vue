@@ -46,7 +46,7 @@ import { useNotify } from "../composables/useNotify";
 
 const props = defineProps<{
   fetchEndpoint: () => Promise<Blob>;
-  uploadEndpoint: (formData: { picture: Blob }) => Promise<any>;
+  uploadEndpoint: (formData: { picture: Blob }) => Promise<unknown>;
   alt?: string;
   emptyText?: string;
   uploadLabel?: string;
@@ -80,12 +80,12 @@ async function handleFileChange(event: Event) {
     });
 
     await fetchPicture();
-  } catch (err: any) {
+  } catch (err) {
     console.error("Failed to upload picture:", err);
     notify({
       type: "negative",
       message: "Failed to upload image",
-      caption: err.message || "Unknown error",
+      caption: (err as Error).message || "Unknown error",
     });
   } finally {
     uploading.value = false;

@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, type Component } from "vue";
 import {
   Dialog,
   DialogContent,
@@ -98,6 +98,8 @@ const handleCancel = () => {
 const iconComponent = computed(() => {
   if (!props.icon) return Circle;
   const iconName = props.icon.charAt(0).toUpperCase() + props.icon.slice(1);
-  return (LucideIcons as any)[iconName] || Circle;
+  return (
+    (LucideIcons as unknown as Record<string, Component>)[iconName] || Circle
+  );
 });
 </script>

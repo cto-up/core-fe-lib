@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- shadcn primitive name -->
 <script setup lang="ts">
 import { PopoverRoot, useForwardPropsEmits } from "radix-vue";
 import type { PopoverRootEmits, PopoverRootProps } from "radix-vue";

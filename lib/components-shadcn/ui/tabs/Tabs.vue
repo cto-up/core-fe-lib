@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -- shadcn primitive name -->
 <script setup lang="ts">
 import { TabsRoot, useForwardPropsEmits } from "radix-vue";
 import type { TabsRootEmits, TabsRootProps } from "radix-vue";

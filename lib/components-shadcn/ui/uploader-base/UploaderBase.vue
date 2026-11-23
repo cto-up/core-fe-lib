@@ -90,7 +90,7 @@ interface Props {
   hasError?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   accept: "*/*",
   hasContent: false,
   uploading: false,
@@ -121,11 +121,11 @@ const onZoneClick = () => {
   emit("zone-click");
 };
 
-const onDragOver = (event: DragEvent) => {
+const onDragOver = () => {
   isDragging.value = true;
 };
 
-const onDragLeave = (event: DragEvent) => {
+const onDragLeave = () => {
   isDragging.value = false;
 };
 

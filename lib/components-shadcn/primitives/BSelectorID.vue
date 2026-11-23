@@ -128,6 +128,8 @@ import { X, Check, ChevronDown, Loader2 } from "lucide-vue-next";
 import { cn } from "../utils";
 
 interface Option {
+  // Callers pass their own row types; `unknown` would refuse them.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [key: string]: any;
 }
 
@@ -405,9 +407,9 @@ const toIdArray = (value: unknown): string[] => {
     return [];
   }
   const list = Array.isArray(value) ? value : [value];
-  return list.map((item: any) =>
+  return list.map((item: unknown) =>
     item && typeof item === "object"
-      ? String(item[props.optionValue])
+      ? String((item as Option)[props.optionValue])
       : String(item)
   );
 };

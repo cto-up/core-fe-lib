@@ -421,7 +421,9 @@ function setToken(name: string, raw: string) {
 }
 
 function resetToken(name: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops the token
   const { [name]: _l, ...restL } = light.value;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops the token
   const { [name]: _d, ...restD } = dark.value;
   light.value = restL;
   dark.value = restD;
@@ -436,6 +438,7 @@ function setDark(name: string, raw: string) {
 }
 
 function clearDark(name: string) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- drops the token
   const { [name]: _d, ...rest } = dark.value;
   dark.value = rest;
   commit();

@@ -118,7 +118,7 @@ interface Props {
   accept?: string;
   showText?: boolean;
   maxFileSize?: number;
-  queryParams?: Record<string, any>;
+  queryParams?: Record<string, unknown>;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -301,11 +301,11 @@ const handleUpload = async () => {
       uploading.value = false;
       clearFile();
     }, 2000);
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error uploading file:", error);
     uploading.value = false;
     hasError.value = true;
-    errorMessage.value = error.message || "Upload failed";
+    errorMessage.value = (error as Error).message || "Upload failed";
     toast({
       title: "Upload failed",
       description: error.message,
