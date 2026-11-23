@@ -3,11 +3,22 @@
     ref="scroller"
     role="group"
     :aria-label="label"
-    :class="cn('select-none overflow-y-auto', props.class)"
+    :class="
+      cn(
+        'select-none overflow-y-auto',
+        moving?.moved &&
+          (moving.mode === 'move' ? 'cursor-grabbing' : 'cursor-ns-resize'),
+        props.class
+      )
+    "
     :style="{
       maxHeight: `${visibleHours * hourHeight + (showHeader ? 48 : 0)}px`,
     }"
     data-test="time-grid"
+    @pointermove="onItemMove"
+    @pointerup="onItemUp"
+    @pointercancel="moving = null"
+    @click.capture="swallowClickAfterMove"
   >
     <div
       v-if="showHeader"
@@ -51,8 +62,9 @@
         >
       </div>
       <div
-        v-for="day in days"
+        v-for="(day, i) in days"
         :key="isoDate(day)"
+        :ref="(el) => (columns[i] = el as HTMLElement)"
         class="relative border-l"
         :class="selectable ? 'cursor-cell' : ''"
         :style="{
@@ -69,6 +81,12 @@
           v-for="p in placed(day)"
           :key="p.item.id"
           class="absolute p-px"
+          :class="[
+            canMove(p.item) && !moving?.moved ? 'cursor-grab' : '',
+            moving?.moved && moving.item.id === p.item.id
+              ? 'z-20 opacity-90 shadow-lg'
+              : '',
+          ]"
           :style="{
             top: `${p.top}px`,
             height: `${p.height}px`,
@@ -76,9 +94,17 @@
             width: `calc(${100 / p.columns}% - 4px)`,
           }"
           :data-test="`time-grid-item-${p.item.id}`"
-          @pointerdown.stop
+          :data-movable="canMove(p.item) || undefined"
+          @pointerdown.stop="startMove($event, p.item, day, 'move')"
         >
           <slot name="item" :item="p.item" :placement="p" />
+          <div
+            v-if="canMove(p.item)"
+            class="absolute inset-x-0 bottom-0 h-1.5 cursor-ns-resize"
+            aria-hidden="true"
+            :data-test="`time-grid-resize-${p.item.id}`"
+            @pointerdown.stop="startMove($event, p.item, day, 'resize')"
+          />
         </div>
         <div
           v-if="drag && sameDay(drag.day, day)"
@@ -119,6 +145,7 @@ import {
   nowOffset,
   placeInDay,
   sameDay,
+  startOfDay,
   timeAt,
   toDate,
   windowHeight,
@@ -132,6 +159,8 @@ import {
  * by its start and end and drawn by the `item` slot, overlaps side by side,
  * a now line on today. Pressing on an empty slot and dragging selects a
  * range (`select-range`); a press without a drag selects `defaultMinutes`.
+ * A `movable` item is dragged to another time or day, or by its bottom edge
+ * to another end (`move-item`); a press without a drag still clicks it.
  */
 const props = withDefaults(
   defineProps<{
@@ -153,6 +182,8 @@ const props = withDefaults(
     /** Length of a selection made by a press without a drag. */
     defaultMinutes?: number;
     selectable?: boolean;
+    /** Which items can be moved and resized by dragging; none by default. */
+    movable?: (item: T) => boolean;
     showHeader?: boolean;
     label?: string;
     class?: HTMLAttributes["class"];
@@ -169,6 +200,7 @@ const props = withDefaults(
     snapMinutes: 15,
     defaultMinutes: 30,
     selectable: true,
+    movable: undefined,
     showHeader: true,
     label: undefined,
     class: undefined,
@@ -177,6 +209,7 @@ const props = withDefaults(
 
 const emit = defineEmits<{
   "select-range": [range: { start: Date; end: Date }];
+  "move-item": [move: { item: T; start: Date; end: Date }];
 }>();
 
 defineSlots<{
@@ -215,13 +248,15 @@ function scrollToFirst() {
   el.scrollTop = Math.max(0, hour - props.startHour) * props.hourHeight;
 }
 onMounted(scrollToFirst);
+// Re-opens only on other days, or when the first items arrive: a string key,
+// so a refreshed items array leaves the user's scroll alone.
 watch(
-  () => [props.days.map(isoDate).join(), props.items.length],
+  () => `${props.days.map(isoDate).join()}|${props.items.length > 0}`,
   () => nextTick(scrollToFirst)
 );
 
 const placed = (day: Date) =>
-  placeInDay(props.items, day, win.value, props.minItemHeight);
+  placeInDay(shown.value, day, win.value, props.minItemHeight);
 
 const weekday = (d: Date) =>
   new Intl.DateTimeFormat(props.locale, { weekday: "short" }).format(d);
@@ -289,5 +324,120 @@ function onUp() {
   const r = range.value;
   drag.value = null;
   if (r) emit("select-range", r);
+}
+
+const columns: HTMLElement[] = [];
+const canMove = (item: T) => !!props.movable?.(item);
+const HOUR = 3_600_000;
+
+const moving = ref<{
+  item: T;
+  mode: "move" | "resize";
+  x0: number;
+  y0: number;
+  day: number;
+  /** Where in the item it was taken, in ms after its start. */
+  grab: number;
+  start: Date;
+  end: Date;
+  moved: boolean;
+} | null>(null);
+let justMoved = false;
+
+/** The items, the one being dragged drawn where it would land. */
+const shown = computed(() => {
+  const m = moving.value;
+  if (!m?.moved) return props.items;
+  return props.items.map((it) =>
+    it.id === m.item.id ? { ...it, start: m.start, end: m.end } : it
+  );
+});
+
+const msAt = (y: number, day: Date) =>
+  startOfDay(day).getTime() +
+  props.startHour * HOUR +
+  (y / props.hourHeight) * HOUR;
+
+function startMove(
+  e: PointerEvent,
+  item: T,
+  day: Date,
+  mode: "move" | "resize"
+) {
+  if (e.button !== 0 || !canMove(item)) return;
+  const i = props.days.findIndex((d) => sameDay(d, day));
+  const start = toDate(item.start);
+  moving.value = {
+    item,
+    mode,
+    x0: e.clientX,
+    y0: e.clientY,
+    day: i,
+    grab: msAt(yOf(e, columns[i]), day) - start.getTime(),
+    start,
+    end: toDate(item.end),
+    moved: false,
+  };
+}
+
+const dayUnder = (x: number) =>
+  columns.findIndex((el) => {
+    const r = el?.getBoundingClientRect();
+    return !!r && x >= r.left && x < r.right;
+  });
+
+function onItemMove(e: PointerEvent) {
+  const m = moving.value;
+  if (!m) return;
+  if (!m.moved) {
+    if (Math.hypot(e.clientX - m.x0, e.clientY - m.y0) < 4) return;
+    m.moved = true;
+    // Captured only once it moves, so a plain press still clicks the item.
+    scroller.value?.setPointerCapture?.(e.pointerId);
+  }
+  const was = { start: toDate(m.item.start), end: toDate(m.item.end) };
+  const snap = props.snapMinutes * 60_000;
+  if (m.mode === "resize") {
+    const i = props.days.findIndex((d) => sameDay(d, was.start));
+    const end = timeAt(
+      yOf(e, columns[i]),
+      was.start,
+      win.value,
+      props.snapMinutes,
+      "up"
+    );
+    m.end = new Date(Math.max(end.getTime(), was.start.getTime() + snap));
+    return;
+  }
+  const under = dayUnder(e.clientX);
+  if (under >= 0) m.day = under;
+  const day = props.days[m.day];
+  const length = was.end.getTime() - was.start.getTime();
+  const from = startOfDay(day).getTime() + props.startHour * HOUR;
+  const to = startOfDay(day).getTime() + props.endHour * HOUR - length;
+  const start =
+    Math.round((msAt(yOf(e, columns[m.day]), day) - m.grab) / snap) * snap;
+  const at = Math.min(Math.max(start, from), Math.max(from, to));
+  m.start = new Date(at);
+  m.end = new Date(at + length);
+}
+
+function onItemUp() {
+  const m = moving.value;
+  moving.value = null;
+  if (!m?.moved) return;
+  justMoved = true;
+  setTimeout(() => (justMoved = false));
+  if (
+    m.start.getTime() !== toDate(m.item.start).getTime() ||
+    m.end.getTime() !== toDate(m.item.end).getTime()
+  )
+    emit("move-item", { item: m.item as T, start: m.start, end: m.end });
+}
+
+function swallowClickAfterMove(e: MouseEvent) {
+  if (!justMoved) return;
+  e.stopPropagation();
+  e.preventDefault();
 }
 </script>

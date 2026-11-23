@@ -1,6 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
-import { h } from "vue";
+import { h, nextTick } from "vue";
 import TimeGrid from "./TimeGrid.vue";
 import { weekDays } from "./layout";
 
@@ -59,6 +59,25 @@ describe("TimeGrid", () => {
     expect(
       w.get('[data-test="time-grid-item-late"]').attributes("style")
     ).toContain("top: 1200px");
+  });
+
+  it("keeps the user's scroll when the items are refreshed, and re-opens on other days", async () => {
+    const w = mountGrid({ startHour: undefined, endHour: undefined });
+    const el = w.get('[data-test="time-grid"]').element as HTMLElement;
+    el.scrollTop = 1000;
+    await w.setProps({
+      items: [
+        { id: "a", start: at(23, 9), end: at(23, 10), title: "Sync" },
+        { id: "b", start: at(25, 14), end: at(25, 15), title: "Retro" },
+        { id: "c", start: at(26, 16), end: at(26, 17), title: "New" },
+      ],
+    });
+    await nextTick();
+    expect(el.scrollTop).toBe(1000);
+
+    await w.setProps({ days: days.map((d) => new Date(+d + 7 * 864e5)) });
+    await nextTick();
+    expect(el.scrollTop).toBe(8 * 60);
   });
 
   it("labels each hour on one short line, inset from the edge", () => {
@@ -150,5 +169,96 @@ describe("TimeGrid", () => {
         .get('[data-test="time-grid-head-2026-11-23"] [aria-current="date"]')
         .text()
     ).toBe("23");
+  });
+});
+
+describe("TimeGrid: moving an item (office#253)", () => {
+  type Item = { id: string; start: Date; end: Date; title: string };
+  const movable = (it: Item) => it.id === "a";
+
+  /** Day columns 100px wide side by side, their tops at 0. */
+  function laidOut(w: ReturnType<typeof mountGrid>) {
+    days.forEach((d, i) => {
+      const iso = `2026-11-${String(d.getDate()).padStart(2, "0")}`;
+      const el = w.get(`[data-test="time-grid-day-${iso}"]`).element;
+      el.getBoundingClientRect = () =>
+        ({ left: i * 100, right: (i + 1) * 100, top: 0 }) as DOMRect;
+    });
+    return w;
+  }
+
+  it("moves an item to another day and time, keeping its length, where it was taken", async () => {
+    const w = laidOut(mountGrid({ movable }));
+    const grid = w.get('[data-test="time-grid"]');
+    expect(
+      w.get('[data-test="time-grid-item-a"]').attributes("data-movable")
+    ).toBe("true");
+    // Taken half an hour into Mon 9:00–10:00, dropped at Wed 14:30.
+    await w
+      .get('[data-test="time-grid-item-a"]')
+      .trigger("pointerdown", { button: 0, clientX: 50, clientY: 90 });
+    await grid.trigger("pointermove", { clientX: 250, clientY: 390 });
+    expect(
+      w
+        .find(
+          '[data-test="time-grid-day-2026-11-25"] [data-test="time-grid-item-a"]'
+        )
+        .exists()
+    ).toBe(true);
+    await grid.trigger("pointerup");
+    expect(w.emitted("move-item")?.[0][0]).toMatchObject({
+      start: at(25, 14),
+      end: at(25, 15),
+    });
+  });
+
+  it("changes the end when the bottom edge is dragged", async () => {
+    const w = laidOut(mountGrid({ movable }));
+    await w
+      .get('[data-test="time-grid-resize-a"]')
+      .trigger("pointerdown", { button: 0, clientX: 50, clientY: 119 });
+    const grid = w.get('[data-test="time-grid"]');
+    await grid.trigger("pointermove", { clientX: 50, clientY: 230 });
+    await grid.trigger("pointerup");
+    expect(w.emitted("move-item")?.[0][0]).toMatchObject({
+      start: at(23, 9),
+      end: at(23, 12),
+    });
+  });
+
+  it("lets a press without a drag click the item, and swallows the click after a move", async () => {
+    const w = laidOut(mountGrid({ movable }));
+    const item = w.get('[data-test="time-grid-item-a"]');
+    const link = item.get("a");
+    const clicks: Event[] = [];
+    link.element.addEventListener("click", (e) => clicks.push(e));
+
+    await item.trigger("pointerdown", { button: 0, clientX: 50, clientY: 90 });
+    await w.get('[data-test="time-grid"]').trigger("pointerup");
+    await link.trigger("click");
+    expect(clicks).toHaveLength(1);
+    expect(w.emitted("move-item")).toBeUndefined();
+
+    await item.trigger("pointerdown", { button: 0, clientX: 50, clientY: 90 });
+    await w
+      .get('[data-test="time-grid"]')
+      .trigger("pointermove", { clientX: 50, clientY: 150 });
+    await w.get('[data-test="time-grid"]').trigger("pointerup");
+    await w.get('[data-test="time-grid-item-a"] a').trigger("click");
+    expect(clicks).toHaveLength(1);
+  });
+
+  it("does not move an item that is not movable, nor any item by default", async () => {
+    for (const w of [laidOut(mountGrid({ movable })), laidOut(mountGrid())]) {
+      const b = w.get('[data-test="time-grid-item-b"]');
+      expect(b.attributes("data-movable")).toBeUndefined();
+      expect(w.find('[data-test="time-grid-resize-b"]').exists()).toBe(false);
+      await b.trigger("pointerdown", { button: 0, clientX: 250, clientY: 380 });
+      await w
+        .get('[data-test="time-grid"]')
+        .trigger("pointermove", { clientX: 350, clientY: 500 });
+      await w.get('[data-test="time-grid"]').trigger("pointerup");
+      expect(w.emitted("move-item")).toBeUndefined();
+    }
   });
 });

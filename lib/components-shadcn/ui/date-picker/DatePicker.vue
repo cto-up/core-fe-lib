@@ -97,7 +97,12 @@ const innerValue = computed({
 const dateValue = computed(() => {
   if (!props.modelValue) return undefined;
   try {
-    return new Date(props.modelValue);
+    // A bare YYYY-MM-DD is that day here, not midnight UTC.
+    return new Date(
+      /^\d{4}-\d{2}-\d{2}$/.test(props.modelValue)
+        ? `${props.modelValue}T00:00:00`
+        : props.modelValue
+    );
   } catch {
     return undefined;
   }
