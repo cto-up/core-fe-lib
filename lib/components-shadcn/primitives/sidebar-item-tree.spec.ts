@@ -104,6 +104,30 @@ describe("SidebarItemTree", () => {
     second.wrapper.unmount();
   });
 
+  it("keeps a branch the user closed closed after a reload on a page inside it, and opens it again on navigating into it", async () => {
+    const first = await mountTree(library, "/rooms");
+    expect(visible("Rooms")).toBe(true);
+    (
+      [...document.body.querySelectorAll("button")].find(
+        (b) => b.textContent?.trim() === "Library"
+      ) as HTMLButtonElement
+    ).click();
+    await flushPromises();
+    expect(visible("Rooms")).toBe(false);
+    first.wrapper.unmount();
+
+    vi.resetModules();
+    ({ default: SidebarItemTree } = await import("./SidebarItemTree.vue"));
+    const second = await mountTree(library, "/rooms");
+    expect(visible("Rooms")).toBe(false);
+
+    await second.router.push("/elsewhere");
+    await second.router.push("/rooms");
+    await flushPromises();
+    expect(visible("Rooms")).toBe(true);
+    second.wrapper.unmount();
+  });
+
   it("opens the branch that holds the current page, and only that one", async () => {
     const { wrapper } = await mountTree(storefront, "/space/catalogs/c2");
     expect(visible("Advanced")).toBe(true);

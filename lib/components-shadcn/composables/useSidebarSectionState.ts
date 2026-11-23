@@ -52,5 +52,10 @@ export function useSidebarSectionState(
     sectionOpen.value[title] = open;
   }
 
-  return { isSectionOpen, setSectionOpen };
+  /** Whether the person (or an earlier visit) left this section open or closed. */
+  function hasSectionChoice(title: string): boolean {
+    return title in sectionOpen.value;
+  }
+
+  return { isSectionOpen, setSectionOpen, hasSectionChoice };
 }

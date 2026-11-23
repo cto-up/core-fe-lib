@@ -100,10 +100,8 @@ defineEmits<{ navigate: [] }>();
 
 // A branch starts closed and keeps whatever the user last chose, across
 // reloads.
-const { isSectionOpen, setSectionOpen } = useSidebarSectionState(
-  "sidebar-branches-open",
-  { defaultOpen: false }
-);
+const { isSectionOpen, setSectionOpen, hasSectionChoice } =
+  useSidebarSectionState("sidebar-branches-open", { defaultOpen: false });
 
 const keyOf = (item: MenuItem) => item.id ?? item.title;
 
@@ -120,15 +118,18 @@ function holdsRoute(item: MenuItem, path: string): boolean {
 }
 
 // Open the branch that holds the current page, on navigation and when the
-// rows arrive late (generated from fetched data). Only ever opens: a branch
-// the user closed elsewhere stays closed.
+// rows arrive late (generated from fetched data). Only ever opens. On a
+// reload the page is not a navigation: a branch the person left closed stays
+// closed, and only one never chosen opens for the page.
 watch(
   [() => route?.path, () => props.items],
-  ([path]) => {
+  ([path], old) => {
     if (!path) return;
+    const navigated = !!old && old[0] !== undefined && old[0] !== path;
     for (const item of props.items ?? []) {
-      if (item.items?.length && holdsRoute(item, path))
-        setSectionOpen(keyOf(item), true);
+      const key = keyOf(item);
+      if (!item.items?.length || !holdsRoute(item, path)) continue;
+      if (navigated || !hasSectionChoice(key)) setSectionOpen(key, true);
     }
   },
   { immediate: true }

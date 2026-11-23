@@ -26,12 +26,32 @@ const SHRINKED = 0;
 
 let systemListenerAttached = false;
 
+// Whether the person left the desktop sidebar open or hidden, kept on this
+// device so a reload shows it as they left it.
+const SIDEBAR_KEY = "app.sidebarExpanded";
+
+function readSidebarExpand(): boolean {
+  try {
+    return localStorage.getItem(SIDEBAR_KEY) !== "false";
+  } catch {
+    return true;
+  }
+}
+
+function writeSidebarExpand(expand: boolean): void {
+  try {
+    localStorage.setItem(SIDEBAR_KEY, String(expand));
+  } catch {
+    // localStorage unavailable: the sidebar opens next time
+  }
+}
+
 export const useAppStore = defineStore("app", {
   state: () =>
     <IAppStore>{
       themePreference: "system",
       systemDark: false,
-      sidebarExpand: true,
+      sidebarExpand: readSidebarExpand(),
       wrapperWidth: 0,
       wrapperLeftOffset: 0,
       navWidth: "100%",
@@ -44,8 +64,12 @@ export const useAppStore = defineStore("app", {
     sidebarExpanded: (state) => state.sidebarExpand,
   },
   actions: {
-    toggleSidebar() {
+    /** remember: false for a toggle the person did not ask for (a layout
+     * hiding the sidebar after a navigation), which a reload forgets. */
+    toggleSidebar({ remember = true }: { remember?: boolean } = {}) {
       this.sidebarExpand = !this.sidebarExpand;
+      if (remember && window.innerWidth > 1024)
+        writeSidebarExpand(this.sidebarExpand);
       if (window.innerWidth > 1024) {
         this.initWrapper();
       }

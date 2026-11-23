@@ -73,7 +73,7 @@
           signout: t('layout.userPanel.signout'),
           sidebarToggle: t('layout.sidebar.toggle'),
         }"
-        @toggle-sidebar="appStore.toggleSidebar"
+        @toggle-sidebar="appStore.toggleSidebar()"
         @toggle-mobile-sidebar="mobileSidebarOpen = !mobileSidebarOpen"
         @go-home="router.push(homePath)"
         @go-signin="router.push(signinPath)"
@@ -445,7 +445,7 @@ const mainEl = ref<HTMLElement | null>(null);
 function onNavigate() {
   mobileSidebarOpen.value = false;
   if (!props.autoCloseNav || isMobile.value || !appStore.sidebarExpand) return;
-  appStore.toggleSidebar();
+  appStore.toggleSidebar({ remember: false });
   mainEl.value?.focus({ preventScroll: true });
 }
 
