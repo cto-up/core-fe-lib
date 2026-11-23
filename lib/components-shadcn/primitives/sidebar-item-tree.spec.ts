@@ -2,8 +2,8 @@
 import { mount, flushPromises } from "@vue/test-utils";
 import { h } from "vue";
 import { createRouter, createMemoryHistory } from "vue-router";
-import { describe, expect, it } from "vitest";
-import SidebarItemTree from "./SidebarItemTree.vue";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Component } from "vue";
 import type { MenuItem } from "../types/menu-link";
 
 const Icon = () => h("i");
@@ -58,7 +58,52 @@ const storefront: MenuItem[] = [
   },
 ];
 
+// Open state is persisted and shared per storage key, so each test gets a
+// fresh module and empty storage.
+let SidebarItemTree: Component;
+beforeEach(async () => {
+  const store = new Map<string, string>();
+  vi.stubGlobal("localStorage", {
+    getItem: (k: string) => store.get(k) ?? null,
+    setItem: (k: string, v: string) => void store.set(k, v),
+  });
+  vi.resetModules();
+  ({ default: SidebarItemTree } = await import("./SidebarItemTree.vue"));
+});
+
+const library: MenuItem[] = [
+  {
+    id: "library",
+    title: "Library",
+    items: [{ title: "Rooms", link: "/rooms" }],
+  },
+];
+
 describe("SidebarItemTree", () => {
+  it("starts a branch closed when the page is outside it", async () => {
+    const { wrapper } = await mountTree(library, "/elsewhere");
+    expect(visible("Rooms")).toBe(false);
+    wrapper.unmount();
+  });
+
+  it("keeps a branch the user opened open after a remount", async () => {
+    const first = await mountTree(library, "/elsewhere");
+    (
+      [...document.body.querySelectorAll("button")].find(
+        (b) => b.textContent?.trim() === "Library"
+      ) as HTMLButtonElement
+    ).click();
+    await flushPromises();
+    expect(visible("Rooms")).toBe(true);
+    first.wrapper.unmount();
+
+    vi.resetModules();
+    ({ default: SidebarItemTree } = await import("./SidebarItemTree.vue"));
+    const second = await mountTree(library, "/elsewhere");
+    expect(visible("Rooms")).toBe(true);
+    second.wrapper.unmount();
+  });
+
   it("opens the branch that holds the current page, and only that one", async () => {
     const { wrapper } = await mountTree(storefront, "/space/catalogs/c2");
     expect(visible("Advanced")).toBe(true);

@@ -14,8 +14,8 @@
     </li>
     <li v-else class="space-y-1">
       <Collapsible
-        :open="!!openMap[keyOf(item)]"
-        @update:open="openMap[keyOf(item)] = $event"
+        :open="isSectionOpen(keyOf(item))"
+        @update:open="setSectionOpen(keyOf(item), $event)"
       >
         <!-- A parent with its own page: the label navigates, the chevron
              alone toggles, so opening the branch never leaves the page. -->
@@ -39,7 +39,7 @@
           >
             <ChevronDown
               class="h-4 w-4 transition-transform duration-200"
-              :class="openMap[keyOf(item)] && 'rotate-180'"
+              :class="isSectionOpen(keyOf(item)) && 'rotate-180'"
             />
           </CollapsibleTrigger>
         </div>
@@ -59,7 +59,7 @@
           <ChevronDown
             v-show="expanded"
             class="ml-auto h-4 w-4 transition-transform duration-200"
-            :class="openMap[keyOf(item)] && 'rotate-180'"
+            :class="isSectionOpen(keyOf(item)) && 'rotate-180'"
           />
         </CollapsibleTrigger>
         <CollapsibleContent class="space-y-1 pl-4 pt-1">
@@ -78,7 +78,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, type Component } from "vue";
+import { watch, type Component } from "vue";
 import { useRoute } from "vue-router";
 import { ChevronDown } from "lucide-vue-next";
 import {
@@ -87,6 +87,7 @@ import {
   CollapsibleTrigger,
 } from "../ui/collapsible";
 import SidebarLink from "./SidebarLink.vue";
+import { useSidebarSectionState } from "../composables/useSidebarSectionState";
 import type { MenuItem } from "../types/menu-link";
 
 const props = defineProps<{
@@ -97,7 +98,12 @@ const props = defineProps<{
 
 defineEmits<{ navigate: [] }>();
 
-const openMap = ref<Record<string, boolean>>({});
+// A branch starts closed and keeps whatever the user last chose, across
+// reloads.
+const { isSectionOpen, setSectionOpen } = useSidebarSectionState(
+  "sidebar-branches-open",
+  { defaultOpen: false }
+);
 
 const keyOf = (item: MenuItem) => item.id ?? item.title;
 
@@ -122,7 +128,7 @@ watch(
     if (!path) return;
     for (const item of props.items ?? []) {
       if (item.items?.length && holdsRoute(item, path))
-        openMap.value[keyOf(item)] = true;
+        setSectionOpen(keyOf(item), true);
     }
   },
   { immediate: true }
