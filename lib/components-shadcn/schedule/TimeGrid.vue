@@ -41,7 +41,7 @@
         <span
           v-for="h in hours"
           :key="h"
-          class="absolute right-2 font-mono text-[11px] text-muted-foreground"
+          class="absolute left-2 right-2 whitespace-nowrap text-right font-mono text-[11px] text-muted-foreground"
           :style="{ top: `${(h - startHour) * hourHeight - 7}px` }"
           >{{ hourLabel(h) }}</span
         >
@@ -175,7 +175,7 @@ const win = computed(() => ({
 const height = computed(() => windowHeight(win.value));
 const nowDate = computed(() => toDate(props.now));
 const columnsTemplate = computed(
-  () => `3.5rem repeat(${props.days.length}, minmax(0, 1fr))`
+  () => `4rem repeat(${props.days.length}, minmax(0, 1fr))`
 );
 const hours = computed(() =>
   Array.from(
@@ -191,8 +191,7 @@ const weekday = (d: Date) =>
   new Intl.DateTimeFormat(props.locale, { weekday: "short" }).format(d);
 const hourLabel = (h: number) =>
   new Intl.DateTimeFormat(props.locale, {
-    hour: "2-digit",
-    minute: "2-digit",
+    hour: "numeric",
   }).format(new Date(2000, 0, 1, h));
 
 const drag = ref<{

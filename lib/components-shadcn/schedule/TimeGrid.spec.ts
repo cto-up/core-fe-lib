@@ -27,6 +27,15 @@ function mountGrid(props: Record<string, unknown> = {}) {
 }
 
 describe("TimeGrid", () => {
+  it("labels each hour on one short line, inset from the edge", () => {
+    const w = mountGrid({ locale: "en-US" });
+    const first = w.find('[aria-hidden="true"] span');
+    expect(first.text()).toBe("8 AM");
+    expect(first.classes()).toEqual(
+      expect.arrayContaining(["whitespace-nowrap", "left-2", "right-2"])
+    );
+  });
+
   it("draws each item through the slot, at its time, in its day", () => {
     const w = mountGrid();
     const a = w.get(
