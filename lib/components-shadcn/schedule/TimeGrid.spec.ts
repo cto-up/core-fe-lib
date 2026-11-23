@@ -127,9 +127,12 @@ describe("TimeGrid", () => {
     await col.trigger("pointermove", { clientY: 200, pointerId: 1 });
     expect(w.find('[data-test="time-grid-selection"]').exists()).toBe(true);
     await col.trigger("pointerup", { pointerId: 1 });
-    expect(w.emitted("select-range")?.[0]).toEqual([
-      { start: at(24, 10), end: at(24, 11, 30) },
-    ]);
+    const [range] = w.emitted("select-range")![0] as [
+      { start: Date; end: Date; rect: DOMRect },
+    ];
+    expect(range).toMatchObject({ start: at(24, 10), end: at(24, 11, 30) });
+    // Where it sits on screen, for a dialog beside it: 10:00 is 2h below 08:00.
+    expect([range.rect.top, range.rect.height]).toEqual([120, 90]);
   });
 
   it("a press without a drag selects the default length", async () => {
@@ -137,9 +140,10 @@ describe("TimeGrid", () => {
     const col = w.get('[data-test="time-grid-day-2026-11-24"]');
     await col.trigger("pointerdown", { button: 0, clientY: 75, pointerId: 1 });
     await col.trigger("pointerup", { pointerId: 1 });
-    expect(w.emitted("select-range")?.[0]).toEqual([
-      { start: at(24, 9, 15), end: at(24, 9, 45) },
-    ]);
+    expect(w.emitted("select-range")?.[0][0]).toMatchObject({
+      start: at(24, 9, 15),
+      end: at(24, 9, 45),
+    });
   });
 
   it("a press on an item selects nothing", async () => {

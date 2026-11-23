@@ -208,7 +208,8 @@ const props = withDefaults(
 );
 
 const emit = defineEmits<{
-  "select-range": [range: { start: Date; end: Date }];
+  /** rect is where the range sits on screen. */
+  "select-range": [range: { start: Date; end: Date; rect: DOMRect }];
   "move-item": [move: { item: T; start: Date; end: Date }];
 }>();
 
@@ -322,8 +323,18 @@ const selectionStyle = computed(() => {
 
 function onUp() {
   const r = range.value;
+  const d = drag.value;
   drag.value = null;
-  if (r) emit("select-range", r);
+  if (!r || !d) return;
+  // Where the range sits on screen, for a dialog opened beside it.
+  const col = d.el.getBoundingClientRect();
+  const pxPerMs = props.hourHeight / 3_600_000;
+  const top = col.top + (r.start.getTime() - msAt(0, d.day)) * pxPerMs;
+  const height = (r.end.getTime() - r.start.getTime()) * pxPerMs;
+  emit("select-range", {
+    ...r,
+    rect: new DOMRect(col.left, top, col.width, height),
+  });
 }
 
 const columns: HTMLElement[] = [];
