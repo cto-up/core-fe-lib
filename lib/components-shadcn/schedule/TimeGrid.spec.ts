@@ -17,6 +17,8 @@ function mountGrid(props: Record<string, unknown> = {}) {
       ],
       now: at(23, 14, 30),
       locale: "en-GB",
+      startHour: 8,
+      endHour: 18,
       ...props,
     },
     slots: {
@@ -27,6 +29,38 @@ function mountGrid(props: Record<string, unknown> = {}) {
 }
 
 describe("TimeGrid", () => {
+  it("covers the whole day and scrolls, opening on 8 AM", () => {
+    const w = mountGrid({ startHour: undefined, endHour: undefined });
+    const labels = w.findAll('[aria-hidden="true"] span');
+    expect(labels).toHaveLength(24);
+    expect(w.get('[data-test="time-grid"]').classes()).toContain(
+      "overflow-y-auto"
+    );
+    expect(w.get('[data-test="time-grid"]').attributes("style")).toContain(
+      "max-height: 648px"
+    );
+    expect(
+      (w.get('[data-test="time-grid"]').element as HTMLElement).scrollTop
+    ).toBe(8 * 60);
+  });
+
+  it("opens on an earlier item, and draws items late in the evening", () => {
+    const w = mountGrid({
+      startHour: undefined,
+      endHour: undefined,
+      items: [
+        { id: "early", start: at(24, 6), end: at(24, 7), title: "Early" },
+        { id: "late", start: at(26, 20), end: at(26, 21), title: "Late" },
+      ],
+    });
+    expect(
+      (w.get('[data-test="time-grid"]').element as HTMLElement).scrollTop
+    ).toBe(6 * 60);
+    expect(
+      w.get('[data-test="time-grid-item-late"]').attributes("style")
+    ).toContain("top: 1200px");
+  });
+
   it("labels each hour on one short line, inset from the edge", () => {
     const w = mountGrid({ locale: "en-US" });
     const first = w.find('[aria-hidden="true"] span');

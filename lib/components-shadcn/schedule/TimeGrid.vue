@@ -1,13 +1,17 @@
 <template>
   <div
+    ref="scroller"
     role="group"
     :aria-label="label"
-    :class="cn('select-none', props.class)"
+    :class="cn('select-none overflow-y-auto', props.class)"
+    :style="{
+      maxHeight: `${visibleHours * hourHeight + (showHeader ? 48 : 0)}px`,
+    }"
     data-test="time-grid"
   >
     <div
       v-if="showHeader"
-      class="grid border-b"
+      class="sticky top-0 z-10 grid border-b bg-card"
       :style="{ gridTemplateColumns: columnsTemplate }"
     >
       <span />
@@ -42,7 +46,7 @@
           v-for="h in hours"
           :key="h"
           class="absolute left-2 right-2 whitespace-nowrap text-right font-mono text-[11px] text-muted-foreground"
-          :style="{ top: `${(h - startHour) * hourHeight - 7}px` }"
+          :style="{ top: `${Math.max(0, (h - startHour) * hourHeight - 7)}px` }"
           >{{ hourLabel(h) }}</span
         >
       </div>
@@ -101,7 +105,14 @@
 </template>
 
 <script setup lang="ts" generic="T extends ScheduleItem">
-import { computed, ref, type HTMLAttributes } from "vue";
+import {
+  computed,
+  nextTick,
+  onMounted,
+  ref,
+  watch,
+  type HTMLAttributes,
+} from "vue";
 import { cn } from "../utils";
 import {
   isoDate,
@@ -129,6 +140,10 @@ const props = withDefaults(
     startHour?: number;
     endHour?: number;
     hourHeight?: number;
+    /** The hour shown at the top when the grid opens, unless an item starts earlier. */
+    scrollToHour?: number;
+    /** How many hours the grid shows before it scrolls. */
+    visibleHours?: number;
     /** Minimum height of an item, in px. */
     minItemHeight?: number;
     now?: DateLike;
@@ -143,9 +158,11 @@ const props = withDefaults(
     class?: HTMLAttributes["class"];
   }>(),
   {
-    startHour: 8,
-    endHour: 18,
+    startHour: 0,
+    endHour: 24,
     hourHeight: 60,
+    scrollToHour: 8,
+    visibleHours: 10,
     minItemHeight: 22,
     now: () => Date.now(),
     locale: undefined,
@@ -182,6 +199,25 @@ const hours = computed(() =>
     { length: props.endHour - props.startHour },
     (_, i) => props.startHour + i
   )
+);
+
+const scroller = ref<HTMLElement | null>(null);
+/** Opens on scrollToHour, or earlier when an item of these days starts before it. */
+function scrollToFirst() {
+  const el = scroller.value;
+  if (!el) return;
+  let hour = props.scrollToHour;
+  for (const it of props.items) {
+    const start = toDate(it.start);
+    if (props.days.some((d) => sameDay(d, start)))
+      hour = Math.min(hour, start.getHours());
+  }
+  el.scrollTop = Math.max(0, hour - props.startHour) * props.hourHeight;
+}
+onMounted(scrollToFirst);
+watch(
+  () => [props.days.map(isoDate).join(), props.items.length],
+  () => nextTick(scrollToFirst)
 );
 
 const placed = (day: Date) =>
