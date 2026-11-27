@@ -30,6 +30,7 @@ import type { Role } from '../models/Role';
 import type { Tenant } from '../models/Tenant';
 import type { TenantFeatureLicenses } from '../models/TenantFeatureLicenses';
 import type { TenantFeatures } from '../models/TenantFeatures';
+import type { TenantPictureUpload } from '../models/TenantPictureUpload';
 import type { TenantProfile } from '../models/TenantProfile';
 import type { Translation } from '../models/Translation';
 import type { User } from '../models/User';
@@ -1314,9 +1315,30 @@ export class DefaultService {
         });
     }
     /**
-     * Returns the tenant logo. Returns 404 if no logo is set. Supports ETag-based caching.
-     * @param ifNoneMatch ETag value for cache validation
-     * @returns binary Logo response
+     * Replaces the tenant logo. The bytes must be WebP (RIFF....WEBP header) and at most 5 MB.
+     * @param formData
+     * @returns void
+     * @throws ApiError
+     */
+    public static uploadTenantLogo(
+        formData: TenantPictureUpload,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tenant/pictures/logo',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                400: `No picture field, no tenant on the request, or the bytes are not a WebP image.`,
+                403: `Only a tenant administrator, a super admin or an acting reseller may change the tenant pictures.`,
+                413: `The picture exceeds 5 MB.`,
+            },
+        });
+    }
+    /**
+     * Serves the logo of the tenant named by the request host, with an ETag for revalidation.
+     * @param ifNoneMatch ETag from an earlier response
+     * @returns binary The stored WebP picture.
      * @throws ApiError
      */
     public static getTenantLogo(
@@ -1329,15 +1351,36 @@ export class DefaultService {
                 'If-None-Match': ifNoneMatch,
             },
             errors: {
-                304: `Not Modified - cached version is still valid`,
-                404: `Logo not found`,
+                304: `The picture matches the If-None-Match validator; reuse the cached copy.`,
+                404: `The tenant has no picture of this kind, or the request names no tenant.`,
             },
         });
     }
     /**
-     * Returns the tenant background image. Returns 404 if no background image is set. Supports ETag-based caching.
-     * @param ifNoneMatch ETag value for cache validation
-     * @returns binary Background image response
+     * Replaces the tenant desktop background. The bytes must be WebP (RIFF....WEBP header) and at most 5 MB.
+     * @param formData
+     * @returns void
+     * @throws ApiError
+     */
+    public static uploadTenantBackground(
+        formData: TenantPictureUpload,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tenant/pictures/background',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                400: `No picture field, no tenant on the request, or the bytes are not a WebP image.`,
+                403: `Only a tenant administrator, a super admin or an acting reseller may change the tenant pictures.`,
+                413: `The picture exceeds 5 MB.`,
+            },
+        });
+    }
+    /**
+     * Serves the desktop background of the tenant named by the request host, with an ETag for revalidation.
+     * @param ifNoneMatch ETag from an earlier response
+     * @returns binary The stored WebP picture.
      * @throws ApiError
      */
     public static getTenantBackground(
@@ -1350,15 +1393,36 @@ export class DefaultService {
                 'If-None-Match': ifNoneMatch,
             },
             errors: {
-                304: `Not Modified - cached version is still valid`,
-                404: `Background image not found`,
+                304: `The picture matches the If-None-Match validator; reuse the cached copy.`,
+                404: `The tenant has no picture of this kind, or the request names no tenant.`,
             },
         });
     }
     /**
-     * Returns the tenant background mobile image. Returns 404 if no background mobile image is set. Supports ETag-based caching.
-     * @param ifNoneMatch ETag value for cache validation
-     * @returns binary Background mobile image response
+     * Replaces the tenant mobile background. The bytes must be WebP (RIFF....WEBP header) and at most 5 MB.
+     * @param formData
+     * @returns void
+     * @throws ApiError
+     */
+    public static uploadTenantBackgroundMobile(
+        formData: TenantPictureUpload,
+    ): CancelablePromise<void> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/tenant/pictures/background-mobile',
+            formData: formData,
+            mediaType: 'multipart/form-data',
+            errors: {
+                400: `No picture field, no tenant on the request, or the bytes are not a WebP image.`,
+                403: `Only a tenant administrator, a super admin or an acting reseller may change the tenant pictures.`,
+                413: `The picture exceeds 5 MB.`,
+            },
+        });
+    }
+    /**
+     * Serves the mobile background of the tenant named by the request host, with an ETag for revalidation.
+     * @param ifNoneMatch ETag from an earlier response
+     * @returns binary The stored WebP picture.
      * @throws ApiError
      */
     public static getTenantBackgroundMobile(
@@ -1371,71 +1435,8 @@ export class DefaultService {
                 'If-None-Match': ifNoneMatch,
             },
             errors: {
-                304: `Not Modified - cached version is still valid`,
-                404: `Background mobile image not found`,
-            },
-        });
-    }
-    /**
-     * Uploads a new tenant logo. Only webp files are accepted.
-     * @param formData
-     * @returns void
-     * @throws ApiError
-     */
-    public static uploadTenantLogo(
-        formData: {
-            picture?: Blob;
-        },
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/tenant/pictures/logo',
-            formData: formData,
-            mediaType: 'multipart/form-data',
-            errors: {
-                400: `Invalid file format. Only webp files are allowed`,
-            },
-        });
-    }
-    /**
-     * Uploads a new tenant background image. Only webp files are accepted.
-     * @param formData
-     * @returns void
-     * @throws ApiError
-     */
-    public static uploadTenantBackground(
-        formData: {
-            picture?: Blob;
-        },
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/tenant/pictures/background',
-            formData: formData,
-            mediaType: 'multipart/form-data',
-            errors: {
-                400: `Invalid file format. Only webp files are allowed`,
-            },
-        });
-    }
-    /**
-     * Uploads a new tenant background mobile image. Only webp files are accepted.
-     * @param formData
-     * @returns void
-     * @throws ApiError
-     */
-    public static uploadTenantBackgroundMobile(
-        formData: {
-            picture?: Blob;
-        },
-    ): CancelablePromise<void> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/v1/tenant/pictures/background-mobile',
-            formData: formData,
-            mediaType: 'multipart/form-data',
-            errors: {
-                400: `Invalid file format. Only webp files are allowed`,
+                304: `The picture matches the If-None-Match validator; reuse the cached copy.`,
+                404: `The tenant has no picture of this kind, or the request names no tenant.`,
             },
         });
     }

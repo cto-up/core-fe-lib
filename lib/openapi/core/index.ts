@@ -54,6 +54,8 @@ export type { TenantFeatureLicenses } from './models/TenantFeatureLicenses';
 export type { TenantFeatures } from './models/TenantFeatures';
 export { TenantLeaveDecision } from './models/TenantLeaveDecision';
 export { TenantMembership } from './models/TenantMembership';
+export type { TenantPictureProblem } from './models/TenantPictureProblem';
+export type { TenantPictureUpload } from './models/TenantPictureUpload';
 export type { TenantProfile } from './models/TenantProfile';
 export type { Translation } from './models/Translation';
 export type { User } from './models/User';
